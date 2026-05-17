@@ -2190,6 +2190,23 @@ function solicitarEliminarHistorial(idx) {
   abrirEditorHistorial(idx2);
 }
 
+function eliminarDesdeEditor(idx2) {
+  const p = state.historialPagos[idx2];
+  if (!p) return;
+  const subtotal = (p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0);
+  if (!confirm(`¿Eliminar pedido "${p.mesa}" por S/${subtotal.toFixed(2)}?\n\nEsta acción quedará registrada.`)) return;
+  if (!state.historialCambios) state.historialCambios = [];
+  state.historialCambios.push({
+    hora: new Date().toLocaleString('es-PE'),
+    desc: `Pedido ELIMINADO: ${p.mesa} · S/${subtotal.toFixed(2)} · ${p.metodoPago} · ${p.fecha}`
+  });
+  state.historialPagos.splice(idx2, 1);
+  document.getElementById('edit-hist-modal')?.remove();
+  saveState();
+  renderView('historial');
+  alert('✅ Pedido eliminado.');
+}
+
 function abrirEditorHistorial(idx2) {
   const p = state.historialPagos[idx2];
   if (!p) return;
@@ -2226,9 +2243,10 @@ function abrirEditorHistorial(idx2) {
       <button onclick="agregarItemEdicion()" style="background:var(--success);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer">+</button>
     </div>
     <div style="display:flex;gap:8px;margin-top:14px">
-      <button onclick="guardarEdicionHistorial(${idx2})" style="flex:1;background:var(--success);color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:900;cursor:pointer">💾 Guardar cambios</button>
+      <button onclick="guardarEdicionHistorial(${idx2})" style="flex:2;background:var(--success);color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:900;cursor:pointer">💾 Guardar cambios</button>
       <button onclick="document.getElementById('edit-hist-modal').remove()" style="flex:1;background:var(--fb-border);color:var(--text);border:none;border-radius:10px;padding:12px;font-size:13px;cursor:pointer">Cancelar</button>
     </div>
+    <button onclick="eliminarDesdeEditor(${idx2})" style="width:100%;margin-top:8px;background:var(--danger);color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:900;cursor:pointer">🗑 Eliminar este pedido</button>
   </div>`;
   document.body.appendChild(modal);
   modal._pedidoIdx = idx2;
