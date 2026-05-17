@@ -2148,7 +2148,10 @@ function renderHistorialView(el) {
         </div>
         <div style="text-align:right">
           <div class="caja-card-total">S/${subtotal.toFixed(2)}</div>
-          <button onclick="solicitarEdicionHistorial(${idx2})" style="margin-top:6px;background:#818CF8;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;cursor:pointer">✏️ Editar</button>
+          <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end">
+            <button onclick="solicitarEdicionHistorial(${idx2})" style="background:#818CF8;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;cursor:pointer">✏️ Editar</button>
+            <button onclick="solicitarEliminarHistorial(${idx2})" style="background:var(--danger);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;cursor:pointer">🗑 Eliminar</button>
+          </div>
         </div>
       </div>
       <div style="padding:8px 14px">
@@ -2163,7 +2166,24 @@ function renderHistorialView(el) {
   el.innerHTML = html;
 }
 
-function solicitarEdicionHistorial(idx2) {
+function solicitarEliminarHistorial(idx) {
+  const pin = prompt('🔒 Ingresa la clave para eliminar (4 dígitos):');
+  if (pin !== '1234') { alert('❌ Clave incorrecta'); return; }
+  const p = state.historialPagos[idx];
+  if (!p) return;
+  const subtotal = (p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0);
+  if (!confirm(`¿Eliminar pedido "${p.mesa}" por S/${subtotal.toFixed(2)}?\n\nEsta acción quedará registrada en el historial de cambios.`)) return;
+  // Registrar en historial de cambios
+  if (!state.historialCambios) state.historialCambios = [];
+  state.historialCambios.push({
+    hora: new Date().toLocaleString('es-PE'),
+    desc: `Pedido ELIMINADO: ${p.mesa} · S/${subtotal.toFixed(2)} · ${p.metodoPago} · ${p.fecha}`
+  });
+  state.historialPagos.splice(idx, 1);
+  saveState();
+  renderView('historial');
+  alert('✅ Pedido eliminado. El reporte se actualizó.');
+}
   // Pedir PIN 1234
   const pin = prompt('🔒 Ingresa la clave para editar (4 dígitos):');
   if (pin !== '1234') { alert('❌ Clave incorrecta'); return; }
