@@ -54,7 +54,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .mesa-card.por-cobrar{border-color:var(--warning);background:#2a250f;}.mesa-card.listo-entregar{border-color:#22C55E;background:#0d2318;box-shadow:0 0 0 2px #22C55E55,0 0 16px #22C55E44;animation:pulse-green 1.4s ease-in-out infinite;}.mesa-card.en-camino{border-color:#818CF8;background:#1a1a2e;animation:pulse-blue 1.2s infinite;}.mesa-card.en-camino .mesa-status{color:#818CF8;font-weight:900;}@keyframes pulse-blue{0%,100%{box-shadow:0 0 0 0 rgba(129,140,248,.4);}50%{box-shadow:0 0 0 6px rgba(129,140,248,0);}}@keyframes pulse-green{0%,100%{box-shadow:0 0 0 2px #22C55E55,0 0 16px #22C55E44;}50%{box-shadow:0 0 0 4px #22C55E99,0 0 28px #22C55E88;}}.mesa-card.listo-entregar .mesa-status{color:#22C55E;font-weight:900;}.mesa-card.por-cobrar .mesa-status{color:var(--warning);}
 .mesa-card.en-elaboracion{border-color:#818CF8;background:#1a1a2e;}
 .mesa-card.en-elaboracion .mesa-status{color:#818CF8;}
-.semaforo{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:900;padding:3px 8px;border-radius:10px;margin-top:3px;}
+.semaforo{display:inline-flex;align-items:center;gap:5px;font-size:15px;font-weight:900;padding:5px 12px;border-radius:12px;margin-top:4px;}
 .semaforo.verde{background:rgba(34,197,94,.2);color:#22C55E;}
 .semaforo.amarillo{background:rgba(245,158,11,.25);color:#F59E0B;}
 .semaforo.rojo{background:rgba(239,68,68,.25);color:#EF4444;animation:pulse-red .9s infinite;}
@@ -646,12 +646,20 @@ window.onerror = function(msg, src, line, col, err) {
 <div style="display:flex;gap:6px;flex-wrap:wrap;" id="adicionales-btns">
 </div>
 </div>
+<div id="hielo-section" style="display:none;margin-top:14px;">
+<div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:8px;">🧊 Hielo</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;" id="hielo-btns">
+  <button class="hielo-opt adicional-btn selected" onclick="selHielo(this,'Normal')">🧊 Normal</button>
+  <button class="hielo-opt adicional-btn" onclick="selHielo(this,'Poco hielo')">🌊 Poco hielo</button>
+  <button class="hielo-opt adicional-btn" onclick="selHielo(this,'Sin hielo')">❌ Sin hielo</button>
+</div>
+</div>
 <div style="margin-top:14px;">
 <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:6px;">📝 Nota libre</div>
 <textarea class="nota-input" id="sabor-nota" placeholder="Ej: sin cebolla, extra picante..." rows="2">
 </textarea>
 </div>
-<div style="display:flex;gap:8px;margin-top:14px;">
+<div style="display:flex;gap:8px;margin-top:14px;position:sticky;bottom:0;background:var(--fb-dark);padding:10px 0 4px;z-index:2;">
 <button class="btn-secondary" onclick="closeSabores()" style="flex:1;padding:12px;border-radius:8px;cursor:pointer;font-family:Arial,sans-serif;font-weight:800;">Cancelar</button>
 <button class="btn-primary" onclick="confirmSabores()" style="flex:2;">✓ Agregar al pedido</button>
 </div>
@@ -726,13 +734,13 @@ foodbiker: {
 { id:'pos1', name:'Chocolate Volcano', price:19.90, priceRappi:26.94, desc:'Bizcocho de chocolate caliente, fudge derretido, helado, cobertura de chocolate y butterscotch' },
 ],
 'Refrescantes & Mocktails 🥤': [
-{ id:'be1', name:'Sparkling Frutos Rojos', price:7.90, priceRappi:10.70, desc:'Dulce, burbujeante y refrescante' },
-{ id:'be2', name:'Maracu Sparkling', price:7.90, priceRappi:10.70, desc:'Ácido tropical y vibrante' },
-{ id:'be3', name:'Sandía Coconut', price:7.90, priceRappi:10.70, desc:'Suave, fresco con toque tropical' },
-{ id:'be4', name:'Piña Coconut', price:7.90, priceRappi:10.70, desc:'Tropical, dulce y refrescante' },
-{ id:'be5', name:'Mango Tropical', price:7.90, priceRappi:10.70, desc:'Tropical, dulce y refrescante' },
-{ id:'be6', name:'Limonada Frozen Fresa', price:6.00, priceRappi:7.99, desc:'Dulce, helada y refrescante' },
-{ id:'be7', name:'Limonada Frozen Clásica', price:6.00, priceRappi:7.99, desc:'Ácida, fresca y revitalizante' },
+{ id:'be1', name:'Sparkling Frutos Rojos', price:7.90, priceRappi:10.70, desc:'Dulce, burbujeante y refrescante', hielo:true },
+{ id:'be2', name:'Maracu Sparkling', price:7.90, priceRappi:10.70, desc:'Ácido tropical y vibrante', hielo:true },
+{ id:'be3', name:'Sandía Coconut', price:7.90, priceRappi:10.70, hielo:true, desc:'Suave, fresco con toque tropical' },
+{ id:'be4', name:'Piña Coconut', hielo:true, price:7.90, priceRappi:10.70, desc:'Tropical, dulce y refrescante' },
+{ id:'be5', name:'Mango Tropical', hielo:true, price:7.90, priceRappi:10.70, desc:'Tropical, dulce y refrescante' },
+{ id:'be6', name:'Limonada Frozen Fresa', hielo:true, price:6.00, priceRappi:7.99, desc:'Dulce, helada y refrescante' },
+{ id:'be7', name:'Limonada Frozen Clásica', hielo:true, price:6.00, priceRappi:7.99, desc:'Ácida, fresca y revitalizante' },
 { id:'be10', name:'Pepsi pequeña', price:3.00, priceRappi:4.06, desc:'Gaseosa Pepsi personal' },
 { id:'be11', name:'Gaseosa personal', price:3.00, priceRappi:4.06, desc:'Gaseosa a elección' },
 ],
@@ -904,7 +912,7 @@ if (i.enviadoCocina === undefined) i.enviadoCocina = (m.estado === 'en-elaboraci
 }
 function initMesas() {
 for (let i = 1; i <= 6; i++) {
-if (!state.mesas[`M${i}`]) state.mesas[`M${i}`] = { num: i, estado: 'libre', items: [], modalidad: '', total: 0, info: {} };
+if (!state.mesas[`M${i}`]) state.mesas[`M${i}`] = { num: i, estado: 'libre', items: [], modalidad: '', total: 0, info: {}, enviadoTs: null };
 }
 // Reparar cualquier mesa que venga sin items (puede pasar con datos de Firebase)
 Object.values(state.mesas).forEach(m => {
@@ -961,6 +969,7 @@ renderNavAndViews(role);
 setTimeout(() => { if (state.role) refreshCurrentView(); }, 500);
 setTimeout(() => { if (state.role) refreshCurrentView(); }, 1500);
 setTimeout(() => { if (state.role) refreshCurrentView(); }, 3000);
+setTimeout(() => { if (state.role) refreshCurrentView(); }, 6000);
 }
 
 function applyRoleTheme(role) {
@@ -1529,6 +1538,7 @@ const mesa = state.mesas[currentPedidoKey];
 if (!mesa) return;
 const detalles = {
 termino: extra.termino || '',
+hielo: extra.hielo || '',
 sin: extra.sin || [],
 adicionales: extra.adicionales || [],
 pair: extra.pair || [],
@@ -1540,7 +1550,7 @@ const key = item.id + '_' + (sabores.join('+')||'solo') + '_' + (detalles.sin.jo
 const existing = mesa.items.find(i => i.key === key && i.nota === nota);
 if (existing) { existing.qty++; }
 else {
-mesa.items.push({ key, id: item.id, name: item.name, price: finalPrice, basePrice: item.price, priceRappi: item.priceRappi, qty: 1, sabores, nota, brand: state.currentMenuTab, promo: item.promo||'', termino:detalles.termino, sin:detalles.sin, adicionales:detalles.adicionales, pair:detalles.pair, itemModalidad:detalles.itemModalidad });
+mesa.items.push({ key, id: item.id, name: item.name, price: finalPrice, basePrice: item.price, priceRappi: item.priceRappi, qty: 1, sabores, nota, brand: state.currentMenuTab, promo: item.promo||'', termino:detalles.termino, hielo:detalles.hielo, sin:detalles.sin, adicionales:detalles.adicionales, pair:detalles.pair, itemModalidad:detalles.itemModalidad });
 }
 if (mesa.estado === 'libre') mesa.estado = 'ocupada';
 renderPedidoItems();
@@ -1653,6 +1663,7 @@ function saveDeliveryInfo() {
 if (!currentPedidoKey) return;
 const mesa = state.mesas[currentPedidoKey];
 mesa.info.nombre = document.getElementById('d-nombre')?.value || '';
+mesa.info.telefono = document.getElementById('d-tel')?.value || '';
 mesa.info.direccion = document.getElementById('d-dir')?.value || '';
 mesa.info.costoDelivery = document.getElementById('d-costo')?.value || '';
 mesa.info.repartidor = document.getElementById('d-rep')?.value || '';
@@ -1744,6 +1755,16 @@ html += `<div class="sabor-opt" onclick="toggleSabor(this,'${op}',${item.maxSabo
 });
 }
 document.getElementById('sabores-list').innerHTML = html;
+// ── Hielo section ──────────────────────────────────────────────────────────
+const hieloSection = document.getElementById('hielo-section');
+if (hieloSection) {
+  hieloSection.style.display = item.hielo ? 'block' : 'none';
+  if (item.hielo) {
+    const hieloBtns = document.getElementById('hielo-btns');
+    hieloBtns.querySelectorAll('.hielo-opt').forEach(b => b.classList.remove('selected'));
+    state.itemPersonalizacion.hielo = 'Normal'; // default
+  }
+}
 const pairSection = document.getElementById('pair-section');
 pairSection.style.display = item.pair ? 'block' : 'none';
 if (item.pair) {
@@ -1784,7 +1805,8 @@ if (item.id === 'pm4' || (!esBurgerOAla && !item.carne)) {
     `<button class="adicional-btn" onclick="toggleAdicional(this,'Extra queso cheddar +S/3.00')">🧀 Extra queso cheddar +S/3</button>
      <button class="adicional-btn" onclick="toggleAdicional(this,'Extra tocino crocante +S/4.00')">🥓 Extra tocino +S/4</button>
      <button class="adicional-btn" onclick="toggleAdicional(this,'Extra Onion Rings +S/9.90')">🧅 Extra Onion Rings +S/9.90</button>
-     <button class="adicional-btn" onclick="toggleAdicional(this,'Extra salsa')">🫙 Extra salsa</button>`;
+     <button class="adicional-btn" onclick="toggleAdicional(this,'Extra salsa')">🫙 Extra salsa</button>
+     <button class="adicional-btn" onclick="toggleAdicional(this,'3 Alitas extra +S/10.90')">🍗 +3 Alitas extra +S/10.90</button>`;
 }
 
 // QUESO SWAP: detectar si la burger tiene cheddar o dambo para ofrecer cambio
@@ -1975,7 +1997,7 @@ currentPedidoKey = key;
 showPedidoModal(state.mesas[key], key);
 }
 function renderCobrarView(el) {
-const pendientes = Object.entries(state.mesas).filter(([k,m]) => ['por-cobrar','listo-entregar','en-elaboracion','en-camino','ocupada'].includes(m.estado) && m.items && m.items.length > 0);
+const pendientes = Object.entries(state.mesas).filter(([k,m]) => ['por-cobrar','listo-entregar','en-elaboracion','en-camino','ocupada','por-entregar'].includes(m.estado) && m.items && m.items.length > 0);
 if (!pendientes.length) { el.innerHTML = `<div class="empty-state">
 <div class="empty-icon">💰</div>
 <p>No hay mesas por cobrar</p>
@@ -1989,13 +2011,15 @@ html += `<div class="caja-card">
 <div class="caja-card-header">
 <div>
 <div style="display:flex;align-items:center;gap:8px;"><div class="caja-card-title">${mesaLabel}</div>${semaforoHTML(mesa)}</div>
+${mesa.info&&mesa.info.telefono?`<a href="https://wa.me/51${(mesa.info.telefono||'').replace(/\D/g,'')}?text=${encodeURIComponent('Hola '+(mesa.clienteNombre||mesa.info.nombre||'')+', tu pedido ya está listo 🍔🔔')}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:900;text-decoration:none;margin-top:4px;">📱 WhatsApp</a>`:''}
 <div style="display:flex;gap:6px;align-items:center;margin-top:3px;"><span style="font-size:11px;color:var(--text-muted);">${modalidadLabel(mesa.modalidad)}</span>${mesa.estado==="en-elaboracion"?'<span style="font-size:10px;font-weight:900;background:rgba(129,140,248,.2);color:#818CF8;padding:2px 8px;border-radius:10px;">👨‍🍳 En cocina</span>':''}${mesa.estado==="listo-entregar"?'<span style="font-size:10px;font-weight:900;background:rgba(34,197,94,.2);color:#22C55E;padding:2px 8px;border-radius:10px;">🔔 Listo</span>':''}${mesa.estado==="en-camino"?'<span style="font-size:10px;font-weight:900;background:rgba(129,140,248,.2);color:#818CF8;padding:2px 8px;border-radius:10px;">🚶 En camino</span>':''}${mesa.estado==="ocupada"?'<span style="font-size:10px;font-weight:900;background:rgba(255,107,0,.2);color:var(--fb-orange);padding:2px 8px;border-radius:10px;">📝 Tomando pedido</span>':''}</div>${mesa.clienteNombre?`<div style="font-size:12px;font-weight:800;color:var(--fb-yellow);margin-top:2px;">👤 ${mesa.clienteNombre}</div>`:''}</div>
 <div class="caja-card-total" id="total-lbl-${key}">S/ ${totalFinal.toFixed(2)}</div>
 </div>
 <div class="caja-items">
 ${mesa.items.map((item, idx) => {
 const esCortesia = item.cortesia === true;
-return `<div class="caja-item-row" style="${esCortesia?'opacity:.6':''}">
+const esBebida = ['be1','be2','be3','be4','be5','be6','be7','be8','be9','be10','be11','be12','be13','be14','be15'].includes(item.id) || (item.brand && ['bocaloca'].includes(item.brand) && item.name && (item.name.toLowerCase().includes('jugo')||item.name.toLowerCase().includes('gaseosa')||item.name.toLowerCase().includes('agua')||item.name.toLowerCase().includes('chicha')));
+return `<div class="caja-item-row" style="${esCortesia?'opacity:.6':''};border-left:3px solid ${esBebida?'#60a5fa':'#fb923c'};padding-left:6px;">
 <span>${item.qty}x ${item.name}${esCortesia?' <span style="background:rgba(34,197,94,.2);color:var(--success);font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;">🎁 CORTESÍA</span>':''}</span>
 <div style="display:flex;align-items:center;gap:8px">
 <span>${esCortesia?'<span style="color:var(--success);font-weight:800">S/0.00</span>':`S/${(item.price*item.qty).toFixed(2)}`}</span>
@@ -2434,6 +2458,7 @@ if (!pedidos.length) { el.innerHTML = `<div class="empty-state">
 let html = '';
 pedidos.forEach(([key, mesa]) => {
 const fbItems = mesa.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom') && i.enviadoCocina);
+    const yaPagado = mesa.estado === 'por-cobrar' || mesa.estado === 'listo-entregar';
 const todosListos = fbItems.length > 0 && fbItems.every(i => i.listo);
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 const modColors = { salon:'#4ade80', llevar:'#f59e0b', delivery:'#60a5fa', externo:'#FC4F00', pedidosya:'#FC4F00', rappi:'#FC4F00', recojo:'#a78bfa' };
@@ -2450,7 +2475,7 @@ extraInfo = `<div class="cocina-detail" style="color:#FC4F00;margin-top:3px;">�
 html += `<div class="cocina-card" id="cocina-card-${key}">
 <div class="cocina-header">
 <div>
-<div class="cocina-title">${mesaLabel} ${modTag}</div>
+<div class="cocina-title">${mesaLabel}${yaPagado?' <span style="background:rgba(34,197,94,.3);color:#22C55E;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:900;">✅ PAGADO</span>':''} ${modTag}</div>
 ${cocinaSemaforoHTML(key, mesa)}
 ${mesa.clienteNombre ? `<div class="cocina-cliente">👤 ${mesa.clienteNombre}</div>` : ''}
 ${extraInfo}
@@ -3897,18 +3922,17 @@ function initFirebaseSync() {
     if (!val) return;
     if (val.writer === DEVICE_ID && (Date.now() - (_lastSentTs||0)) < 2000) return;
     const remotePagos = val.pagos || [];
-    // Tomar el historial más completo entre local y remoto
-    if (remotePagos.length >= state.historialPagos.length) {
-      state.historialPagos = remotePagos;
-    }
-    if (val.cambios && val.cambios.length >= (state.historialCambios||[]).length) {
-      state.historialCambios = val.cambios;
-    }
+    const remoteCambios = val.cambios || [];
+    // Siempre tomar el historial de Firebase (es la fuente de verdad)
+    state.historialPagos = remotePagos;
+    state.historialCambios = remoteCambios;
     try {
       const safeState = { ...state, role:null, saboresCallback:null, currentModalItem:null };
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: safeState, menuData, pins: PINS }));
     } catch(e) {}
+    // Refrescar en cualquier rol que tenga vista de caja activa
     if (state.role === 'caja') refreshCurrentView();
+    else if (state.role === 'admin') refreshCurrentView();
   });
 
   // Listener 2: menú / precios / stock (baja frecuencia, solo admin)
@@ -3924,6 +3948,7 @@ setTimeout(initFirebaseSync, 400);
 // ── SEMÁFORO DE PEDIDOS ──────────────────────────────────────────────────────
 function getSemaforoData(mesa) {
   if (!mesa.enviadoTs) return null;
+  if (mesa.estado === 'libre' || mesa.estado === 'por-cobrar') return null;
   const elapsed = Math.floor((Date.now() - mesa.enviadoTs) / 1000);
   const mins = Math.floor(elapsed / 60);
   const secs = elapsed % 60;
