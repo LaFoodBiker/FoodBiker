@@ -410,14 +410,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 
 </head>
 <body>
-<div id="js-err" style="display:none;position:fixed;top:0;left:0;right:0;background:#7f0000;color:#fff;padding:10px;font-size:12px;z-index:99999;word-break:break-all;"></div>
-<script>
-window.onerror=function(msg,src,line,col,err){
-  var b=document.getElementById('js-err');
-  if(b){b.style.display='block';b.textContent='JS Error line '+line+': '+msg;}
-  return false;
-};
-</script>
 <div id="js-error-banner" style="display:none;position:fixed;top:0;left:0;right:0;background:#7f0000;color:#fff;padding:10px 14px;font-size:12px;z-index:99999;word-break:break-all;"></div>
 <script>
 window.onerror = function(msg, src, line, col, err) {
@@ -2629,11 +2621,11 @@ if (!pedidos.length) { el.innerHTML = `<div class="empty-state">
 </div>`; return; }
 let html = '';
 pedidos.forEach(([key, mesa]) => {
-const fbItems = mesa.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom') && i.enviadoCocina);
+const fbItems = mesa.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom' || !i.brand) && i.enviadoCocina);
     const yaPagado = mesa.estado === 'por-cobrar' || mesa.estado === 'listo-entregar' || mesa.estado === 'ya-pagado' || mesa.estado === 'pagado' || mesa.prepagado === true;
-// For button: check if ALL fb items are now listo
+// Para el botón: todos los items enviados están marcados como listo (true === true)
 const allFbItems = mesa.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom' || !i.brand) && i.enviadoCocina);
-const todosListos = allFbItems.length > 0 && allFbItems.every(i => i.listo);
+const todosListos = allFbItems.length > 0 && allFbItems.every(i => i.listo === true);
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 const modColors = { salon:'#4ade80', llevar:'#f59e0b', delivery:'#60a5fa', externo:'#FC4F00', pedidosya:'#FC4F00', rappi:'#FC4F00', recojo:'#a78bfa' };
 const modColor = modColors[mesa.modalidad] || '#888';
@@ -2700,7 +2692,7 @@ ${mesa.estado === 'listo-entregar'
 el.innerHTML = html;
 }
 function toggleCocinaItem(mesaKey, itemIdx) {
-state.mesas[mesaKey].items[itemIdx].listo = !state.mesas[mesaKey].items[itemIdx].listo;
+state.mesas[mesaKey].items[itemIdx].listo = state.mesas[mesaKey].items[itemIdx].listo === true ? false : true;
 saveState();
 renderView('cocina-view');
 }
