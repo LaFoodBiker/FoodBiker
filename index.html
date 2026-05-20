@@ -3198,8 +3198,14 @@ function confirmarPagoComb() {
 function ejecutarCobro(key, metodoPago, totalFinal, mesa) {
 if (!mesa) mesa = state.mesas[key];
 if (!mesa) return;
-const now = new Date().toLocaleString('es-PE');
-const nowISO = new Date().toISOString();
+const _ahora = new Date();
+// 'fecha' = local del dispositivo (formato peruano) — usado para filtros de día
+const now = _ahora.toLocaleString('es-PE', {
+  day:'2-digit', month:'2-digit', year:'numeric',
+  hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: true
+});
+// 'fechaISO' = UTC — solo para ordenar y buscar por exactitud, NO para filtrar por día
+const nowISO = _ahora.toISOString();
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 const fbItems = mesa.items.filter(i => i.brand === 'foodbiker' || i.brand === 'custom');
 const blItems = mesa.items.filter(i => i.brand === 'bocaloca');
@@ -3463,38 +3469,41 @@ let _customHasta = '';  // 'YYYY-MM-DD'
 
 function filtrarPagosPorRango(pagos, filtro) {
   const ahora = new Date();
+  // ⚠️ IMPORTANTE: usar fecha LOCAL del dispositivo para "hoy"
+  // (no UTC — Peru es UTC-5 y fechaISO se guardaría en UTC causando desfase)
   const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
 
   function parsePagoFecha(p) {
-    // 1. Primero intentar fechaISO (más confiable)
-    if (p.fechaISO) {
-      const d = new Date(p.fechaISO);
-      if (!isNaN(d.getTime())) return d;
-    }
-    // 2. Parsear formato peruano: "DD/MM/YYYY, HH:MM:SS a. m." o "DD/MM/YYYY HH:MM:SS"
+    // PRIORIDAD 1: campo 'fecha' en formato local peruano (DD/MM/YYYY HH:MM:SS)
+    // Este campo siempre refleja la hora local del dispositivo — es la fuente correcta para filtrar por día
     try {
       const s = (p.fecha || '').trim();
-      // Extraer DD, MM, YYYY con regex robusto
       const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
       if (m) {
         const day = parseInt(m[1]), mon = parseInt(m[2]) - 1, yr = parseInt(m[3]);
-        // Extraer hora si existe
         const hm = s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
         const h = hm ? parseInt(hm[1]) : 0;
         const mi = hm ? parseInt(hm[2]) : 0;
-        // Ajustar p.m. si aplica
         const isPM = /p\.?\s?m/i.test(s);
         const hora = (isPM && h < 12) ? h + 12 : h;
         const d = new Date(yr, mon, day, hora, mi, 0);
         if (!isNaN(d.getTime())) return d;
       }
     } catch(e) {}
-    // 3. Fallback: intentar parseo nativo
+    // PRIORIDAD 2: fechaISO solo como último recurso (está en UTC, puede tener desfase de día)
+    // Convertir a fecha LOCAL para comparar correctamente
+    if (p.fechaISO) {
+      try {
+        const d = new Date(p.fechaISO);
+        if (!isNaN(d.getTime())) return d; // JS convierte a local automáticamente en métodos locales
+      } catch(e) {}
+    }
+    // Fallback nativo
     try {
       const d = new Date(p.fecha);
       if (!isNaN(d.getTime())) return d;
     } catch(e) {}
-    return new Date(); // último fallback = ahora
+    return new Date();
   }
 
   return pagos.filter(p => {
@@ -3755,17 +3764,24 @@ function renderReporteResumen(el) {
 
   // Función robusta de parseo de fecha — nunca lanza error
   function parseFecha(p) {
+    // PRIORIDAD 1: fecha local peruana (DD/MM/YYYY) — evita desfase UTC
+    try {
+      const s = (p.fecha || '').trim();
+      const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (m) {
+        const hm = s.match(/(\d{1,2}):(\d{2})/);
+        const h = hm ? +hm[1] : 0, mi = hm ? +hm[2] : 0;
+        const isPM = /p\.?\s?m/i.test(s);
+        const hora = (isPM && h < 12) ? h + 12 : h;
+        const d = new Date(+m[3], +m[2]-1, +m[1], hora, mi, 0);
+        if (!isNaN(d.getTime())) return d;
+      }
+    } catch(e) {}
+    // PRIORIDAD 2: fechaISO UTC → convertir a local
     try {
       if (p.fechaISO) { const d = new Date(p.fechaISO); if (!isNaN(d.getTime())) return d; }
-      const s = (p.fecha || '').replace(',','').trim();
-      // Formato peruano: DD/MM/YYYY HH:MM:SS
-      const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/);
-      if (m) return new Date(+m[3], +m[2]-1, +m[1], +m[4], +m[5]);
-      // Intentar ISO directo
-      const d2 = new Date(s);
-      if (!isNaN(d2.getTime())) return d2;
     } catch(e) {}
-    return new Date(); // fallback = ahora
+    return new Date();
   }
 
   // Convertir fecha a string YYYY-MM-DD sin usar toISOString (evita crash en Chrome Android)
