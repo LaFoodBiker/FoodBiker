@@ -52,6 +52,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .mesa-card.libre{border-color:var(--fb-border);}
 .mesa-card.ocupada{border-color:var(--fb-orange);background:#2a1f0f;}
 .mesa-card.pagado{border-color:#22C55E;background:rgba(34,197,94,.08);}
+.caja-card.pagado-card{border-color:#22C55E !important;background:#071a0e !important;}
 .mesa-card.pagado .mesa-status{color:#22C55E;font-weight:900;}
 .mesa-card.por-cobrar{border-color:var(--warning);background:#2a250f;}.mesa-card.listo-entregar{border-color:#22C55E;background:#0d2318;box-shadow:0 0 0 2px #22C55E55,0 0 16px #22C55E44;animation:pulse-green 1.4s ease-in-out infinite;}.mesa-card.en-camino{border-color:#818CF8;background:#1a1a2e;animation:pulse-blue 1.2s infinite;}.mesa-card.en-camino .mesa-status{color:#818CF8;font-weight:900;}@keyframes pulse-blue{0%,100%{box-shadow:0 0 0 0 rgba(129,140,248,.4);}50%{box-shadow:0 0 0 6px rgba(129,140,248,0);}}@keyframes pulse-green{0%,100%{box-shadow:0 0 0 2px #22C55E55,0 0 16px #22C55E44;}50%{box-shadow:0 0 0 4px #22C55E99,0 0 28px #22C55E88;}}.mesa-card.listo-entregar .mesa-status{color:#22C55E;font-weight:900;}.mesa-card.por-cobrar .mesa-status{color:var(--warning);}
 .mesa-card.en-elaboracion{border-color:#818CF8;background:#1a1a2e;}
@@ -1164,6 +1165,38 @@ function renderMesasView(el) {
 const cajasRapidas = Object.entries(state.mesas).filter(([k,m]) => k.startsWith('CR_') && m.estado !== 'libre');
 const mesasNumeradas = Object.entries(state.mesas).filter(([k]) => k.startsWith('M'));
 let html = `<div class="caja-rapida-btn" onclick="openCajaRapida()">⚡ Caja Rápida — Cliente paga directo</div>`;
+// ── LISTOS PARA RECOGER — siempre primero ──────────────────────────────────
+const listosPendientes = Object.entries(state.mesas).filter(([k,m]) => m.estado === 'listo-entregar');
+if (listosPendientes.length) {
+  html += `<div style="background:#0a2a14;border:2px solid #22C55E;border-radius:14px;margin:6px 0 10px;overflow:hidden;box-shadow:0 0 0 2px #22C55E44;">
+    <div style="background:#071f10;padding:10px 14px;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:18px;animation:pulse-green 1s infinite;display:inline-block;">🔔</span>
+      <span style="font-size:12px;font-weight:900;color:#22C55E;text-transform:uppercase;letter-spacing:1px;">Listos — Recoger de cocina</span>
+    </div>`;
+  listosPendientes.forEach(([key, mesa]) => {
+    const label = mesa.label || 'Mesa ' + mesa.num;
+    const total = calcTotal(mesa.items);
+    html += `<div style="padding:10px 14px;border-top:1px solid #1a3322;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div>
+          <div style="font-size:17px;font-weight:900;color:#fff;">${label}${mesa.prepagado?' <span style="background:rgba(34,197,94,.2);color:#22C55E;font-size:10px;font-weight:900;padding:2px 8px;border-radius:12px;border:1px solid #22C55E44;">💰 PREPAGADO</span>':''}</div>
+          ${mesa.clienteNombre?`<div style="font-size:11px;color:var(--fb-yellow);">👤 ${mesa.clienteNombre}</div>`:''}
+          <div style="font-size:10px;color:var(--text-muted);">${modalidadLabel(mesa.modalidad)}</div>
+        </div>
+        <div style="text-align:right;">
+          ${semaforoHTML(mesa)}
+          <div style="font-size:14px;font-weight:900;color:var(--fb-yellow);">S/ ${total.toFixed(2)}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="confirmarEntregaMesa('${key}')" style="flex:2;background:#22C55E;color:#fff;border:none;border-radius:10px;padding:13px;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">🍽️ Recoger y llevar a mesa</button>
+        <button onclick="confirmarEntregaLlevar('${key}')" style="flex:1;background:#333;color:var(--fb-yellow);border:1px solid #555;border-radius:10px;padding:13px;font-size:11px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">💳 A cobrar</button>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+}
+// ────────────────────────────────────────────────────────────────────────────
 // DEBUG: mostrar cuántas mesas hay en memoria
 if (mesasNumeradas.length === 0) {
   html += `<div style="background:#2a1500;border:1px solid var(--warning);border-radius:8px;padding:12px;margin:8px 0;font-size:12px;color:var(--warning);">
@@ -1199,6 +1232,7 @@ html += `</div>`;
 html += `<div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin:12px 0 6px;">Mesas del salón</div>`;
 html += `<div class="mesas-grid">`;
 mesasNumeradas.forEach(([key, mesa]) => {
+if (mesa.estado === 'pagado') return; // pagadas ya se ven en Caja, no aquí
 const vis = mesaEstadoVisual(mesa);
 const total = calcTotal(mesa.items);
 const mod = (mesa.estado !== 'libre' && mesa.modalidad) ? `<div style="font-size:9px;font-weight:800;color:var(--text-muted);margin-top:2px;">${modalidadLabel(mesa.modalidad)}</div>` : '';
@@ -1347,6 +1381,7 @@ if (el) el.remove();
 // Solo notificamos visualmente que ya está en camino → "en-camino"
 const mesa = state.mesas[key];
 mesa.estado = 'en-camino';
+if (!mesa.congeladoTs) mesa.congeladoTs = Date.now();
 saveState();
 refreshCurrentView();
 // Después de 30s si no se confirma, vuelve a listo-entregar (safety)
@@ -1366,6 +1401,7 @@ function mesaEntregada(key) {
 const mesa = state.mesas[key];
 if (!mesa) return;
 mesa.estado = 'por-cobrar';
+if (!mesa.congeladoTs) mesa.congeladoTs = Date.now();
 saveState();
 refreshCurrentView();
 }
@@ -2033,23 +2069,35 @@ showPedidoModal(state.mesas[key], key);
 }
 function renderCobrarView(el) {
 // Todos los pedidos activos (en elaboración, listos, ocupados, por-cobrar, ya-pagado)
-const pendientes = Object.entries(state.mesas).filter(([k,m]) =>
-  ['por-cobrar','listo-entregar','en-elaboracion','en-camino','ocupada','ya-pagado','por-entregar','pagado'].includes(m.estado)
+const estadosActivos = ['por-cobrar','listo-entregar','en-elaboracion','en-camino','ocupada','ya-pagado','por-entregar','entregado'];
+const estadosPagados = ['pagado','entregado'];
+const todosPendientes = Object.entries(state.mesas).filter(([k,m]) =>
+  (estadosActivos.concat(estadosPagados)).includes(m.estado)
   && m.items && m.items.length > 0
 );
+// Activos primero (ocupada al tope), pagados al fondo
+const prioridad = e => e[1].estado === 'ocupada' ? 0 : e[1].estado === 'en-elaboracion' ? 1 : e[1].estado === 'listo-entregar' ? 2 : e[1].estado === 'en-camino' ? 3 : e[1].estado === 'por-cobrar' ? 4 : e[1].estado === 'pagado' ? 99 : e[1].estado === 'entregado' ? 98 : 5;
+const pendientes = [...todosPendientes].sort((a,b) => prioridad(a) - prioridad(b));
 if (!pendientes.length) { el.innerHTML = `<div class="empty-state">
 <div class="empty-icon">💰</div>
 <p>No hay pedidos activos</p>
 </div>`; return; }
 let html = '';
+let _mostroSepPagado = false;
 pendientes.forEach(([key, mesa]) => {
+if ((mesa.estado === 'pagado' || mesa.estado === 'entregado') && !_mostroSepPagado) {
+  _mostroSepPagado = true;
+  html += `<div style="margin:16px 0 8px;padding:8px 12px;background:#071a0e;border-radius:8px;border:1px solid #22C55E44;display:flex;align-items:center;gap:6px;">
+    <span style="color:#22C55E;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;">✅ Cobrados — pendientes de cierre</span>
+  </div>`;
+}
 const delivery = parseFloat(mesa.info.costoDelivery||0);
 const totalFinal = calcTotal(mesa.items) + delivery;
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 html += `<div class="caja-card">
 <div class="caja-card-header">
 <div>
-<div style="display:flex;align-items:center;gap:8px;"><div class="caja-card-title">${mesaLabel}</div>${semaforoHTML(mesa)}</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><div class="caja-card-title">${mesaLabel}</div>${semaforoHTML(mesa)}${mesa.prepagado && mesa.estado !== 'pagado' ? '<span style="background:rgba(34,197,94,.2);color:#22C55E;font-size:10px;font-weight:900;padding:3px 10px;border-radius:20px;border:1px solid #22C55E55;">💰 PREPAGADO</span>' : ''}</div>
 ${(mesa.info&&mesa.info.telefono&&(mesa.modalidad==='delivery'||mesa.modalidad==='recojo'))?`<a href="https://wa.me/51${(mesa.info.telefono||'').replace(/\D/g,'').replace(/^0/,'')}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;padding:4px 12px;border-radius:10px;font-size:12px;font-weight:900;text-decoration:none;margin-top:4px;">📱 Avisar por WhatsApp</a>`:''}
 <div style="display:flex;gap:6px;align-items:center;margin-top:3px;"><span style="font-size:11px;color:var(--text-muted);">${modalidadLabel(mesa.modalidad)}</span>${mesa.estado==="en-elaboracion"?'<span style="font-size:10px;font-weight:900;background:rgba(129,140,248,.2);color:#818CF8;padding:2px 8px;border-radius:10px;">👨‍🍳 En cocina</span>':''}${mesa.estado==="listo-entregar"?'<span style="font-size:10px;font-weight:900;background:rgba(34,197,94,.2);color:#22C55E;padding:2px 8px;border-radius:10px;">🔔 Listo</span>':''}${mesa.estado==="en-camino"?'<span style="font-size:10px;font-weight:900;background:rgba(129,140,248,.2);color:#818CF8;padding:2px 8px;border-radius:10px;">🚶 En camino</span>':''}${mesa.estado==="ocupada"?'<span style="font-size:10px;font-weight:900;background:rgba(255,107,0,.2);color:var(--fb-orange);padding:2px 8px;border-radius:10px;">📝 Tomando pedido</span>':''}</div>${mesa.clienteNombre?`<div style="font-size:12px;font-weight:800;color:var(--fb-yellow);margin-top:2px;">👤 ${mesa.clienteNombre}</div>`:''}</div>
 <div class="caja-card-total" id="total-lbl-${key}">S/ ${totalFinal.toFixed(2)}</div>
@@ -2071,16 +2119,24 @@ ${delivery>0?`<div class="caja-item-row">
 <span>S/${delivery.toFixed(2)}</span>
 </div>`:''}
 </div>
-<div class="caja-actions">
-${(mesa.estado === 'ya-pagado' || mesa.estado === 'pagado')
-  ? `<div style="background:rgba(34,197,94,.15);border:1.5px solid #22C55E;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
-      <div>
-        <div style="font-size:13px;font-weight:900;color:#22C55E;">✅ YA PAGADO — ${mesa.pagadoCon||''}</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Esperando entrega al cliente</div>
+${(mesa.estado === 'pagado' || mesa.estado === 'entregado')
+? `<div style="background:#071a0e;border-top:2px solid #22C55E;padding:14px 16px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <div style="font-size:32px;">${mesa.estado === 'entregado' ? '🍽️' : '✅'}</div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:900;color:#22C55E;">${mesa.estado === 'entregado' ? 'ENTREGADO' : 'COBRADO'}</div>
+        <div style="font-size:12px;font-weight:800;color:var(--fb-yellow);">${mesa.metodoPago||mesa.pagadoCon||''}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${mesa.estado === 'entregado' ? 'Entregado al cliente' : 'Pago registrado'}</div>
       </div>
-      <button onclick="cerrarYaPagado('${key}')" style="background:#22C55E;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:900;cursor:pointer;">Cerrar ✓</button>
-    </div>`
-  : `<button class="btn-primary" onclick="abrirPagoComb('${key}')">💳 Cobrar</button>`}
+      <div style="font-family:'Arial Black',Impact,sans-serif;font-size:20px;color:#22C55E;">S/ ${totalFinal.toFixed(2)}</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="cerrarMesa('${key}')" style="flex:2;background:#22C55E;color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">🗑️ Cerrar — Quitar de pantalla</button>
+      <button onclick="reimprimirComprobante('${key}')" style="flex:1;background:transparent;color:#22C55E;border:2px solid #22C55E;border-radius:10px;padding:14px;font-size:11px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">🖨️ Reimprimir</button>
+    </div>
+  </div>`
+: `<div class="caja-actions">
+<button class="btn-primary" onclick="abrirPagoComb('${key}')">💳 Cobrar</button>
 <button class="btn-secondary" onclick="reabrirMesa('${key}')">✏️ Editar</button>
 <button onclick="eliminarPedidoCaja('${key}')" style="background:var(--danger);color:#fff;border:none;border-radius:var(--radius-sm);padding:14px 12px;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">🗑️</button>
 </div>
@@ -2090,18 +2146,23 @@ ${(mesa.estado === 'ya-pagado' || mesa.estado === 'pagado')
 <button class="pago-btn" onclick="cobrar('${key}','Plin')">💙 Plin</button>
 <button class="pago-btn" onclick="cobrar('${key}','Visa')">💳 Visa</button>
 <button class="pago-btn" onclick="cobrar('${key}','Mastercard')">💳 Mastercard</button>
-</div>
+</div>`}
 </div>`;
 });
 el.innerHTML = html;
 }
 function marcarEntregado(key) {
-delete state.mesas[key];
+const mesa = state.mesas[key];
+if (!mesa) return;
+// No eliminar — dejar en 'entregado' para que caja lo vea y cierre manualmente
+state.mesas[key] = { ...mesa, estado: 'entregado', entregadoTs: Date.now(), congeladoTs: mesa.congeladoTs || Date.now() };
 saveState();
 refreshCurrentView();
 }
 function marcarEntregadoMotorizado(key) {
-delete state.mesas[key];
+const mesa = state.mesas[key];
+if (!mesa) return;
+state.mesas[key] = { ...mesa, estado: 'entregado', entregadoTs: Date.now(), congeladoTs: mesa.congeladoTs || Date.now() };
 saveState();
 refreshCurrentView();
 }
@@ -2162,6 +2223,15 @@ function clearHistorialDia() {
 }
 
 function renderHistorialView(el) {
+  // Deduplicar historial antes de mostrar
+  const _hSeenUids = new Set();
+  const historialPagosDedup = (state.historialPagos || []).filter(p => {
+    const uid = p._uid || (p.key + '_' + (p.fechaISO||p.fecha));
+    if (_hSeenUids.has(uid)) return false;
+    _hSeenUids.add(uid);
+    return true;
+  });
+  state.historialPagos = historialPagosDedup; // limpiar in-place
   if (!state.historialPagos.length) {
     el.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><p>Sin pagos registrados</p></div>`;
     return;
@@ -2491,9 +2561,11 @@ return labels[mod] || 'SIN MODALIDAD';
 function renderCocinaView(el) {
 const pedidos = Object.entries(state.mesas).filter(([k,m]) => {
 if (!m.items || !m.items.length) return false;
+// Mostrar si: hay items pendientes O todos listos pero aún no se pulsó el botón (fbListo flag)
 const fbItems = m.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom' || !i.brand) && i.enviadoCocina && !i.listo);
-// Mostrar si hay items de FoodBiker enviados a cocina que NO están listos aún
-return fbItems.length > 0;
+const todosListosPendiente = m.fbListo === true; // esperando que mesero confirme
+const estadoActivo = m.estado === 'en-elaboracion' || m.estado === 'ocupada' || m.estado === 'ya-pagado' || m.estado === 'pagado' || m.estado === 'listo-entregar' || m.estado === 'en-camino';
+return (fbItems.length > 0 && estadoActivo) || todosListosPendiente;
 });
 if (!pedidos.length) { el.innerHTML = `<div class="empty-state">
 <div class="empty-icon">👨‍🍳</div>
@@ -2502,8 +2574,10 @@ if (!pedidos.length) { el.innerHTML = `<div class="empty-state">
 let html = '';
 pedidos.forEach(([key, mesa]) => {
 const fbItems = mesa.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom') && i.enviadoCocina);
-    const yaPagado = mesa.estado === 'por-cobrar' || mesa.estado === 'listo-entregar' || (mesa.estado === 'ya-pagado' || mesa.estado === 'pagado');
-const todosListos = fbItems.length > 0 && fbItems.every(i => i.listo);
+    const yaPagado = mesa.estado === 'por-cobrar' || mesa.estado === 'listo-entregar' || mesa.estado === 'ya-pagado' || mesa.estado === 'pagado' || mesa.prepagado === true;
+// For button: check if ALL fb items are now listo
+const allFbItems = mesa.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom' || !i.brand) && i.enviadoCocina);
+const todosListos = allFbItems.length > 0 && allFbItems.every(i => i.listo);
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 const modColors = { salon:'#4ade80', llevar:'#f59e0b', delivery:'#60a5fa', externo:'#FC4F00', pedidosya:'#FC4F00', rappi:'#FC4F00', recojo:'#a78bfa' };
 const modColor = modColors[mesa.modalidad] || '#888';
@@ -2550,9 +2624,19 @@ ${detalleClean ? `<div class="cocina-detail">${detalleClean}</div>` : ''}
 }).join('')}
 </div>
 <div class="cocina-footer" style="padding:12px 16px;border-top:1px solid var(--fb-border);">
-${todosListos
-? `<button class="btn-primary btn-success" onclick="marcarPedidoListo('${key}')">✅ 🔔 ¡Listo! Avisar al mesero</button>`
-: `<div style="font-size:12px;color:var(--text-muted);text-align:center;">Marca cada ítem cuando esté listo</div>`
+${mesa.estado === 'listo-entregar'
+  ? `<div style="background:#0a2a14;border:1.5px solid #22C55E;border-radius:10px;padding:12px 14px;text-align:center;">
+      <div style="font-size:14px;font-weight:900;color:#22C55E;">✅ Enviado al mesero</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Esperando que el mesero recoja</div>
+    </div>`
+  : mesa.estado === 'en-camino'
+  ? `<div style="background:#1a1a2e;border:1.5px solid #818CF8;border-radius:10px;padding:12px 14px;text-align:center;">
+      <div style="font-size:14px;font-weight:900;color:#818CF8;">🚶 Mesero en camino</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">El mesero ya recogió el pedido</div>
+    </div>`
+  : todosListos
+  ? `<button class="btn-primary btn-success" onclick="marcarPedidoListo('${key}')">✅ 🔔 ¡Todo listo! Enviar al mesero</button>`
+  : `<div style="font-size:12px;color:var(--text-muted);text-align:center;">Marca cada ítem cuando esté listo ↑</div>`
 }
 </div>
 </div>`;
@@ -2572,6 +2656,7 @@ mesa.items.forEach(i => { if ((i.brand === 'foodbiker' || i.brand === 'custom') 
 mesa.fbListo = true;
 if (blItems.length === 0 || mesa.blListo) {
 mesa.estado = 'listo-entregar';
+mesa.congeladoTs = Date.now(); // ❄️ congela el timer
 delete mesa.fbListo;
 delete mesa.blListo;
 }
@@ -2583,7 +2668,7 @@ const pedidos = Object.entries(state.mesas).filter(([k,m]) => {
 if (!m.items || !m.items.length) return false;
 const blItems = m.items.filter(i => i.brand === 'bocaloca' && i.enviadoCocina);
 if (!blItems.length) return false;
-const estadoActivo = m.estado === 'en-elaboracion' || m.estado === 'ocupada' || m.estado === 'ya-pagado' || m.estado === 'pagado';
+const estadoActivo = m.estado === 'en-elaboracion' || m.estado === 'ocupada' || m.estado === 'ya-pagado' || m.estado === 'pagado' || m.estado === 'listo-entregar' || m.estado === 'en-camino';
 const esperandoFB = m.blListo === true;
 return (estadoActivo || esperandoFB);
 });
@@ -2649,6 +2734,7 @@ mesa.items.forEach(i => { if (i.brand === 'bocaloca' && i.enviadoCocina) i.listo
 mesa.blListo = true;
 if (fbItems.length === 0 || mesa.fbListo) {
 mesa.estado = 'listo-entregar';
+mesa.congeladoTs = Date.now();
 delete mesa.fbListo;
 delete mesa.blListo;
 }
@@ -3119,17 +3205,61 @@ const fbItems = mesa.items.filter(i => i.brand === 'foodbiker' || i.brand === 'c
 const blItems = mesa.items.filter(i => i.brand === 'bocaloca');
 if (fbItems.length) saveToSheet('FoodBiker_Ventas', [now, mesaLabel, mesa.modalidad, fbItems.map(itemLineText).join(' | '), calcTotal(fbItems).toFixed(2), metodoPago, mesa.info?.nombre||mesa.clienteNombre||'', mesa.info?.direccion||'']);
 if (blItems.length) saveToSheet('BocaLoca_Ventas', [now, mesaLabel, mesa.modalidad, blItems.map(itemLineText).join(' | '), calcTotal(blItems).toFixed(2), metodoPago]);
-state.historialPagos.push({ key, mesa: mesaLabel, total: totalFinal, metodoPago, items: mesa.items, fecha: now, fechaISO: nowISO, modalidad: mesa.modalidad, clienteNombre: mesa.clienteNombre||mesa.info?.nombre||'' });
+// Copiar items por valor (no referencia) para evitar mutaciones posteriores
+const itemsSnap = JSON.parse(JSON.stringify(mesa.items || []));
+// uid único para detectar duplicados al sincronizar
+const pagoUid = `${key}_${nowISO}`;
+// Solo agregar si no existe ya un pago con este uid
+if (!state.historialPagos.some(p => p._uid === pagoUid)) {
+  state.historialPagos.push({ _uid: pagoUid, key, mesa: mesaLabel, total: totalFinal, metodoPago, items: itemsSnap, fecha: now, fechaISO: nowISO, modalidad: mesa.modalidad, clienteNombre: mesa.clienteNombre||mesa.info?.nombre||'' });
+}
 window._lastPago = { key, mesa: mesaLabel, modalidad: mesa.modalidad, total: totalFinal, metodoPago, items: JSON.parse(JSON.stringify(mesa.items)), delivery: parseFloat(mesa.info?.costoDelivery||0), fecha: now, clienteNombre: mesa.clienteNombre||mesa.info?.nombre||'' };
-// ✅ NUEVO: marcar como pagado en vez de liberar/eliminar inmediatamente
-// Caja decide cuándo cerrar
-state.mesas[key] = { ...mesa, estado: 'pagado', pagadoTs: Date.now(), metodoPago, totalPagado: totalFinal };
+// Si la comida AÚN está en cocina (en-elaboracion / ocupada) → pago anticipado
+// El timer NO se congela porque la cocina sigue trabajando
+const estadosCocinaActiva = ['en-elaboracion','ocupada'];
+const pagoAnticipado = estadosCocinaActiva.includes(mesa.estado);
+if (pagoAnticipado) {
+  // Guardar pago pero mantener estado de cocina intacto
+  state.mesas[key] = { ...mesa, prepagado: true, metodoPago, totalPagado: totalFinal, pagadoTs: Date.now() };
+  // congeladoTs NO se toca — el timer sigue corriendo
+} else {
+  // Pago normal (comida lista / en-camino / por-cobrar) → estado pagado + congelar timer
+  state.mesas[key] = { ...mesa, estado: 'pagado', pagadoTs: Date.now(), congeladoTs: mesa.congeladoTs || Date.now(), metodoPago, totalPagado: totalFinal };
+}
 saveState();
 abrirComprobante();
 renderView('cobrar');
 }
 
 // Cerrar mesa después de pago (llamado por caja manualmente)
+
+
+function reimprimirComprobante(key) {
+  const mesa = state.mesas[key];
+  if (!mesa) return;
+  const totalFinal = calcTotal(mesa.items) + parseFloat(mesa.info?.costoDelivery||0);
+  window._lastPago = {
+    key, mesa: mesa.label || 'Mesa ' + mesa.num,
+    modalidad: mesa.modalidad, total: totalFinal,
+    metodoPago: mesa.metodoPago || mesa.pagadoCon || '',
+    items: JSON.parse(JSON.stringify(mesa.items||[])),
+    delivery: parseFloat(mesa.info?.costoDelivery||0),
+    fecha: new Date().toLocaleString('es-PE'),
+    clienteNombre: mesa.clienteNombre || mesa.info?.nombre || ''
+  };
+  abrirComprobante();
+}
+function cerrarMesa(key) {
+  const mesa = state.mesas[key];
+  if (!mesa) return;
+  if (key.startsWith('M')) {
+    state.mesas[key] = { num: mesa.num, estado: 'libre', items: [], modalidad: '', total: 0, info: {}, enviadoTs: null };
+  } else {
+    delete state.mesas[key];
+  }
+  saveState();
+  refreshCurrentView();
+}
 function cerrarMesaPagada(key) {
 const mesa = state.mesas[key];
 if (!mesa) return;
@@ -3613,7 +3743,14 @@ function renderReporteDetalle(el) {
 
 
 function renderReporteResumen(el) {
-  const todosPagos = state.historialPagos || [];
+  // Deduplicar por _uid o por key+fechaISO (doble seguro)
+  const _seenUids = new Set();
+  const todosPagos = (state.historialPagos || []).filter(p => {
+    const uid = p._uid || (p.key + '_' + (p.fechaISO||p.fecha));
+    if (_seenUids.has(uid)) return false;
+    _seenUids.add(uid);
+    return true;
+  });
   const btnBorrar = `<button onclick="clearHistorialDia()" style="width:100%;background:var(--danger);color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:900;cursor:pointer;margin-bottom:12px;">🗑️ Borrar historial del día</button>`;
 
   // Función robusta de parseo de fecha — nunca lanza error
@@ -3748,7 +3885,14 @@ function renderReporteResumen(el) {
 }
 
 function renderReporteProductos(el) {
-  const todosPagos = state.historialPagos || [];
+  // Deduplicar por _uid o por key+fechaISO (doble seguro)
+  const _seenUids = new Set();
+  const todosPagos = (state.historialPagos || []).filter(p => {
+    const uid = p._uid || (p.key + '_' + (p.fechaISO||p.fecha));
+    if (_seenUids.has(uid)) return false;
+    _seenUids.add(uid);
+    return true;
+  });
   const filtro = _reporteFiltro || 'hoy';
   const pagos = filtrarPagosPorRango(todosPagos, filtro);
   const filtros = [{k:'hoy',l:'Hoy'},{k:'ayer',l:'Solo Ayer'},{k:'2dias',l:'Hoy+Ayer'},{k:'3dias',l:'3d'},{k:'semana',l:'7d'},{k:'mes',l:'30d'},{k:'todo',l:'Todo'}];
@@ -3930,6 +4074,16 @@ function applyRemoteMesas(data) {
       delete merged[k];
     }
   });
+  // No pisar mesas que localmente ya están en estado terminal
+  // (puede ocurrir si el broadcast remoto llega con versión anterior al pago)
+  const estadosTerminales = ['pagado','entregado'];
+  Object.keys(state.mesas).forEach(k => {
+    if (estadosTerminales.includes(state.mesas[k]?.estado) &&
+        merged[k] && !estadosTerminales.includes(merged[k].estado)) {
+      // El local ya cobró esta mesa, el remoto aún no sabe → conservar local
+      merged[k] = state.mesas[k];
+    }
+  });
   state.mesas = merged;
   // historialPagos ya no viene en pos/mesas — tiene su propio nodo pos/historial
   if (data.cajaRapidaCount !== undefined) state.cajaRapidaCount = data.cajaRapidaCount;
@@ -3956,7 +4110,30 @@ function applyRemoteMesas(data) {
 
   // FIX: siempre refrescar la UI, aunque el rol aún no esté elegido
   // (el estado queda listo en memoria para cuando el usuario elija rol)
-  if (myRole) refreshCurrentView();
+  if (myRole) {
+    refreshCurrentView();
+    // Notificar al mesero si alguna mesa pasó a listo-entregar
+    if (myRole === 'mesero') {
+      Object.values(state.mesas).forEach(m => {
+        if (m.estado === 'listo-entregar' && !m._notificado) {
+          m._notificado = true;
+          // Vibrar si está disponible
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          // Sonido de notificación
+          try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.value = 880; osc.type = 'sine';
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+            osc.start(); osc.stop(ctx.currentTime + 0.5);
+          } catch(e) {}
+        }
+      });
+    }
+  }
 
   console.log('🔄 Mesas sync desde Firebase — mesas:', Object.keys(state.mesas).length);
 }
@@ -3985,8 +4162,15 @@ function initFirebaseSync() {
     if (val.writer === DEVICE_ID && (Date.now() - (_lastSentTs||0)) < 2000) return;
     const remotePagos = val.pagos || [];
     const remoteCambios = val.cambios || [];
-    // Siempre tomar el historial de Firebase (es la fuente de verdad)
-    state.historialPagos = remotePagos;
+    // Merge inteligente: conservar pagos locales que el remoto aún no tiene
+    // (pueden existir por lag de Firebase entre el push local y el broadcast)
+    const remotePagosSet = new Set(remotePagos.map(p => p._uid || p.fechaISO || JSON.stringify({k:p.key,f:p.fecha})));
+    const localNuevos = state.historialPagos.filter(p => {
+      const id = p._uid || p.fechaISO || JSON.stringify({k:p.key,f:p.fecha});
+      return !remotePagosSet.has(id);
+    });
+    // El remoto es la fuente de verdad, pero añadimos los locales nuevos al final
+    state.historialPagos = [...remotePagos, ...localNuevos];
     state.historialCambios = remoteCambios;
     try {
       const safeState = { ...state, role:null, saboresCallback:null, currentModalItem:null };
@@ -4010,13 +4194,20 @@ setTimeout(initFirebaseSync, 400);
 // ── SEMÁFORO DE PEDIDOS ──────────────────────────────────────────────────────
 function getSemaforoData(mesa) {
   if (!mesa.enviadoTs) return null;
-  if (mesa.estado === 'libre' || mesa.estado === 'por-cobrar') return null;
-  const elapsed = Math.floor((Date.now() - mesa.enviadoTs) / 1000);
+  if (mesa.estado === 'libre') return null;
+  // Estados terminales: congelar el reloj
+  const estadosCongelados = ['listo-entregar','en-camino','por-cobrar','por-entregar','por-entregar-motorizado','pagado','ya-pagado'];
+  // Si tiene prepagado pero la cocina sigue activa → NO congelar
+  const cocineandoAun = (mesa.estado === 'en-elaboracion' || mesa.estado === 'ocupada');
+  const congelado = estadosCongelados.includes(mesa.estado) && !cocineandoAun;
+  const refTs = congelado ? (mesa.congeladoTs || mesa.enviadoTs) : Date.now();
+  const elapsed = Math.floor((refTs - mesa.enviadoTs) / 1000);
   const mins = Math.floor(elapsed / 60);
   const secs = elapsed % 60;
-  const label = `${mins}:${String(secs).padStart(2,'0')}`;
+  const label = (congelado ? '❄️ ' : '') + `${mins}:${String(secs).padStart(2,'0')}`;
   let clase, emoji;
-  if (elapsed < 600)      { clase='verde';    emoji='🟢'; }
+  if (congelado)          { clase='verde';    emoji='✅'; }
+  else if (elapsed < 600) { clase='verde';    emoji='🟢'; }
   else if (elapsed < 780) { clase='amarillo'; emoji='🟡'; }
   else                    { clase='rojo';     emoji='🔴'; }
   return { clase, emoji, label, elapsed };
@@ -4062,8 +4253,11 @@ setInterval(() => {
   else if (state.role === 'mesero') {
     const active = document.querySelector('.nav-tab.active');
     if (active && active.dataset.tab === 'mesas') renderView('mesas');
+  } else if (state.role === 'caja') {
+    const active = document.querySelector('.nav-tab.active');
+    if (active && active.dataset.tab === 'cobrar') renderView('cobrar');
   }
-}, 8000);
+}, 3000);
 </script>
 
 </body>
