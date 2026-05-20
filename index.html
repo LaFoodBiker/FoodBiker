@@ -865,7 +865,7 @@ function pushToFirebase(safeState) {
     cajaRapidaCount: safeState.cajaRapidaCount || 0,
     writer: DEVICE_ID,
     ts: _lastSentTs
-  }).then(() => { setSyncDot('#22C55E'); setTimeout(() => setSyncDot('#555'), 1000); })
+  }).then(() => { setSyncDot('#22C55E'); })
     .catch(e => { console.warn('FB mesas write error:', e); setSyncDot('#EF4444'); })
     .finally(() => { setTimeout(() => { _fbWriting = false; }, 200); });
 
@@ -1017,6 +1017,15 @@ if (role === 'caja') {
     topBar.style.boxShadow = '0 2px 12px rgba(0,0,0,.1)';
   }
   if (roleLabel) roleLabel.style.color = '#22C55E';
+  // En caja (fondo blanco), hacer el sync dot visible con borde oscuro
+  const dot = document.getElementById('sync-dot');
+  if (dot) {
+    dot.style.width = '11px';
+    dot.style.height = '11px';
+    dot.style.border = '2px solid #ccc';
+    dot.style.background = '#22C55E'; // verde desde el inicio — se actualiza con Firebase
+    dot.title = 'Firebase: conectando...';
+  }
 
 } else if (role === 'cocina') {
   // ── COCINA: ROJO OSCURO + TARJETAS BLANCAS/CLARAS ───────────────────
@@ -1248,8 +1257,8 @@ ${mod}
 ${nombreBadge}
 ${total>0?`<div class="mesa-total">S/ ${total.toFixed(2)}</div>`:''}
 ${mesa.items.length>0?`<div class="mesa-badge">${mesa.items.reduce((a,i)=>a+i.qty,0)}</div>`:''}
-</div>
-${enCamino ? `<button onclick="event.stopPropagation();mesaEntregada('${key}')" style="width:100%;margin-top:-6px;background:#22C55E;color:#fff;border:none;border-radius:0 0 12px 12px;padding:10px;font-size:12px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;display:block;">✅ Entregado → Cobrar</button>` : ''}`;
+${enCamino ? `<div onclick="event.stopPropagation();mesaEntregada('${key}')" style="margin-top:8px;background:#22C55E;color:#fff;border-radius:8px;padding:8px 4px;font-size:11px;font-weight:900;cursor:pointer;text-align:center;">✅ Entregado → Cobrar</div>` : ''}
+</div>`;
 });
 html += `</div>`;
 const deliveryActivos = Object.entries(state.mesas).filter(([k,m]) => k.startsWith('DEL_') && (m.estado === 'ocupada' || m.estado === 'en-elaboracion' || m.estado === 'por-cobrar' || m.estado === 'listo-entregar'));
@@ -1347,16 +1356,52 @@ if (mesa.estado === 'listo-entregar') {
 showListoEntregarSheet(key);
 return;
 }
-// Para todos los demás estados (ocupada, en-elaboracion, en-camino, por-cobrar)
-// siempre abrir el modal de pedido — mesero puede agregar más items
+if (mesa.estado === 'en-camino') {
+showEnCaminoSheet(key);
+return;
+}
 openMesa(key);
+}
+
+function showEnCaminoSheet(key) {
+const mesa = state.mesas[key];
+if (!mesa) return;
+const label = mesa.label || 'Mesa ' + mesa.num;
+const existing = document.getElementById('encamino-sheet');
+if (existing) existing.remove();
+const overlay = document.createElement('div');
+overlay.id = 'encamino-sheet';
+overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:900;display:flex;align-items:flex-end;justify-content:center;padding:20px;';
+overlay.innerHTML = `
+<div style="background:var(--fb-card);border-radius:18px 18px 12px 12px;padding:24px 20px;width:100%;max-width:420px;">
+  <div style="text-align:center;font-size:32px;margin-bottom:8px;">🍽️</div>
+  <div style="font-family:'Arial Black',Impact,sans-serif;font-size:20px;text-align:center;color:#818CF8;margin-bottom:4px;">${label}</div>
+  ${mesa.clienteNombre?`<div style="font-size:14px;text-align:center;color:var(--fb-yellow);margin-bottom:4px;">👤 ${mesa.clienteNombre}</div>`:''}
+  <div style="font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:20px;">Pedido recogido — ¿Ya lo entregaste?</div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <button onclick="marcarEntregadoMesero('${key}')" style="background:#22C55E;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">✅ Ya entregué el pedido a la mesa</button>
+    <button onclick="document.getElementById('encamino-sheet').remove()" style="background:var(--fb-border);color:var(--text);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;">Cancelar</button>
+  </div>
+</div>`;
+document.body.appendChild(overlay);
+}
+
+function marcarEntregadoMesero(key) {
+const el = document.getElementById('encamino-sheet');
+if (el) el.remove();
+const mesa = state.mesas[key];
+if (!mesa) return;
+mesa.estado = 'por-cobrar';
+if (!mesa.congeladoTs) mesa.congeladoTs = Date.now();
+saveState();
+refreshCurrentView();
 }
 
 function showListoEntregarSheet(key) {
 const mesa = state.mesas[key];
 const label = mesa.label || 'Mesa ' + mesa.num;
 const esSalon = mesa.modalidad === 'salon';
-// Bottom sheet overlay
+const esLlevar = mesa.modalidad === 'llevar' || mesa.modalidad === 'recojo' || key.startsWith('CR_');
 const overlay = document.createElement('div');
 overlay.id = 'listo-sheet';
 overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;display:flex;align-items:flex-end;justify-content:center;padding:20px;';
@@ -1364,11 +1409,13 @@ overlay.innerHTML = `
 <div style="background:var(--fb-card);border-radius:18px 18px 12px 12px;padding:24px 20px;width:100%;max-width:420px;">
 <div style="text-align:center;font-size:32px;margin-bottom:8px;">🔔</div>
 <div style="font-family:'Arial Black',Impact,sans-serif;font-size:20px;text-align:center;color:#22C55E;margin-bottom:4px;">${label}</div>
+${mesa.clienteNombre?`<div style="font-size:13px;text-align:center;color:var(--fb-yellow);margin-bottom:6px;">👤 ${mesa.clienteNombre}</div>`:''}
 <div style="font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:20px;">El cocinero terminó. ¿Qué hacemos?</div>
 <div style="display:flex;flex-direction:column;gap:10px;">
-  ${esSalon ? `<button onclick="confirmarEntregaMesa('${key}')" style="background:#22C55E;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">🍽️ Recoger y entregar a la mesa</button>` : ''}
-  <button onclick="confirmarEntregaLlevar('${key}')" style="background:var(--fb-orange);color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">💳 Mandar a cobrar</button>
-  <button onclick="document.getElementById('listo-sheet').remove()" style="background:var(--fb-border);color:var(--text);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;font-family:Arial,sans-serif;">Cancelar</button>
+  ${esSalon ? `<button onclick="confirmarEntregaMesa('${key}')" style="background:#22C55E;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">🍽️ Recoger y entregar a la mesa</button>` : ''}
+  ${esLlevar ? `<button onclick="confirmarEntregaMesa('${key}')" style="background:#22C55E;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">📦 Recoger y entregar al cliente</button>` : ''}
+  <button onclick="confirmarEntregaLlevar('${key}')" style="background:var(--fb-orange);color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">💳 Mandar a cobrar</button>
+  <button onclick="document.getElementById('listo-sheet').remove()" style="background:var(--fb-border);color:var(--text);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;">Cancelar</button>
 </div>
 </div>`;
 document.body.appendChild(overlay);
@@ -1377,20 +1424,19 @@ document.body.appendChild(overlay);
 function confirmarEntregaMesa(key) {
 const el = document.getElementById('listo-sheet');
 if (el) el.remove();
-// Mesa sigue en listo-entregar visualmente hasta que el mesero lo lleve
-// Solo notificamos visualmente que ya está en camino → "en-camino"
 const mesa = state.mesas[key];
+if (!mesa) return;
 mesa.estado = 'en-camino';
 if (!mesa.congeladoTs) mesa.congeladoTs = Date.now();
 saveState();
 refreshCurrentView();
-// Después de 30s si no se confirma, vuelve a listo-entregar (safety)
 }
 
 function confirmarEntregaLlevar(key) {
 const el = document.getElementById('listo-sheet');
 if (el) el.remove();
 const mesa = state.mesas[key];
+if (!mesa.congeladoTs) mesa.congeladoTs = Date.now();
 mesa.estado = 'por-cobrar';
 saveState();
 currentPedidoKey = key;
@@ -1760,7 +1806,7 @@ saveDeliveryInfo();
 const mesa = state.mesas[currentPedidoKey];
 if (!mesa.items.length) { alert('No hay items en el pedido'); return; }
 if (!mesa.modalidad) { alert('Primero selecciona la modalidad del pedido.'); return; }
-mesa.items.forEach(i => { i.enviadoCocina = true; i.listo = i.listo || false; });
+mesa.items.forEach(i => { i.enviadoCocina = true; if (!i.listo) i.listo = false; });
 if (mesa.estado !== 'en-elaboracion') mesa.estado = 'en-elaboracion';
 if (!mesa.enviadoTs) mesa.enviadoTs = Date.now(); // timestamp para semáforo
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
@@ -1788,6 +1834,7 @@ if (!currentPedidoKey) return;
 saveDeliveryInfo();
 const mesa = state.mesas[currentPedidoKey];
 mesa.items.forEach(i => { i.enviadoCocina = true; });
+if (!mesa.congeladoTs) mesa.congeladoTs = Date.now();
 mesa.estado = 'por-cobrar';
 saveState();
 alert('✅ Mesa marcada como "por cobrar". Ve a Caja para procesar el pago.');
@@ -2068,13 +2115,14 @@ currentPedidoKey = key;
 showPedidoModal(state.mesas[key], key);
 }
 function renderCobrarView(el) {
-// Todos los pedidos activos (en elaboración, listos, ocupados, por-cobrar, ya-pagado)
-const estadosActivos = ['por-cobrar','listo-entregar','en-elaboracion','en-camino','ocupada','ya-pagado','por-entregar','entregado'];
+// Todos los pedidos activos
+const estadosActivos = ['por-cobrar','listo-entregar','en-elaboracion','en-camino','ocupada','ya-pagado','por-entregar'];
 const estadosPagados = ['pagado','entregado'];
 const todosPendientes = Object.entries(state.mesas).filter(([k,m]) =>
   (estadosActivos.concat(estadosPagados)).includes(m.estado)
   && m.items && m.items.length > 0
 );
+// Alias para compatibilidad
 // Activos primero (ocupada al tope), pagados al fondo
 const prioridad = e => e[1].estado === 'ocupada' ? 0 : e[1].estado === 'en-elaboracion' ? 1 : e[1].estado === 'listo-entregar' ? 2 : e[1].estado === 'en-camino' ? 3 : e[1].estado === 'por-cobrar' ? 4 : e[1].estado === 'pagado' ? 99 : e[1].estado === 'entregado' ? 98 : 5;
 const pendientes = [...todosPendientes].sort((a,b) => prioridad(a) - prioridad(b));
@@ -2169,7 +2217,7 @@ refreshCurrentView();
 function cobrar(key, metodoPago) {
 const mesa = state.mesas[key];
 const total = calcTotal(mesa.items);
-const delivery = parseFloat(mesa.info.costoDelivery||0);
+const delivery = parseFloat(mesa.info?.costoDelivery||0);
 const totalFinal = total + delivery;
 ejecutarCobro(key, metodoPago, totalFinal, mesa);
 }
@@ -2680,6 +2728,7 @@ let html = '';
 pedidos.forEach(([key, mesa]) => {
 const blItems = mesa.items.filter(i => i.brand === 'bocaloca' && i.enviadoCocina);
 const todosListos = blItems.length > 0 && blItems.every(i => i.listo);
+const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 html += `<div class="cocina-card bl">
 <div class="cocina-header">
 <div>
@@ -2712,9 +2761,19 @@ ${detalleClean ? `<div class="cocina-detail">${detalleClean}</div>` : ''}
 }).join('')}
 </div>
 <div class="cocina-footer" style="padding:12px 16px;border-top:1px solid var(--fb-border);">
-${todosListos
-? `<button class="btn-primary btn-teal" onclick="marcarBLListo('${key}')">🔔 ¡Listo! Avisar al mesero</button>`
-: `<div style="font-size:12px;color:var(--text-muted);text-align:center;">Marca cada ítem cuando esté listo</div>`
+${mesa.estado === 'listo-entregar'
+  ? `<div style="background:#0a2a14;border:1.5px solid #22C55E;border-radius:10px;padding:12px 14px;text-align:center;">
+      <div style="font-size:14px;font-weight:900;color:#22C55E;">✅ Enviado al mesero</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Esperando que el mesero recoja</div>
+    </div>`
+  : mesa.estado === 'en-camino'
+  ? `<div style="background:#1a1a2e;border:1.5px solid #818CF8;border-radius:10px;padding:12px 14px;text-align:center;">
+      <div style="font-size:14px;font-weight:900;color:#818CF8;">🚶 Mesero en camino</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">El mesero ya recogió el pedido</div>
+    </div>`
+  : todosListos
+  ? `<button class="btn-primary btn-teal" onclick="marcarBLListo('${key}')">🔔 ¡Listo! Avisar al mesero</button>`
+  : `<div style="font-size:12px;color:var(--text-muted);text-align:center;">Marca cada ítem cuando esté listo</div>`
 }
 </div>
 </div>`;
@@ -4061,7 +4120,16 @@ if (active) renderView(active.dataset.tab);
 // ── Firebase real-time sync ──────────────────────────────────────────────────
 function setSyncDot(color) {
   const dot = document.getElementById('sync-dot');
-  if (dot) dot.style.background = color;
+  if (!dot) return;
+  dot.style.background = color;
+  // En caja (fondo blanco) asegurar que el dot sea siempre visible
+  if (state.role === 'caja') {
+    dot.style.border = '2px solid ' + (color === '#555' ? '#bbb' : color === '#EF4444' ? '#EF4444' : '#22C55E');
+    dot.style.background = color === '#555' ? '#aaa' : color;
+  }
+  // Tooltip
+  const labels = { '#22C55E':'✅ Firebase conectado', '#FF6B00':'🔄 Sincronizando...', '#EF4444':'❌ Error de conexión', '#555':'⚫ Sin actividad' };
+  dot.title = labels[color] || 'Firebase sync';
 }
 
 function applyRemoteMesas(data) {
@@ -4081,7 +4149,11 @@ function applyRemoteMesas(data) {
   // Partir de las mesas actuales para no perder M1-M6
   const merged = { ...state.mesas };
   // Aplicar cambios remotos encima
+  // Actualizar solo mesas que realmente cambiaron — no sobrescribir mesas libres con fantasmas
   Object.entries(remoteMesas).forEach(([k, v]) => {
+    const local = merged[k];
+    // Solo ignorar si localmente ya está pagada/entregada y el remoto dice libre (race condition)
+    if (local && ['pagado','entregado'].includes(local.estado) && v.estado === 'libre') return;
     merged[k] = v;
   });
   // Eliminar mesas temporales que el remoto ya no tiene (CR_, DEL_, EXT_ cerrados)
@@ -4112,7 +4184,7 @@ function applyRemoteMesas(data) {
     (m.items || []).forEach(i => {
       if (!i.itemModalidad) i.itemModalidad = m.modalidad === 'llevar' ? 'llevar' : 'salon';
       if (i.enviadoCocina === undefined)
-        i.enviadoCocina = m.estado === 'en-elaboracion' || m.estado === 'por-cobrar' || m.estado === 'listo-entregar';
+        i.enviadoCocina = ['en-elaboracion','por-cobrar','listo-entregar','ya-pagado','pagado'].includes(m.estado);
     });
   });
 
@@ -4129,13 +4201,13 @@ function applyRemoteMesas(data) {
   if (myRole) {
     refreshCurrentView();
     // Notificar al mesero si alguna mesa pasó a listo-entregar
+    // Usamos un Set local para no contaminar Firebase con _notificado
+    if (!window._mesasNotificadas) window._mesasNotificadas = new Set();
     if (myRole === 'mesero') {
-      Object.values(state.mesas).forEach(m => {
-        if (m.estado === 'listo-entregar' && !m._notificado) {
-          m._notificado = true;
-          // Vibrar si está disponible
+      Object.entries(state.mesas).forEach(([k, m]) => {
+        if (m.estado === 'listo-entregar' && !window._mesasNotificadas.has(k)) {
+          window._mesasNotificadas.add(k);
           if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-          // Sonido de notificación
           try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = ctx.createOscillator();
@@ -4147,6 +4219,8 @@ function applyRemoteMesas(data) {
             osc.start(); osc.stop(ctx.currentTime + 0.5);
           } catch(e) {}
         }
+        // Limpiar del Set si ya no está en listo-entregar (para re-notificar si vuelve)
+        if (m.estado !== 'listo-entregar') window._mesasNotificadas.delete(k);
       });
     }
   }
@@ -4167,13 +4241,18 @@ function applyRemoteMenu(data) {
 function initFirebaseSync() {
   if (!window._fbReady) { setTimeout(initFirebaseSync, 300); return; }
 
+  // Marcar verde inmediatamente al conectar
+  setSyncDot('#22C55E');
+
   // Listener 1: mesas / pedidos (alta frecuencia)
   window._fbListen('pos/mesas', function(val) {
+    setSyncDot('#22C55E');
     applyRemoteMesas(val);
   });
 
   // Listener 3: historial de pagos (nodo separado para no superar límite 1MB)
   window._fbListen('pos/historial', function(val) {
+    setSyncDot('#22C55E');
     if (!val) return;
     if (val.writer === DEVICE_ID && (Date.now() - (_lastSentTs||0)) < 2000) return;
     const remotePagos = val.pagos || [];
