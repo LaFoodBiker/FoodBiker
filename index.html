@@ -1411,6 +1411,8 @@ const mesa = state.mesas[key];
 const label = mesa.label || 'Mesa ' + mesa.num;
 const esSalon = mesa.modalidad === 'salon';
 const esLlevar = mesa.modalidad === 'llevar' || mesa.modalidad === 'recojo' || key.startsWith('CR_');
+const esDelivery = mesa.modalidad === 'delivery' || key.startsWith('DEL_');
+const esExterno = mesa.modalidad === 'externo' || key.startsWith('EXT_');
 const overlay = document.createElement('div');
 overlay.id = 'listo-sheet';
 overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;display:flex;align-items:flex-end;justify-content:center;padding:20px;';
@@ -1423,6 +1425,8 @@ ${mesa.clienteNombre?`<div style="font-size:13px;text-align:center;color:var(--f
 <div style="display:flex;flex-direction:column;gap:10px;">
   ${esSalon ? `<button onclick="confirmarEntregaMesa('${key}')" style="background:#22C55E;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">🍽️ Recoger y entregar a la mesa</button>` : ''}
   ${esLlevar ? `<button onclick="confirmarEntregaMesa('${key}')" style="background:#22C55E;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">📦 Recoger y entregar al cliente</button>` : ''}
+  ${esDelivery ? `<button onclick="confirmarEntregaDelivery('${key}')" style="background:#3B82F6;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">🛵 Entregar al repartidor</button>` : ''}
+  ${esExterno ? `<button onclick="confirmarEntregaDelivery('${key}')" style="background:#FC4F00;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">📱 Listo para el motorizado</button>` : ''}
   <button onclick="confirmarEntregaLlevar('${key}')" style="background:var(--fb-orange);color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">💳 Mandar a cobrar</button>
   <button onclick="document.getElementById('listo-sheet').remove()" style="background:var(--fb-border);color:var(--text);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;">Cancelar</button>
 </div>
@@ -1430,11 +1434,25 @@ ${mesa.clienteNombre?`<div style="font-size:13px;text-align:center;color:var(--f
 document.body.appendChild(overlay);
 }
 
+
+function confirmarEntregaDelivery(key) {
+  const el = document.getElementById('listo-sheet');
+  if (el) el.remove();
+  const mesa = state.mesas[key];
+  if (!mesa) return;
+  // Para delivery: pasar a "en-camino" = en camino con el repartidor
+  mesa.estado = 'en-camino';
+  if (!mesa.congeladoTs) mesa.congeladoTs = Date.now();
+  saveState();
+  refreshCurrentView();
+}
+
 function confirmarEntregaMesa(key) {
 const el = document.getElementById('listo-sheet');
 if (el) el.remove();
 const mesa = state.mesas[key];
 if (!mesa) return;
+mesa._sheetMostrado = false;
 mesa.estado = 'en-camino';
 // NO congelar timer aquí — el timer se congela cuando el mesero confirma la entrega física
 saveState();
@@ -1896,8 +1914,18 @@ saveDeliveryInfo();
 const mesa = state.mesas[currentPedidoKey];
 if (!mesa.items.length) { alert('No hay items en el pedido'); return; }
 if (!mesa.modalidad) { alert('Primero selecciona la modalidad del pedido.'); return; }
-mesa.items.forEach(i => { i.enviadoCocina = true; i.listo = false; });
-if (mesa.estado !== 'en-elaboracion') mesa.estado = 'en-elaboracion';
+mesa.items.forEach(i => {
+  i.enviadoCocina = true;
+  // Solo resetear listo si es un item NUEVO (no tenía enviadoCocina antes)
+  if (!i._yaEnviado) {
+    i.listo = false;
+    i._yaEnviado = true;
+  }
+  // Items que ya estaban enviados conservan su estado listo
+});
+mesa.estado = 'en-elaboracion';
+mesa._sheetMostrado = false; // Reset para que el sheet vuelva a aparecer cuando termine
+if (window._mesasNotificadas) window._mesasNotificadas.delete(currentPedidoKey);
 if (!mesa.enviadoTs) mesa.enviadoTs = Date.now(); // timestamp para semáforo
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 const clienteInfo = mesa.clienteNombre || mesa.info?.nombre || '';
@@ -4324,6 +4352,11 @@ function applyRemoteMesas(data) {
         if (m.estado === 'listo-entregar' && !window._mesasNotificadas.has(k)) {
           window._mesasNotificadas.add(k);
           if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          // Auto-mostrar sheet si no hay uno ya abierto
+          if (!document.getElementById('listo-sheet') && !m._sheetMostrado) {
+            m._sheetMostrado = true;
+            setTimeout(() => showListoEntregarSheet(k), 400);
+          }
           try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = ctx.createOscillator();
@@ -4463,7 +4496,18 @@ setInterval(() => {
   else if (state.role === 'bocaloca') renderView('bl-view');
   else if (state.role === 'mesero') {
     const active = document.querySelector('.nav-tab.active');
-    if (active && active.dataset.tab === 'mesas') renderView('mesas');
+    if (active && active.dataset.tab === 'mesas') {
+      renderView('mesas');
+      // Check for new listo-entregar that hasn't shown sheet yet
+      if (!document.getElementById('listo-sheet')) {
+        Object.entries(state.mesas).forEach(([k,m]) => {
+          if (m.estado === 'listo-entregar' && !m._sheetMostrado) {
+            m._sheetMostrado = true;
+            showListoEntregarSheet(k);
+          }
+        });
+      }
+    }
   } else if (state.role === 'caja') {
     const active = document.querySelector('.nav-tab.active');
     if (active && active.dataset.tab === 'cobrar') renderView('cobrar');
