@@ -1609,35 +1609,35 @@ ${modalidadPendiente ? '<div class="modalidad-required">🏷️ Selecciona modal
 <div class="delivery-fields" id="delivery-fields" ${mesa.modalidad==='delivery'?'style="display:block"':''}>
 <div class="field-group">
 <div class="field-label">Nombre cliente</div>
-<input class="field-input" id="d-nombre" placeholder="Nombre..." value="${mesa.info.nombre||''}">
+<input class="field-input" id="d-nombre" placeholder="Nombre..." value="${mesa.info?.nombre||''}">
 </div>
 <div class="field-group">
 <div class="field-label">📞 Teléfono WhatsApp</div>
-<input class="field-input" id="d-tel" type="tel" placeholder="999 888 777" value="${mesa.info.telefono||''}" inputmode="numeric">
+<input class="field-input" id="d-tel" type="tel" placeholder="999 888 777" value="${mesa.info?.telefono||''}" inputmode="numeric">
 </div>
 <div class="field-group">
 <div class="field-label">Dirección</div>
-<input class="field-input" id="d-dir" placeholder="Dirección de entrega..." value="${mesa.info.direccion||''}">
+<input class="field-input" id="d-dir" placeholder="Dirección de entrega..." value="${mesa.info?.direccion||''}">
 </div>
 <div class="field-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
 <div>
 <div class="field-label">Costo delivery</div>
-<input class="field-input" id="d-costo" type="number" placeholder="S/3" value="${mesa.info.costoDelivery||''}">
+<input class="field-input" id="d-costo" type="number" placeholder="S/3" value="${mesa.info?.costoDelivery||''}">
 </div>
 <div>
 <div class="field-label">Repartidor</div>
-<input class="field-input" id="d-rep" placeholder="Nombre..." value="${mesa.info.repartidor||''}">
+<input class="field-input" id="d-rep" placeholder="Nombre..." value="${mesa.info?.repartidor||''}">
 </div>
 </div>
 </div>
 <div class="delivery-fields" id="recojo-fields" ${mesa.modalidad==='recojo'?'style="display:block"':''}>
 <div class="field-group">
 <div class="field-label">Nombre cliente</div>
-<input class="field-input" id="r-nombre" placeholder="Nombre del cliente..." value="${mesa.info.recojoNombre||mesa.info.nombre||''}">
+<input class="field-input" id="r-nombre" placeholder="Nombre del cliente..." value="${mesa.info?.recojoNombre||mesa.info?.nombre||''}">
 </div>
 <div class="field-group">
 <div class="field-label">📞 Teléfono WhatsApp — te avisamos cuando esté listo</div>
-<input class="field-input" id="r-tel" type="tel" placeholder="999 888 777" value="${mesa.info.telefono||''}" inputmode="numeric">
+<input class="field-input" id="r-tel" type="tel" placeholder="999 888 777" value="${mesa.info?.telefono||''}" inputmode="numeric">
 </div>
 </div>
 <div class="custom-item-box">
@@ -1867,7 +1867,8 @@ document.getElementById('custom-price').value = '';
 function saveDeliveryInfo() {
 if (!currentPedidoKey) return;
 const mesa = state.mesas[currentPedidoKey];
-mesa.info.nombre = document.getElementById('d-nombre')?.value || document.getElementById('r-nombre')?.value || '';
+if (!mesa.info) mesa.info = {};
+  mesa.info.nombre = document.getElementById('d-nombre')?.value || document.getElementById('r-nombre')?.value || '';
 mesa.info.telefono = document.getElementById('d-tel')?.value || document.getElementById('r-tel')?.value || '';
 mesa.info.direccion = document.getElementById('d-dir')?.value || '';
 mesa.info.costoDelivery = document.getElementById('d-costo')?.value || '';
@@ -2228,7 +2229,7 @@ if ((mesa.estado === 'pagado' || mesa.estado === 'entregado') && !_mostroSepPaga
     <span style="color:#22C55E;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;">✅ Cobrados — pendientes de cierre</span>
   </div>`;
 }
-const delivery = parseFloat(mesa.info.costoDelivery||0);
+const delivery = parseFloat(mesa.info?.costoDelivery||0);
 const totalFinal = calcTotal(mesa.items) + delivery;
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 html += `<div class="caja-card">
@@ -2731,11 +2732,11 @@ const modColor = modColors[mesa.modalidad] || '#888';
 const modTag = mesa.modalidad ? `<span class="cocina-modality" style="background:${modColor}22;color:${modColor};border-color:${modColor}55;">${modalidadLabel(mesa.modalidad)}</span>` : '';
 let extraInfo = '';
 if (mesa.modalidad === 'delivery' && mesa.info) {
-extraInfo = `<div class="cocina-detail" style="color:var(--fb-yellow);margin-top:3px;">🛵 ${mesa.info.direccion||''} ${mesa.info.repartidor?'· Rep: '+mesa.info.repartidor:''}</div>`;
+extraInfo = `<div class="cocina-detail" style="color:var(--fb-yellow);margin-top:3px;">🛵 ${mesa.info?.direccion||''} ${mesa.info?.repartidor?'· Rep: '+mesa.info?.repartidor:''}</div>`;
 }
 if ((mesa.modalidad === 'externo' || mesa.info?.plataforma) && mesa.info) {
-const plat = mesa.info.plataforma || 'Externo';
-extraInfo = `<div class="cocina-detail" style="color:#FC4F00;margin-top:3px;">📱 ${plat} · Pedido: ${mesa.info.numPedido||'-'} ${mesa.info.nombre?'· '+mesa.info.nombre:''}</div>`;
+const plat = mesa.info?.plataforma || 'Externo';
+extraInfo = `<div class="cocina-detail" style="color:#FC4F00;margin-top:3px;">📱 ${plat} · Pedido: ${mesa.info?.numPedido||'-'} ${mesa.info?.nombre?'· '+mesa.info?.nombre:''}</div>`;
 }
 html += `<div class="cocina-card" id="cocina-card-${key}">
 <div class="cocina-header">
@@ -3114,7 +3115,7 @@ function imprimirPrecuenta() {
 if (!currentPedidoKey) return;
 const mesa = state.mesas[currentPedidoKey];
 if (!mesa.items.length) { alert('No hay items en el pedido'); return; }
-const delivery = parseFloat(document.getElementById('d-costo')?.value || mesa.info.costoDelivery || 0);
+const delivery = parseFloat(document.getElementById('d-costo')?.value || mesa.info?.costoDelivery || 0);
 const subtotal = calcTotal(mesa.items);
 const total = subtotal + delivery;
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
@@ -4291,9 +4292,12 @@ function applyRemoteMesas(data) {
   // Garantizar que M1-M6 siempre existan
   initMesas();
 
-  // Reparar flags que pueden llegar sin inicializar
+  // Reparar campos que Firebase elimina silenciosamente cuando son vacios
+  // Firebase borra objetos {} y arrays [] vacios del arbol — reconstruir al recibir
   Object.values(state.mesas || {}).forEach(m => {
-    (m.items || []).forEach(i => {
+    if (!m.info)  m.info  = {};
+    if (!m.items) m.items = [];
+    m.items.forEach(i => {
       if (!i.itemModalidad) i.itemModalidad = m.modalidad === 'llevar' ? 'llevar' : 'salon';
       if (i.enviadoCocina === undefined)
         i.enviadoCocina = ['en-elaboracion','por-cobrar','listo-entregar','ya-pagado','pagado'].includes(m.estado);
