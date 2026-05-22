@@ -1171,8 +1171,9 @@ if (tieneEnviados) return { clase: 'en-elaboracion', icon: '👨‍🍳', label:
 return { clase: 'ocupada', icon: '🍽️', label: 'Ocupada' };
 }
 function renderMesasView(el) {
-const cajasRapidas = Object.entries(state.mesas).filter(([k,m]) => k.startsWith('CR_') && m.estado !== 'libre');
-const mesasNumeradas = Object.entries(state.mesas).filter(([k]) => k.startsWith('M'));
+const cajasRapidas = Object.entries(state.mesas).filter(([k,m]) => k.startsWith('CR_') && !['libre','pagado','entregado','cerrado'].includes(m.estado));
+const ESTADOS_ACTIVOS = ['libre','ocupada','en-elaboracion','listo-entregar','en-camino','por-cobrar','ya-pagado','por-entregar','por-entregar-motorizado'];
+const mesasNumeradas = Object.entries(state.mesas).filter(([k,m]) => k.startsWith('M') && ESTADOS_ACTIVOS.includes(m.estado));
 let html = `<div class="caja-rapida-btn" onclick="openCajaRapida()">⚡ Caja Rápida — Cliente paga directo</div>`;
 // ── LISTOS PARA RECOGER — siempre primero ──────────────────────────────────
 const listosPendientes = Object.entries(state.mesas).filter(([k,m]) => m.estado === 'listo-entregar');
@@ -1481,22 +1482,96 @@ return;
 showPedidoModal(mesa, key);
 }
 function openCajaRapida() {
-pedirNombreCliente('⚡ Caja Rápida', 'Ingresa el nombre del cliente para identificar el pedido', (nombre) => {
-const existingNums = Object.keys(state.mesas)
-.filter(k => k.startsWith('CR_'))
-.map(k => state.mesas[k].crNum || 0);
-const nextNum = existingNums.length > 0 ? Math.max(...existingNums) + 1 : 1;
-const key = 'CR_' + Date.now();
-state.mesas[key] = {
-num: 'CR-' + nextNum,
-crNum: nextNum,
-label: 'Caja Rápida ' + nextNum,
-clienteNombre: nombre,
-estado: 'ocupada', items: [], modalidad: 'llevar', total: 0, info: {}, esCajaRapida: true
-};
-currentPedidoKey = key;
-showPedidoModal(state.mesas[key], key);
-});
+  // Mostrar selector de modalidad primero
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML = `
+    <div style="background:var(--fb-card);border-radius:16px;padding:24px 20px;width:100%;max-width:360px;">
+      <div style="font-family:'Arial Black',Impact,sans-serif;font-size:20px;margin-bottom:6px;">⚡ Caja Rápida</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">¿Cómo retira el cliente?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <button onclick="crAbrirConModalidad('llevar',this.closest('div').closest('div').closest('div'))" 
+          style="background:var(--fb-dark);border:2px solid var(--fb-border);color:var(--text);border-radius:12px;padding:16px 10px;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">
+          🥡<br>Para Llevar</button>
+        <button onclick="crAbrirConModalidad('recojo',this.closest('div').closest('div').closest('div'))"
+          style="background:var(--fb-dark);border:2px solid var(--bl-teal);color:var(--bl-teal);border-radius:12px;padding:16px 10px;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">
+          📦<br>Recojo</button>
+      </div>
+      <button onclick="this.closest('[style*=fixed]').remove()" 
+        style="width:100%;background:none;border:1px solid var(--fb-border);color:var(--text-muted);border-radius:10px;padding:12px;font-size:13px;cursor:pointer;font-family:Arial,sans-serif;">
+        Cancelar</button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+function crAbrirConModalidad(modalidad, overlayEl) {
+  if (overlayEl) overlayEl.remove();
+  // Calcular número correlativo ignorando los ya cerrados
+  const existingNums = Object.keys(state.mesas)
+    .filter(k => k.startsWith('CR_'))
+    .map(k => state.mesas[k].crNum || 0);
+  const nextNum = existingNums.length > 0 ? Math.max(...existingNums) + 1 : 1;
+
+  if (modalidad === 'recojo') {
+    // Pedir nombre y teléfono para recojo
+    const overlay2 = document.createElement('div');
+    overlay2.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;';
+    overlay2.innerHTML = `
+      <div style="background:var(--fb-card);border-radius:16px;padding:24px 20px;width:100%;max-width:360px;">
+        <div style="font-family:'Arial Black',Impact,sans-serif;font-size:18px;margin-bottom:16px;">📦 Datos para Recojo</div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Nombre cliente</div>
+          <input id="cr-nombre-input" class="field-input" placeholder="Nombre del cliente..." style="width:100%;">
+        </div>
+        <div style="margin-bottom:20px;">
+          <div style="font-size:11px;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📞 Teléfono WhatsApp</div>
+          <input id="cr-tel-input" class="field-input" type="tel" placeholder="999 888 777" inputmode="numeric" style="width:100%;">
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="this.closest('[style*=fixed]').remove()" 
+            style="flex:1;background:none;border:1px solid var(--fb-border);color:var(--text-muted);border-radius:10px;padding:13px;font-size:13px;cursor:pointer;font-family:Arial,sans-serif;">Cancelar</button>
+          <button onclick="crConfirmarRecojo(${nextNum}, this.closest('[style*=fixed]'))"
+            style="flex:2;background:var(--bl-teal);color:#fff;border:none;border-radius:10px;padding:13px;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">✅ Continuar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay2);
+  } else {
+    // Llevar: pedir solo nombre
+    const nombre = prompt('Nombre del cliente (opcional):') || '';
+    crCrearMesa(nextNum, modalidad, nombre, '');
+  }
+}
+
+function crConfirmarRecojo(nextNum, overlayEl) {
+  const nombre = document.getElementById('cr-nombre-input')?.value.trim() || '';
+  const tel = document.getElementById('cr-tel-input')?.value.trim() || '';
+  if (overlayEl) overlayEl.remove();
+  crCrearMesa(nextNum, 'recojo', nombre, tel);
+}
+
+function crCrearMesa(nextNum, modalidad, nombre, tel) {
+  const key = 'CR_' + Date.now();
+  state.mesas[key] = {
+    num: 'CR-' + nextNum,
+    crNum: nextNum,
+    label: 'Caja Rápida ' + nextNum,
+    clienteNombre: nombre || null,
+    estado: 'ocupada',
+    items: [],
+    modalidad,
+    total: 0,
+    // Info limpia — solo los datos de ESTE pedido
+    info: {
+      nombre: nombre || '',
+      telefono: tel || '',
+      direccion: '',
+      costoDelivery: '',
+      repartidor: ''
+    },
+    esCajaRapida: true
+  };
+  currentPedidoKey = key;
+  showPedidoModal(state.mesas[key], key);
 }
 function showPedidoModal(mesa, key) {
 const modal = document.createElement('div');
@@ -2160,7 +2235,7 @@ html += `<div class="caja-card">
 <div class="caja-card-header">
 <div>
 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><div class="caja-card-title">${mesaLabel}</div>${semaforoHTML(mesa)}${(mesa.estado === 'pagado' || mesa.estado === 'entregado') ? '<span style="background:rgba(34,197,94,.25);color:#22C55E;font-size:11px;font-weight:900;padding:3px 10px;border-radius:20px;border:1px solid #22C55E88;">✅ PAGADO</span>' : mesa.prepagado ? '<span style="background:rgba(34,197,94,.2);color:#22C55E;font-size:11px;font-weight:900;padding:3px 10px;border-radius:20px;border:1px solid #22C55E55;">💰 PREPAGADO</span>' : '<span style="background:rgba(239,68,68,.18);color:#f87171;font-size:11px;font-weight:900;padding:3px 10px;border-radius:20px;border:1px solid rgba(239,68,68,.4);">❌ SIN PAGAR</span>'}</div>
-${(mesa.info&&mesa.info.telefono&&(mesa.modalidad==='delivery'||mesa.modalidad==='recojo'))?`<a href="https://wa.me/51${(mesa.info.telefono||'').replace(/\D/g,'').replace(/^0/,'')}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;padding:4px 12px;border-radius:10px;font-size:12px;font-weight:900;text-decoration:none;margin-top:4px;">📱 Avisar por WhatsApp</a>`:''}
+${(mesa.info&&mesa.info.telefono&&(mesa.modalidad==='delivery'||mesa.modalidad==='recojo'))?`<a href="https://wa.me/51${(mesa.info.telefono||'').replace(/\D/g,'').replace(/^0/,'')}?text=${encodeURIComponent('¡Hola, '+(mesa.clienteNombre||mesa.info.nombre||'')+'! ⚡ TU PEDIDO ESTÁ LISTO PARA RECOJO 🤤\nVen por él a nuestro local en 📍 Jirón Inclán 238, San Miguel.\n¡Te esperamos! ⚡🏍️💨\nSomos LaFoodBiker')}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;padding:4px 12px;border-radius:10px;font-size:12px;font-weight:900;text-decoration:none;margin-top:4px;">📱 Avisar por WhatsApp</a>`:''}
 <div style="display:flex;gap:6px;align-items:center;margin-top:3px;"><span style="font-size:11px;color:var(--text-muted);">${modalidadLabel(mesa.modalidad)}</span>${mesa.estado==="en-elaboracion"?'<span style="font-size:10px;font-weight:900;background:rgba(129,140,248,.2);color:#818CF8;padding:2px 8px;border-radius:10px;">👨‍🍳 En cocina</span>':''}${mesa.estado==="listo-entregar"?'<span style="font-size:10px;font-weight:900;background:rgba(34,197,94,.2);color:#22C55E;padding:2px 8px;border-radius:10px;">🔔 Listo</span>':''}${mesa.estado==="en-camino"?'<span style="font-size:10px;font-weight:900;background:rgba(129,140,248,.2);color:#818CF8;padding:2px 8px;border-radius:10px;">🚶 En camino</span>':''}${mesa.estado==="ocupada"?'<span style="font-size:10px;font-weight:900;background:rgba(255,107,0,.2);color:var(--fb-orange);padding:2px 8px;border-radius:10px;">📝 Tomando pedido</span>':''}</div>${mesa.clienteNombre?`<div style="font-size:12px;font-weight:800;color:var(--fb-yellow);margin-top:2px;">👤 ${mesa.clienteNombre}</div>`:''}</div>
 <div class="caja-card-total" id="total-lbl-${key}">S/ ${totalFinal.toFixed(2)}</div>
 </div>
