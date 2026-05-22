@@ -4262,8 +4262,9 @@ function applyRemoteMesas(data) {
   // Actualizar solo mesas que realmente cambiaron — no sobrescribir mesas libres con fantasmas
   Object.entries(remoteMesas).forEach(([k, v]) => {
     const local = merged[k];
-    // Solo ignorar si localmente ya está pagada/entregada y el remoto dice libre (race condition)
-    if (local && ['pagado','entregado'].includes(local.estado) && v.estado === 'libre') return;
+    // FIX: si el remoto dice 'libre' (caja cerró la mesa), SIEMPRE aceptar — es el cierre definitivo.
+    // Solo proteger contra broadcasts antiguos que traen estados no-terminales cuando el local ya cobró.
+    if (local && ['pagado','entregado'].includes(local.estado) && v.estado !== 'libre' && !['pagado','entregado'].includes(v.estado)) return;
     merged[k] = v;
   });
   // Eliminar mesas temporales que el remoto ya no tiene (CR_, DEL_, EXT_ cerrados)
@@ -4272,13 +4273,14 @@ function applyRemoteMesas(data) {
       delete merged[k];
     }
   });
-  // No pisar mesas que localmente ya están en estado terminal
-  // (puede ocurrir si el broadcast remoto llega con versión anterior al pago)
+  // No pisar mesas que localmente ya están en estado terminal con broadcasts viejos.
+  // EXCEPCION: si el remoto dice 'libre', es porque caja la cerro definitivamente — aceptar siempre.
   const estadosTerminales = ['pagado','entregado'];
   Object.keys(state.mesas).forEach(k => {
     if (estadosTerminales.includes(state.mesas[k]?.estado) &&
-        merged[k] && !estadosTerminales.includes(merged[k].estado)) {
-      // El local ya cobró esta mesa, el remoto aún no sabe → conservar local
+        merged[k] && !estadosTerminales.includes(merged[k].estado) &&
+        merged[k].estado !== 'libre') {
+      // El local esta cobrado y el remoto trae un estado intermedio (no 'libre') → conservar local
       merged[k] = state.mesas[k];
     }
   });
