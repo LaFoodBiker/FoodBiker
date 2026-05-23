@@ -1411,8 +1411,6 @@ const mesa = state.mesas[key];
 const label = mesa.label || 'Mesa ' + mesa.num;
 const esSalon = mesa.modalidad === 'salon';
 const esLlevar = mesa.modalidad === 'llevar' || mesa.modalidad === 'recojo' || key.startsWith('CR_');
-const esDelivery = mesa.modalidad === 'delivery' || key.startsWith('DEL_');
-const esExterno = mesa.modalidad === 'externo' || key.startsWith('EXT_');
 const overlay = document.createElement('div');
 overlay.id = 'listo-sheet';
 overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;display:flex;align-items:flex-end;justify-content:center;padding:20px;';
@@ -1425,8 +1423,6 @@ ${mesa.clienteNombre?`<div style="font-size:13px;text-align:center;color:var(--f
 <div style="display:flex;flex-direction:column;gap:10px;">
   ${esSalon ? `<button onclick="confirmarEntregaMesa('${key}')" style="background:#22C55E;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">🍽️ Recoger y entregar a la mesa</button>` : ''}
   ${esLlevar ? `<button onclick="confirmarEntregaMesa('${key}')" style="background:#22C55E;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">📦 Recoger y entregar al cliente</button>` : ''}
-  ${esDelivery ? `<button onclick="confirmarEntregaDelivery('${key}')" style="background:#3B82F6;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">🛵 Entregar al repartidor</button>` : ''}
-  ${esExterno ? `<button onclick="confirmarEntregaDelivery('${key}')" style="background:#FC4F00;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">📱 Listo para el motorizado</button>` : ''}
   <button onclick="confirmarEntregaLlevar('${key}')" style="background:var(--fb-orange);color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;">💳 Mandar a cobrar</button>
   <button onclick="document.getElementById('listo-sheet').remove()" style="background:var(--fb-border);color:var(--text);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;">Cancelar</button>
 </div>
@@ -1434,25 +1430,11 @@ ${mesa.clienteNombre?`<div style="font-size:13px;text-align:center;color:var(--f
 document.body.appendChild(overlay);
 }
 
-
-function confirmarEntregaDelivery(key) {
-  const el = document.getElementById('listo-sheet');
-  if (el) el.remove();
-  const mesa = state.mesas[key];
-  if (!mesa) return;
-  // Para delivery: pasar a "en-camino" = en camino con el repartidor
-  mesa.estado = 'en-camino';
-  if (!mesa.congeladoTs) mesa.congeladoTs = Date.now();
-  saveState();
-  refreshCurrentView();
-}
-
 function confirmarEntregaMesa(key) {
 const el = document.getElementById('listo-sheet');
 if (el) el.remove();
 const mesa = state.mesas[key];
 if (!mesa) return;
-mesa._sheetMostrado = false;
 mesa.estado = 'en-camino';
 // NO congelar timer aquí — el timer se congela cuando el mesero confirma la entrega física
 saveState();
@@ -1627,35 +1609,41 @@ ${modalidadPendiente ? '<div class="modalidad-required">🏷️ Selecciona modal
 <div class="delivery-fields" id="delivery-fields" ${mesa.modalidad==='delivery'?'style="display:block"':''}>
 <div class="field-group">
 <div class="field-label">Nombre cliente</div>
-<input class="field-input" id="d-nombre" placeholder="Nombre..." value="${mesa.info?.nombre||''}">
+<input class="field-input" id="d-nombre" placeholder="Nombre..." value="${mesa.info.nombre||''}">
 </div>
 <div class="field-group">
 <div class="field-label">📞 Teléfono WhatsApp</div>
-<input class="field-input" id="d-tel" type="tel" placeholder="999 888 777" value="${mesa.info?.telefono||''}" inputmode="numeric">
+<input class="field-input" id="d-tel" type="tel" placeholder="999 888 777" value="${mesa.info.telefono||''}" inputmode="numeric">
 </div>
 <div class="field-group">
 <div class="field-label">Dirección</div>
-<input class="field-input" id="d-dir" placeholder="Dirección de entrega..." value="${mesa.info?.direccion||''}">
+<input class="field-input" id="d-dir" placeholder="Dirección de entrega..." value="${mesa.info.direccion||''}">
 </div>
 <div class="field-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
 <div>
 <div class="field-label">Costo delivery</div>
-<input class="field-input" id="d-costo" type="number" placeholder="S/3" value="${mesa.info?.costoDelivery||''}">
+<div style="display:flex;align-items:center;gap:8px;">
+<input class="field-input" id="d-costo" type="number" placeholder="S/3" value="${mesa.info.costoDelivery||''}" style="flex:1;" oninput="actualizarDeliveryCortesia()">
+<label style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:800;color:var(--success);white-space:nowrap;cursor:pointer;">
+<input type="checkbox" id="d-cortesia" ${mesa.info.deliveryCortesia?'checked':''} onchange="actualizarDeliveryCortesia()" style="width:16px;height:16px;accent-color:var(--success);">
+🎁 Cortesía
+</label>
+</div>
 </div>
 <div>
 <div class="field-label">Repartidor</div>
-<input class="field-input" id="d-rep" placeholder="Nombre..." value="${mesa.info?.repartidor||''}">
+<input class="field-input" id="d-rep" placeholder="Nombre..." value="${mesa.info.repartidor||''}">
 </div>
 </div>
 </div>
 <div class="delivery-fields" id="recojo-fields" ${mesa.modalidad==='recojo'?'style="display:block"':''}>
 <div class="field-group">
 <div class="field-label">Nombre cliente</div>
-<input class="field-input" id="r-nombre" placeholder="Nombre del cliente..." value="${mesa.info?.recojoNombre||mesa.info?.nombre||''}">
+<input class="field-input" id="r-nombre" placeholder="Nombre del cliente..." value="${mesa.info.recojoNombre||mesa.info.nombre||''}">
 </div>
 <div class="field-group">
 <div class="field-label">📞 Teléfono WhatsApp — te avisamos cuando esté listo</div>
-<input class="field-input" id="r-tel" type="tel" placeholder="999 888 777" value="${mesa.info?.telefono||''}" inputmode="numeric">
+<input class="field-input" id="r-tel" type="tel" placeholder="999 888 777" value="${mesa.info.telefono||''}" inputmode="numeric">
 </div>
 </div>
 <div class="custom-item-box">
@@ -1882,14 +1870,33 @@ pushItem({ id: 'custom_' + Date.now(), name, price, brand: 'foodbiker', isCustom
 document.getElementById('custom-name').value = '';
 document.getElementById('custom-price').value = '';
 }
+function actualizarDeliveryCortesia() {
+  const chk = document.getElementById('d-cortesia');
+  const inp = document.getElementById('d-costo');
+  if (!chk || !inp) return;
+  if (chk.checked) {
+    inp.value = '0';
+    inp.style.textDecoration = 'line-through';
+    inp.style.color = 'var(--success)';
+  } else {
+    inp.style.textDecoration = '';
+    inp.style.color = '';
+  }
+  if (currentPedidoKey && state.mesas[currentPedidoKey]) {
+    state.mesas[currentPedidoKey].info.deliveryCortesia = chk.checked;
+    state.mesas[currentPedidoKey].info.costoDelivery = chk.checked ? '0' : inp.value;
+    updateModalTotal();
+  }
+}
+
 function saveDeliveryInfo() {
 if (!currentPedidoKey) return;
 const mesa = state.mesas[currentPedidoKey];
-if (!mesa.info) mesa.info = {};
-  mesa.info.nombre = document.getElementById('d-nombre')?.value || document.getElementById('r-nombre')?.value || '';
+mesa.info.nombre = document.getElementById('d-nombre')?.value || document.getElementById('r-nombre')?.value || '';
 mesa.info.telefono = document.getElementById('d-tel')?.value || document.getElementById('r-tel')?.value || '';
 mesa.info.direccion = document.getElementById('d-dir')?.value || '';
-mesa.info.costoDelivery = document.getElementById('d-costo')?.value || '';
+mesa.info.costoDelivery = document.getElementById('d-cortesia')?.checked ? '0' : (document.getElementById('d-costo')?.value || '');
+  mesa.info.deliveryCortesia = document.getElementById('d-cortesia')?.checked || false;
 mesa.info.repartidor = document.getElementById('d-rep')?.value || '';
 mesa.info.recojoNombre = document.getElementById('r-nombre')?.value || '';
 }
@@ -1914,18 +1921,8 @@ saveDeliveryInfo();
 const mesa = state.mesas[currentPedidoKey];
 if (!mesa.items.length) { alert('No hay items en el pedido'); return; }
 if (!mesa.modalidad) { alert('Primero selecciona la modalidad del pedido.'); return; }
-mesa.items.forEach(i => {
-  i.enviadoCocina = true;
-  // Solo resetear listo si es un item NUEVO (no tenía enviadoCocina antes)
-  if (!i._yaEnviado) {
-    i.listo = false;
-    i._yaEnviado = true;
-  }
-  // Items que ya estaban enviados conservan su estado listo
-});
-mesa.estado = 'en-elaboracion';
-mesa._sheetMostrado = false; // Reset para que el sheet vuelva a aparecer cuando termine
-if (window._mesasNotificadas) window._mesasNotificadas.delete(currentPedidoKey);
+mesa.items.forEach(i => { i.enviadoCocina = true; i.listo = false; });
+if (mesa.estado !== 'en-elaboracion') mesa.estado = 'en-elaboracion';
 if (!mesa.enviadoTs) mesa.enviadoTs = Date.now(); // timestamp para semáforo
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 const clienteInfo = mesa.clienteNombre || mesa.info?.nombre || '';
@@ -2257,7 +2254,7 @@ if ((mesa.estado === 'pagado' || mesa.estado === 'entregado') && !_mostroSepPaga
     <span style="color:#22C55E;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;">✅ Cobrados — pendientes de cierre</span>
   </div>`;
 }
-const delivery = parseFloat(mesa.info?.costoDelivery||0);
+const delivery = parseFloat(mesa.info.costoDelivery||0);
 const totalFinal = calcTotal(mesa.items) + delivery;
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 html += `<div class="caja-card">
@@ -2760,11 +2757,11 @@ const modColor = modColors[mesa.modalidad] || '#888';
 const modTag = mesa.modalidad ? `<span class="cocina-modality" style="background:${modColor}22;color:${modColor};border-color:${modColor}55;">${modalidadLabel(mesa.modalidad)}</span>` : '';
 let extraInfo = '';
 if (mesa.modalidad === 'delivery' && mesa.info) {
-extraInfo = `<div class="cocina-detail" style="color:var(--fb-yellow);margin-top:3px;">🛵 ${mesa.info?.direccion||''} ${mesa.info?.repartidor?'· Rep: '+mesa.info?.repartidor:''}</div>`;
+extraInfo = `<div class="cocina-detail" style="color:var(--fb-yellow);margin-top:3px;">🛵 ${mesa.info.direccion||''} ${mesa.info.repartidor?'· Rep: '+mesa.info.repartidor:''}</div>`;
 }
 if ((mesa.modalidad === 'externo' || mesa.info?.plataforma) && mesa.info) {
-const plat = mesa.info?.plataforma || 'Externo';
-extraInfo = `<div class="cocina-detail" style="color:#FC4F00;margin-top:3px;">📱 ${plat} · Pedido: ${mesa.info?.numPedido||'-'} ${mesa.info?.nombre?'· '+mesa.info?.nombre:''}</div>`;
+const plat = mesa.info.plataforma || 'Externo';
+extraInfo = `<div class="cocina-detail" style="color:#FC4F00;margin-top:3px;">📱 ${plat} · Pedido: ${mesa.info.numPedido||'-'} ${mesa.info.nombre?'· '+mesa.info.nombre:''}</div>`;
 }
 html += `<div class="cocina-card" id="cocina-card-${key}">
 <div class="cocina-header">
@@ -3143,7 +3140,7 @@ function imprimirPrecuenta() {
 if (!currentPedidoKey) return;
 const mesa = state.mesas[currentPedidoKey];
 if (!mesa.items.length) { alert('No hay items en el pedido'); return; }
-const delivery = parseFloat(document.getElementById('d-costo')?.value || mesa.info?.costoDelivery || 0);
+const delivery = parseFloat(document.getElementById('d-costo')?.value || mesa.info.costoDelivery || 0);
 const subtotal = calcTotal(mesa.items);
 const total = subtotal + delivery;
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
@@ -3409,7 +3406,7 @@ const itemsSnap = JSON.parse(JSON.stringify(mesa.items || []));
 const pagoUid = `${key}_${nowISO}`;
 // Solo agregar si no existe ya un pago con este uid
 if (!state.historialPagos.some(p => p._uid === pagoUid)) {
-  state.historialPagos.push({ _uid: pagoUid, key, mesa: mesaLabel, total: totalFinal, metodoPago, items: itemsSnap, fecha: now, fechaISO: nowISO, modalidad: mesa.modalidad, clienteNombre: mesa.clienteNombre||mesa.info?.nombre||'' });
+  state.historialPagos.push({ _uid: pagoUid, key, mesa: mesaLabel, total: totalFinal, metodoPago, items: itemsSnap, fecha: now, fechaISO: nowISO, modalidad: mesa.modalidad, clienteNombre: mesa.clienteNombre||mesa.info?.nombre||'', costoDelivery: parseFloat(mesa.info?.costoDelivery||0) });
 }
 window._lastPago = { key, mesa: mesaLabel, modalidad: mesa.modalidad, total: totalFinal, metodoPago, items: JSON.parse(JSON.stringify(mesa.items)), delivery: parseFloat(mesa.info?.costoDelivery||0), fecha: now, clienteNombre: mesa.clienteNombre||mesa.info?.nombre||'' };
 // Si la comida AÚN está en cocina (en-elaboracion / ocupada) → pago anticipado
@@ -3428,7 +3425,7 @@ if (pagoAnticipado) {
   const esSalon = mesa.modalidad === 'salon';
   const yaEntregado = mesa.estado === 'por-cobrar'; // mesero entregó antes del cobro
   const estadoFinal = (!esSalon || yaEntregado) ? 'entregado' : 'pagado';
-  state.mesas[key] = { ...mesa, estado: estadoFinal, pagadoTs: Date.now(), congeladoTs: mesa.congeladoTs || Date.now(), metodoPago, totalPagado: totalFinal };
+  state.mesas[key] = { ...mesa, estado: estadoFinal, pagadoTs: Date.now(), congeladoTs: mesa.congeladoTs || Date.now(), metodoPago, totalPagado: totalFinal, costoDeliveryGuardado: parseFloat(mesa.info?.costoDelivery||0) };
 }
 saveState();
 abrirComprobante();
@@ -3457,7 +3454,7 @@ function cerrarMesa(key) {
   const mesa = state.mesas[key];
   if (!mesa) return;
   if (key.startsWith('M')) {
-    state.mesas[key] = { num: mesa.num, estado: 'libre', items: [], modalidad: '', total: 0, info: {}, enviadoTs: null };
+    state.mesas[key] = { num: mesa.num, estado: 'libre', items: [], modalidad: '', total: 0, info: {}, enviadoTs: null, limpiadoTs: Date.now() };
   } else {
     delete state.mesas[key];
   }
@@ -4291,9 +4288,8 @@ function applyRemoteMesas(data) {
   // Actualizar solo mesas que realmente cambiaron — no sobrescribir mesas libres con fantasmas
   Object.entries(remoteMesas).forEach(([k, v]) => {
     const local = merged[k];
-    // FIX: si el remoto dice 'libre' (caja cerró la mesa), SIEMPRE aceptar — es el cierre definitivo.
-    // Solo proteger contra broadcasts antiguos que traen estados no-terminales cuando el local ya cobró.
-    if (local && ['pagado','entregado'].includes(local.estado) && v.estado !== 'libre' && !['pagado','entregado'].includes(v.estado)) return;
+    // Solo ignorar si localmente ya está pagada/entregada y el remoto dice libre (race condition)
+    if (local && ['pagado','entregado'].includes(local.estado) && v.estado === 'libre') return;
     merged[k] = v;
   });
   // Eliminar mesas temporales que el remoto ya no tiene (CR_, DEL_, EXT_ cerrados)
@@ -4302,15 +4298,24 @@ function applyRemoteMesas(data) {
       delete merged[k];
     }
   });
-  // No pisar mesas que localmente ya están en estado terminal con broadcasts viejos.
-  // EXCEPCION: si el remoto dice 'libre', es porque caja la cerro definitivamente — aceptar siempre.
-  const estadosTerminales = ['pagado','entregado'];
+  // No pisar mesas que localmente ya están en estado terminal
+  // (puede ocurrir si el broadcast remoto llega con versión anterior al pago)
+  const estadosTerminales = ['pagado','entregado','cerrado','libre'];
   Object.keys(state.mesas).forEach(k => {
-    if (estadosTerminales.includes(state.mesas[k]?.estado) &&
-        merged[k] && !estadosTerminales.includes(merged[k].estado) &&
-        merged[k].estado !== 'libre') {
-      // El local esta cobrado y el remoto trae un estado intermedio (no 'libre') → conservar local
+    const localEstado = state.mesas[k]?.estado;
+    const remotoEstado = merged[k]?.estado;
+    // Si local ya cerró/pagó y el remoto trae estado anterior → conservar local
+    if (['pagado','entregado','cerrado'].includes(localEstado) &&
+        remotoEstado && !['pagado','entregado','cerrado'].includes(remotoEstado)) {
       merged[k] = state.mesas[k];
+    }
+    // Si local ya está libre y el remoto trae estado ocupado con timestamp viejo → conservar libre
+    if (localEstado === 'libre' && remotoEstado && remotoEstado !== 'libre') {
+      const remotoPagadoTs = merged[k]?.pagadoTs || 0;
+      const localLimpiado = state.mesas[k]?.limpiadoTs || 0;
+      if (localLimpiado > remotoPagadoTs) {
+        merged[k] = state.mesas[k]; // local más reciente
+      }
     }
   });
   state.mesas = merged;
@@ -4320,12 +4325,9 @@ function applyRemoteMesas(data) {
   // Garantizar que M1-M6 siempre existan
   initMesas();
 
-  // Reparar campos que Firebase elimina silenciosamente cuando son vacios
-  // Firebase borra objetos {} y arrays [] vacios del arbol — reconstruir al recibir
+  // Reparar flags que pueden llegar sin inicializar
   Object.values(state.mesas || {}).forEach(m => {
-    if (!m.info)  m.info  = {};
-    if (!m.items) m.items = [];
-    m.items.forEach(i => {
+    (m.items || []).forEach(i => {
       if (!i.itemModalidad) i.itemModalidad = m.modalidad === 'llevar' ? 'llevar' : 'salon';
       if (i.enviadoCocina === undefined)
         i.enviadoCocina = ['en-elaboracion','por-cobrar','listo-entregar','ya-pagado','pagado'].includes(m.estado);
@@ -4352,11 +4354,6 @@ function applyRemoteMesas(data) {
         if (m.estado === 'listo-entregar' && !window._mesasNotificadas.has(k)) {
           window._mesasNotificadas.add(k);
           if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-          // Auto-mostrar sheet si no hay uno ya abierto
-          if (!document.getElementById('listo-sheet') && !m._sheetMostrado) {
-            m._sheetMostrado = true;
-            setTimeout(() => showListoEntregarSheet(k), 400);
-          }
           try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = ctx.createOscillator();
@@ -4496,18 +4493,7 @@ setInterval(() => {
   else if (state.role === 'bocaloca') renderView('bl-view');
   else if (state.role === 'mesero') {
     const active = document.querySelector('.nav-tab.active');
-    if (active && active.dataset.tab === 'mesas') {
-      renderView('mesas');
-      // Check for new listo-entregar that hasn't shown sheet yet
-      if (!document.getElementById('listo-sheet')) {
-        Object.entries(state.mesas).forEach(([k,m]) => {
-          if (m.estado === 'listo-entregar' && !m._sheetMostrado) {
-            m._sheetMostrado = true;
-            showListoEntregarSheet(k);
-          }
-        });
-      }
-    }
+    if (active && active.dataset.tab === 'mesas') renderView('mesas');
   } else if (state.role === 'caja') {
     const active = document.querySelector('.nav-tab.active');
     if (active && active.dataset.tab === 'cobrar') renderView('cobrar');
