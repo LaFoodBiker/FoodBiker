@@ -4304,9 +4304,10 @@ function applyRemoteMesas(data) {
   Object.keys(state.mesas).forEach(k => {
     const localEstado = state.mesas[k]?.estado;
     const remotoEstado = merged[k]?.estado;
-    // Si local ya cerró/pagó y el remoto trae estado anterior → conservar local
+    // Si local ya cerró/pagó y el remoto trae estado ANTERIOR (no-terminal) → conservar local
+    // EXCEPCIÓN: si el remoto dice 'libre' = caja cerró la mesa → SIEMPRE aceptar
     if (['pagado','entregado','cerrado'].includes(localEstado) &&
-        remotoEstado && !['pagado','entregado','cerrado'].includes(remotoEstado)) {
+        remotoEstado && !['pagado','entregado','cerrado','libre'].includes(remotoEstado)) {
       merged[k] = state.mesas[k];
     }
     // Si local ya está libre y el remoto trae estado ocupado con timestamp viejo → conservar libre
