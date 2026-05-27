@@ -827,6 +827,7 @@ historialCambios: [],
 const DEVICE_ID = Math.random().toString(36).slice(2);
 let _fbWriting = false;   // true mientras estamos nosotros escribiendo
 let _lastSentTs = 0;      // timestamp del último push nuestro
+let _needsRepublish = false; // true cuando detectamos escritura fantasma de otro dispositivo
 
 
 function cerrarYaPagado(key) {
@@ -834,7 +835,7 @@ function cerrarYaPagado(key) {
   if (!mesa) return;
   if (key.startsWith('M')) {
     // Liberar mesa de salón
-    state.mesas[key] = { num: mesa.num, estado: 'libre', items: [], modalidad: '', total: 0, info: {}, enviadoTs: null };
+    state.mesas[key] = { num: mesa.num, estado: 'libre', items: [], modalidad: '', total: 0, info: {}, enviadoTs: null, limpiadoTs: Date.now() };
   } else {
     // Eliminar otros tipos
     delete state.mesas[key];
@@ -3465,7 +3466,7 @@ function cerrarMesaPagada(key) {
 const mesa = state.mesas[key];
 if (!mesa) return;
 if (key.startsWith('M')) {
-state.mesas[key] = { num: mesa.num, estado: 'libre', items: [], modalidad: '', total: 0, info: {} };
+state.mesas[key] = { num: mesa.num, estado: 'libre', items: [], modalidad: '', total: 0, info: {}, limpiadoTs: Date.now() };
 } else {
 delete state.mesas[key];
 }
@@ -4285,11 +4286,10 @@ function applyRemoteMesas(data) {
   // Partir de las mesas actuales para no perder M1-M6
   const merged = { ...state.mesas };
   // Aplicar cambios remotos encima
-  // Actualizar solo mesas que realmente cambiaron — no sobrescribir mesas libres con fantasmas
+  // NOTA: si el remoto dice 'libre', SIEMPRE aceptar — es la señal definitiva de cierre de caja.
+  // No hay que proteger contra esto: la lógica de limpiadoTs más abajo protege a caja
+  // de que otros dispositivos le escriban estados viejos.
   Object.entries(remoteMesas).forEach(([k, v]) => {
-    const local = merged[k];
-    // Solo ignorar si localmente ya está pagada/entregada y el remoto dice libre (race condition)
-    if (local && ['pagado','entregado'].includes(local.estado) && v.estado === 'libre') return;
     merged[k] = v;
   });
   // Eliminar mesas temporales que el remoto ya no tiene (CR_, DEL_, EXT_ cerrados)
@@ -4310,24 +4310,37 @@ function applyRemoteMesas(data) {
       merged[k] = state.mesas[k];
     }
     // Si local ya está libre y el remoto trae estado ocupado con timestamp viejo → conservar libre
+    // Y RE-PUBLICAR a Firebase para cortar el ciclo de escrituras fantasma
     if (localEstado === 'libre' && remotoEstado && remotoEstado !== 'libre') {
       const remotoPagadoTs = merged[k]?.pagadoTs || 0;
       const localLimpiado = state.mesas[k]?.limpiadoTs || 0;
       if (localLimpiado > remotoPagadoTs) {
         merged[k] = state.mesas[k]; // local más reciente
+        // Re-publicar para que Firebase quede con el estado correcto y otros dispositivos lo reciban
+        _needsRepublish = true;
       }
     }
   });
   state.mesas = merged;
   // historialPagos ya no viene en pos/mesas — tiene su propio nodo pos/historial
   if (data.cajaRapidaCount !== undefined) state.cajaRapidaCount = data.cajaRapidaCount;
+  // Si detectamos escritura fantasma (remoto tenía estado viejo), re-publicar estado correcto
+  if (_needsRepublish) {
+    _needsRepublish = false;
+    setTimeout(() => {
+      const snap = { ...state, role:null, saboresCallback:null, currentModalItem:null };
+      pushToFirebase(snap);
+    }, 800);
+  }
 
   // Garantizar que M1-M6 siempre existan
   initMesas();
 
-  // Reparar flags que pueden llegar sin inicializar
+  // Reparar campos que Firebase borra silenciosamente (objetos {} y arrays [] vacios)
   Object.values(state.mesas || {}).forEach(m => {
-    (m.items || []).forEach(i => {
+    if (!m.info)  m.info  = {};
+    if (!Array.isArray(m.items)) m.items = [];
+    m.items.forEach(i => {
       if (!i.itemModalidad) i.itemModalidad = m.modalidad === 'llevar' ? 'llevar' : 'salon';
       if (i.enviadoCocina === undefined)
         i.enviadoCocina = ['en-elaboracion','por-cobrar','listo-entregar','ya-pagado','pagado'].includes(m.estado);
