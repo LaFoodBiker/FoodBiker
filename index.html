@@ -1173,7 +1173,7 @@ return { clase: 'ocupada', icon: '🍽️', label: 'Ocupada' };
 }
 function renderMesasView(el) {
 const cajasRapidas = Object.entries(state.mesas).filter(([k,m]) => k.startsWith('CR_') && !['libre','pagado','entregado','cerrado'].includes(m.estado));
-const ESTADOS_ACTIVOS = ['libre','ocupada','en-elaboracion','listo-entregar','en-camino','por-cobrar','ya-pagado','por-entregar','por-entregar-motorizado'];
+const ESTADOS_ACTIVOS = ['libre','ocupada','en-elaboracion','listo-entregar','en-camino','por-cobrar','ya-pagado','pagado','por-entregar','por-entregar-motorizado'];
 const mesasNumeradas = Object.entries(state.mesas).filter(([k,m]) => k.startsWith('M') && ESTADOS_ACTIVOS.includes(m.estado));
 let html = `<div class="caja-rapida-btn" onclick="openCajaRapida()">⚡ Caja Rápida — Cliente paga directo</div>`;
 // ── LISTOS PARA RECOGER — siempre primero ──────────────────────────────────
@@ -1243,8 +1243,7 @@ html += `</div>`;
 html += `<div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin:12px 0 6px;">Mesas del salón</div>`;
 html += `<div class="mesas-grid">`;
 mesasNumeradas.forEach(([key, mesa]) => {
-// Ocultar del mesero solo si está pagado Y no es prepagado (prepagado aún sigue ciclo cocina)
-if (mesa.estado === 'pagado' && !mesa.prepagado) return;
+// pagado: mostrar siempre — el mesero necesita entregar y marcar entregado
 const vis = mesaEstadoVisual(mesa);
 const total = calcTotal(mesa.items);
 const mod = (mesa.estado !== 'libre' && mesa.modalidad) ? `<div style="font-size:9px;font-weight:800;color:var(--text-muted);margin-top:2px;">${modalidadLabel(mesa.modalidad)}</div>` : '';
@@ -1363,7 +1362,40 @@ if (mesa.estado === 'en-camino') {
 showEnCaminoSheet(key);
 return;
 }
+if (mesa.estado === 'pagado') {
+showPagadoEntregarSheet(key);
+return;
+}
 openMesa(key);
+}
+
+function showPagadoEntregarSheet(key) {
+const mesa = state.mesas[key];
+if (!mesa) return;
+const label = mesa.label || 'Mesa ' + mesa.num;
+const existing = document.getElementById('pagado-sheet');
+if (existing) existing.remove();
+const total = (mesa.totalPagado || calcTotal(mesa.items)).toFixed(2);
+const metodoPago = mesa.metodoPago || '';
+const clienteTag = mesa.clienteNombre ? '<div style="font-size:14px;text-align:center;color:var(--fb-yellow);margin-bottom:4px;">👤 ' + mesa.clienteNombre + '</div>' : '';
+const overlay = document.createElement('div');
+overlay.id = 'pagado-sheet';
+overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:900;display:flex;align-items:flex-end;justify-content:center;padding:20px;';
+overlay.innerHTML =
+  '<div style="background:var(--fb-card);border-radius:18px 18px 12px 12px;padding:24px 20px;width:100%;max-width:420px;">' +
+  '<div style="text-align:center;font-size:32px;margin-bottom:8px;">✅</div>' +
+  '<div style="font-family:Arial Black,Impact,sans-serif;font-size:20px;text-align:center;color:#22C55E;margin-bottom:4px;">' + label + '</div>' +
+  clienteTag +
+  '<div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:10px 14px;margin-bottom:16px;text-align:center;">' +
+  '<div style="font-size:12px;font-weight:900;color:#22C55E;">💳 YA COBRADO</div>' +
+  '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + metodoPago + ' · S/' + total + '</div>' +
+  '</div>' +
+  '<div style="font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:20px;">¿Ya llevaste el pedido a la mesa?</div>' +
+  '<div style="display:flex;flex-direction:column;gap:10px;">' +
+  '<button onclick="marcarEntregadoMesero(\'' + key + '\');document.getElementById(\'pagado-sheet\').remove();" style="background:#22C55E;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">🍽️ Sí, ya entregué el pedido</button>' +
+  '<button onclick="document.getElementById(\'pagado-sheet\').remove()" style="background:var(--fb-border);color:var(--text);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;font-family:Arial,sans-serif;">Cancelar</button>' +
+  '</div></div>';
+document.body.appendChild(overlay);
 }
 
 function showEnCaminoSheet(key) {
