@@ -1503,6 +1503,7 @@ currentPedidoKey = key;
 const mesa = state.mesas[key];
 if (mesa.estado === 'libre' && !mesa.items.length) {
 mesa.modalidad = '';
+mesa.createdTs = Date.now(); // timestamp de apertura para detectar pedidos nuevos vs fantasmas
 if (!mesa.clienteNombre) {
 pedirNombreCliente(`Mesa ${mesa.num}`, 'Nombre del cliente (opcional — presiona Continuar para omitir)', (nombre) => {
 mesa.clienteNombre = nombre || '';
@@ -4373,16 +4374,21 @@ function applyRemoteMesas(data) {
         remotoEstado && !['pagado','entregado','cerrado','libre'].includes(remotoEstado)) {
       merged[k] = state.mesas[k];
     }
-    // Si local ya está libre y el remoto trae estado ocupado con timestamp viejo → conservar libre
-    // Y RE-PUBLICAR a Firebase para cortar el ciclo de escrituras fantasma
+    // Si local ya está libre y el remoto trae estado ocupado → solo bloquear si es un pedido VIEJO
+    // Un pedido VIEJO es cuando fue enviado a cocina ANTES de que cerráramos la mesa (enviadoTs < limpiadoTs)
+    // Un pedido NUEVO tiene enviadoTs > limpiadoTs → aceptarlo siempre
     if (localEstado === 'libre' && remotoEstado && remotoEstado !== 'libre') {
-      const remotoPagadoTs = merged[k]?.pagadoTs || 0;
-      const localLimpiado = state.mesas[k]?.limpiadoTs || 0;
-      if (localLimpiado > remotoPagadoTs) {
-        merged[k] = state.mesas[k]; // local más reciente
-        // Re-publicar para que Firebase quede con el estado correcto y otros dispositivos lo reciban
+      const remotoEnviadoTs = merged[k]?.enviadoTs || 0;
+      const remotoPagadoTs  = merged[k]?.pagadoTs  || 0;
+      const remotoCreatedTs = merged[k]?.createdTs  || 0;
+      const remotoTs        = Math.max(remotoEnviadoTs, remotoPagadoTs, remotoCreatedTs); // el más reciente del remoto
+      const localLimpiado   = state.mesas[k]?.limpiadoTs || 0;
+      // Solo bloquear si cerramos la mesa DESPUÉS de que el remoto la ocupó (es un fantasma del ciclo anterior)
+      if (localLimpiado > remotoTs && remotoTs > 0) {
+        merged[k] = state.mesas[k];
         _needsRepublish = true;
       }
+      // Si remotoTs === 0 (pedido nuevo, sin enviadoTs ni pagadoTs todavía) → aceptar sin bloquear
     }
   });
   state.mesas = merged;
