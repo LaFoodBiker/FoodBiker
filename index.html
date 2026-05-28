@@ -1740,17 +1740,46 @@ const classes = ['menu-item'];
 if (item.agotado) classes.push('soldout');
 const displayPrice = (esExterno && item.priceRappi) ? item.priceRappi : item.price;
 const rappiTag = (esExterno && item.priceRappi) ? `<span class="tag tag-orange" style="font-size:9px;margin-left:4px;">🛵 Rappi</span>` : '';
+if (item.agotado) {
+html += `<div class="${classes.join(' ')}" onclick="reactivarItemMenu('${brand}',this,'${item.id}')" title="Toca para reactivar">
+<div class="menu-item-info">
+<div class="menu-item-name">${item.name}<span class="badge-agotado">AGOTADO — toca para reactivar</span>${rappiTag}</div>
+${item.desc?`<div class="menu-item-desc">${item.desc}</div>`:''}
+</div>
+<div class="menu-item-price" style="opacity:.5">S/${displayPrice.toFixed(2)}</div>
+</div>`;
+} else {
 html += `<div class="${classes.join(' ')}" onclick="addItemToPedidoById('${item.id}')">
 <div class="menu-item-info">
-<div class="menu-item-name">${item.name}${item.agotado?'<span class="badge-agotado">AGOTADO</span>':''}${rappiTag}</div>
+<div class="menu-item-name">${item.name}${rappiTag}</div>
 ${item.desc?`<div class="menu-item-desc">${item.desc}</div>`:''}
 ${item.promo?`<span class="tag tag-orange">${item.promo}</span>`:''}
 </div>
 <div class="menu-item-price">S/${displayPrice.toFixed(2)}</div>
 </div>`;
+}
 });
 });
 container.innerHTML = html;
+}
+function reactivarItemMenu(brand, el, itemId) {
+  // Buscar el item en menuData y reactivarlo directamente desde el modal
+  let found = false;
+  Object.entries(menuData[brand] || {}).forEach(([cat, items]) => {
+    items.forEach((it, idx) => {
+      if (it.id === itemId) {
+        it.agotado = false;
+        found = true;
+      }
+    });
+  });
+  if (found) {
+    pushMenuToFirebase();
+    saveState();
+    // Re-renderizar el menú activo
+    const activeBrand = state.currentMenuTab || brand;
+    renderMenuItems(activeBrand);
+  }
 }
 function addItemToPedidoById(id) {
 const item = _menuItemRegistry[id];
