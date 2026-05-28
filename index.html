@@ -2434,15 +2434,17 @@ function renderHistorialView(el) {
     return true;
   });
   state.historialPagos = historialPagosDedup; // limpiar in-place
+  // Filtrar por hoy para el resumen — usar misma función que el Reporte
+  const pagosHoy = filtrarPagosPorRango(state.historialPagos, 'hoy');
   if (!state.historialPagos.length) {
     el.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><p>Sin pagos registrados</p></div>`;
     return;
   }
-  const total = state.historialPagos.reduce((s,p)=>s+(p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0)+(p.costoDelivery||0),0);
+  const total = pagosHoy.reduce((s,p)=>s+(p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0)+(p.costoDelivery||0),0);
 
-  // Agrupar métodos de pago correctamente
+  // Agrupar métodos de pago correctamente — solo de hoy
   const byMetodo = {efectivo:0,yape:0,plin:0,tarjeta:0,externo:0};
-  state.historialPagos.forEach(p => {
+  pagosHoy.forEach(p => {
     const parts = (p.metodoPago||'').split('+').map(s=>s.trim());
     parts.forEach(part => {
       const mm = part.match(/s\/([\d.]+)/i);
