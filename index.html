@@ -2020,6 +2020,11 @@ closePedidoModal();
 refreshCurrentView();
 }
 function closePedidoModal() {
+// Guardar datos de delivery/recojo antes de cerrar
+if (currentPedidoKey) {
+  saveDeliveryInfo();
+  saveState();
+}
 const m = document.getElementById('pedido-modal');
 if (m) m.remove();
 currentPedidoKey = null;
@@ -2793,17 +2798,17 @@ const labels = { salon:'SALÓN', llevar:'PARA LLEVAR', recojo:'RECOJO', delivery
 return labels[mod] || 'SIN MODALIDAD';
 }
 function renderCocinaView(el) {
+const ESTADOS_EXCLUIR = ['libre', 'pagado', 'ya-pagado', 'por-entregar', 'por-entregar-motorizado'];
 const pedidos = Object.entries(state.mesas).filter(([k,m]) => {
-if (!m.items || !m.items.length) return false;
-const allFbItems = m.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom' || !i.brand) && i.enviadoCocina);
-if (!allFbItems.length) return false;
-// Mostrar si: hay items pendientes (no listos) O todos listos pero aún no se pulsó el botón "Avisar al mesero"
-// O si fbListo está activo (esperando que el mesero confirme) O si el estado es listo-entregar/en-camino
-const hayItemsPendientes = allFbItems.some(i => !i.listo);
-const todosListosSinAvisar = allFbItems.every(i => i.listo === true) && m.estado === 'en-elaboracion'; // todos marcados pero sin pulsar el botón aún
-const fbListoPendiente = m.fbListo === true; // se pulsó "Avisar" pero hay BL pendiente
-const estadoActivo = m.estado === 'en-elaboracion' || m.estado === 'ocupada' || m.estado === 'ya-pagado' || m.estado === 'pagado' || m.estado === 'listo-entregar' || m.estado === 'en-camino' || m.estado === 'por-cobrar' || m.estado === 'entregado';
-return (hayItemsPendientes && estadoActivo) || todosListosSinAvisar || fbListoPendiente || (m.estado === 'listo-entregar') || (m.estado === 'en-camino');
+  if (!m.items || !m.items.length) return false;
+  if (ESTADOS_EXCLUIR.includes(m.estado)) return false;
+  const allFbItems = m.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom' || !i.brand) && i.enviadoCocina);
+  if (!allFbItems.length) return false;
+  // Mostrar si hay items pendientes O todos listos pero aún no se avisó (estado en-elaboracion u ocupada)
+  const hayPendientes = allFbItems.some(i => i.listo !== true);
+  const todosListosSinAvisar = allFbItems.every(i => i.listo === true) && (m.estado === 'en-elaboracion' || m.estado === 'ocupada');
+  const fbListoPendiente = m.fbListo === true;
+  return hayPendientes || todosListosSinAvisar || fbListoPendiente || m.estado === 'listo-entregar' || m.estado === 'en-camino';
 });
 if (!pedidos.length) { el.innerHTML = `<div class="empty-state">
 <div class="empty-icon">👨‍🍳</div>
@@ -2813,9 +2818,9 @@ let html = '';
 pedidos.forEach(([key, mesa]) => {
 const fbItems = mesa.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom' || !i.brand) && i.enviadoCocina);
     const yaPagado = !!(mesa.metodoPago) && (mesa.estado === 'pagado' || mesa.estado === 'entregado' || mesa.estado === 'ya-pagado');
-// Para el botón: todos los items enviados están marcados como listo (true === true)
 const allFbItems = mesa.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom' || !i.brand) && i.enviadoCocina);
-const todosListos = allFbItems.length > 0 && allFbItems.every(i => i.listo === true);
+// Botón aparece cuando TODOS los ítems están marcados y aún no se avisó al mesero
+const todosListos = allFbItems.length > 0 && allFbItems.every(i => i.listo === true) && mesa.estado !== 'listo-entregar' && mesa.estado !== 'en-camino';
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 const modColors = { salon:'#4ade80', llevar:'#f59e0b', delivery:'#60a5fa', externo:'#FC4F00', pedidosya:'#FC4F00', rappi:'#FC4F00', recojo:'#a78bfa' };
 const modColor = modColors[mesa.modalidad] || '#888';
@@ -3291,8 +3296,10 @@ function abrirPagoComb(key) {
   pagoCombKey = key;
   pcMetodosSeleccionados = [];
   const mesa = state.mesas[key];
+  if (!mesa) return;
+  // Siempre recalcular desde el estado actual — no usar valores cacheados
   const delivery = parseFloat(mesa.info?.costoDelivery || 0);
-  const total = calcTotal(mesa.items) + delivery;
+  const total = calcTotal(mesa.items) + (mesa.info?.deliveryCortesia ? 0 : delivery);
   const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
   document.getElementById('pc-total-lbl').textContent = `S/ ${total.toFixed(2)}`;
   document.getElementById('pc-mesa-lbl').textContent = mesaLabel;
