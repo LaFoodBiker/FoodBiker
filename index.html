@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="FoodBiker">
 <meta name="theme-color" content="#111111">
 <title>FoodBiker — Comandas</title>
-<style>:root{--fb-orange:#FF6B00;--fb-yellow:#FFD600;--fb-dark:#1A1A1A;--fb-darker:#111111;--fb-card:#242424;--fb-border:#333333;--bl-teal:#00B4A0;--bl-lime:#C6E600;--success:#22C55E;--danger:#EF4444;--warning:#F59E0B;--text:#F0F0F0;--text-muted:#888;--radius:14px;--radius-sm:8px;}
+<style>:root{--fb-orange:#FF6B00;--fb-yellow:#FFD600;--fb-dark:#1A1A1A;--fb-darker:#111111;--fb-card:#242424;--fb-border:#333333;--success:#22C55E;--danger:#EF4444;--warning:#F59E0B;--text:#F0F0F0;--text-muted:#888;--radius:14px;--radius-sm:8px;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--fb-darker);color:var(--text);min-height:100vh;overflow-x:hidden;}
 #login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--fb-darker);padding:24px;}
@@ -20,8 +20,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .role-btn:hover,.role-btn:active{border-color:var(--fb-orange);background:#2d2d2d;transform:scale(0.97);}
 .role-btn .icon{font-size:32px;}
 .role-btn .label{font-size:13px;font-weight:800;text-align:center;}
-.role-btn.bl{border-color:var(--bl-teal);}
-.role-btn.bl:hover{border-color:var(--bl-lime);}
+
 .pin-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;}
 .pin-modal.show{display:flex;}
 .pin-box{background:var(--fb-card);border-radius:var(--radius);padding:28px 24px;width:300px;text-align:center;}
@@ -43,7 +42,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .nav-tabs{display:flex;background:var(--fb-dark);border-bottom:2px solid var(--fb-border);overflow-x:auto;}
 .nav-tab{padding:12px 18px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;cursor:pointer;white-space:nowrap;color:var(--text-muted);border-bottom:3px solid transparent;transition:all .2s;}
 .nav-tab.active{color:var(--fb-orange);border-bottom-color:var(--fb-orange);}
-.nav-tab.bl-tab.active{color:var(--bl-teal);border-bottom-color:var(--bl-teal);}
 .view{display:none;padding:16px;flex:1;}
 .view.active{display:block;}
 .mesas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
@@ -86,8 +84,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .menu-tabs{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;}
 .menu-tab-btn{flex-shrink:0;background:var(--fb-card);border:2px solid var(--fb-border);color:var(--text-muted);border-radius:20px;padding:7px 16px;font-size:12px;font-weight:800;cursor:pointer;transition:all .2s;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;}
 .menu-tab-btn.active{border-color:var(--fb-orange);color:var(--fb-orange);}
-.menu-tab-btn.bl{}
-.menu-tab-btn.bl.active{border-color:var(--bl-teal);color:var(--bl-teal);}
 .menu-items{padding:8px 16px 100px;}
 .menu-cat-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin:16px 0 8px;}
 .menu-item{background:var(--fb-card);border-radius:var(--radius-sm);border:1px solid var(--fb-border);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s;}
@@ -130,7 +126,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .btn-secondary{background:var(--fb-card);color:var(--text);border:2px solid var(--fb-border);border-radius:var(--radius-sm);padding:14px 18px;font-size:14px;font-weight:800;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;}
 .btn-success{background:var(--success);}
 .btn-danger{background:var(--danger);}
-.btn-teal{background:var(--bl-teal);}
+
 .sabores-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:600;align-items:center;justify-content:center;padding:20px;}
 .sabores-modal.show{display:flex;}
 .sabores-box{background:var(--fb-card);border-radius:var(--radius);padding:24px;width:100%;max-width:360px;}
@@ -159,7 +155,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .pago-btn{background:var(--fb-card);border:2px solid var(--fb-border);color:var(--text);border-radius:var(--radius-sm);padding:12px 8px;font-size:12px;font-weight:800;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;text-align:center;transition:all .2s;}
 .pago-btn:hover{border-color:var(--fb-orange);color:var(--fb-orange);}
 .cocina-card{background:var(--fb-card);border-radius:var(--radius);border:2px solid var(--fb-orange);margin-bottom:12px;}
-.cocina-card.bl{border-color:var(--bl-teal);}
 .cocina-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--fb-border);}
 .cocina-title{font-family:'Arial Black',Impact,sans-serif;font-size:20px;}
 .cocina-time{font-size:11px;color:var(--text-muted);}
@@ -182,16 +177,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .add-item-row{padding:12px 16px;display:flex;gap:8px;}
 .add-item-input{flex:1;background:var(--fb-dark);border:1px solid var(--fb-border);color:var(--text);border-radius:6px;padding:8px 10px;font-size:13px;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;}
 .btn-sm{background:var(--fb-orange);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;white-space:nowrap;}
-.btn-sm.teal{background:var(--bl-teal);}
 .report-card{background:var(--fb-card);border-radius:var(--radius);border:1px solid var(--fb-border);padding:16px;margin-bottom:12px;}
 .report-card h3{font-size:14px;font-weight:800;margin-bottom:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
 .report-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2a2a2a;font-size:13px;}
 .report-row:last-child{border-bottom:none;}
 .report-total{font-family:'Arial Black',Impact,sans-serif;font-size:32px;color:var(--fb-yellow);}
-.report-total.teal{color:var(--bl-teal);}
 .tag{display:inline-block;font-size:10px;font-weight:800;border-radius:4px;padding:2px 7px;text-transform:uppercase;letter-spacing:.5px;}
 .tag-orange{background:rgba(255,107,0,.2);color:var(--fb-orange);}
-.tag-teal{background:rgba(0,180,160,.2);color:var(--bl-teal);}
 .tag-green{background:rgba(34,197,94,.2);color:var(--success);}
 .tag-yellow{background:rgba(255,214,0,.2);color:var(--fb-yellow);}
 .custom-item-box{padding:12px 16px;border-bottom:1px solid var(--fb-border);display:flex;gap:8px;}
@@ -230,7 +222,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
   body.rol-caja .nav-tab{color:#999!important;}
   body.rol-caja .nav-tab.active{color:#22C55E!important;border-bottom-color:#22C55E!important;}
   body.rol-caja .report-total{color:#E85D00!important;}
-  body.rol-caja .report-total.teal{color:#00B4A0!important;}
+
   body.rol-caja .report-card{background:#fff!important;border-color:#E0E0E0!important;box-shadow:0 1px 6px rgba(0,0,0,.06);}
   body.rol-caja .report-card h3{color:#666!important;}
   body.rol-caja .report-row{color:#333!important;border-color:#eee!important;}
@@ -257,15 +249,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 #ticket-print-area{display:block !important;}
 }
 #ticket-print-area{display:none;}
-.ticket{font-family:'Courier New',monospace;width:280px;margin:0 auto;font-size:12px;color:#000;background:#fff;padding:12px 8px;}
+.ticket{font-family:'Courier New',monospace;width:840px;margin:0 auto;font-size:36px;color:#000;background:#fff;padding:36px 24px;font-weight:700;}
+.ticket *{font-weight:700 !important;}
 .ticket-center{text-align:center;}
-.ticket-logo{font-size:17px;font-weight:900;letter-spacing:1px;}
-.ticket-sub{font-size:10px;margin-bottom:3px;}
-.ticket-divider{border:none;border-top:1px dashed #000;margin:5px 0;}
-.ticket-row{display:flex;justify-content:space-between;margin:2px 0;font-size:12px;}
-.ticket-row-detail{font-size:10px;color:#555;padding-left:10px;margin-bottom:2px;}
-.ticket-total-row{display:flex;justify-content:space-between;font-size:14px;font-weight:900;margin:3px 0;}
-.ticket-footer{font-size:10px;text-align:center;margin-top:8px;line-height:1.6;}
+.ticket-logo{font-size:51px;font-weight:900;letter-spacing:1px;}
+.ticket-sub{font-size:30px;margin-bottom:9px;}
+.ticket-divider{border:none;border-top:3px dashed #000;margin:15px 0;}
+.ticket-row{display:flex;justify-content:space-between;margin:6px 0;font-size:36px;}
+.ticket-row-detail{font-size:30px;color:#000;padding-left:30px;margin-bottom:6px;}
+.ticket-total-row{display:flex;justify-content:space-between;font-size:42px;font-weight:900;margin:9px 0;}
+.ticket-footer{font-size:30px;text-align:center;margin-top:24px;line-height:1.6;}
 .nombre-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:750;align-items:center;justify-content:center;padding:20px;}
 .nombre-overlay.show{display:flex;}
 .nombre-box{background:var(--fb-card);border-radius:var(--radius);width:100%;max-width:360px;padding:24px 20px;}
@@ -306,6 +299,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .pc-restante.falta{background:rgba(239,68,68,.12);color:var(--danger);border:1px solid rgba(239,68,68,.3);}
 .pc-restante.ok{background:rgba(34,197,94,.12);color:var(--success);border:1px solid rgba(34,197,94,.3);}
 .pc-restante.excede{background:rgba(245,158,11,.12);color:var(--warning);border:1px solid rgba(245,158,11,.3);}
+/* Tabs */
+.pc-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.pc-tab{flex:1;background:var(--fb-dark);border:2px solid var(--fb-border);color:var(--text-muted);border-radius:10px;padding:10px 6px;font-size:11px;font-weight:800;cursor:pointer;transition:all .18s;}
+.pc-tab.sel{border-color:var(--fb-orange);background:rgba(251,146,60,.12);color:var(--fb-orange);}
+#pc-tandas-metodo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+/* Method count badge (for repeated methods, e.g. 2x Yape) */
+.pc-metodo-count{position:absolute;top:4px;left:4px;min-width:16px;height:16px;border-radius:8px;background:var(--fb-orange);color:#fff;font-size:9px;font-weight:900;display:none;align-items:center;justify-content:center;padding:0 3px;z-index:2;}
+.pc-metodo-card.has-count .pc-metodo-count{display:flex;}
+/* Por producto: item rows */
+.pc-prod-row{background:var(--fb-dark);border:2px solid var(--fb-border);border-radius:12px;padding:10px 12px;margin-bottom:8px;}
+.pc-prod-row.asignado{border-color:var(--success);background:rgba(34,197,94,.08);}
+.pc-prod-row-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.pc-prod-name{font-size:13px;font-weight:800;flex:1;}
+.pc-prod-price{font-size:13px;font-weight:900;color:var(--fb-yellow);}
+.pc-prod-tag{font-size:10px;font-weight:800;color:var(--success);margin-top:4px;}
+.pc-prod-metodos{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.pc-prod-metodo-btn{background:var(--fb-border);border:1.5px solid var(--fb-border);color:var(--text-muted);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer;}
+.pc-prod-metodo-btn.sel{background:var(--success);border-color:var(--success);color:#fff;}
+.pc-prod-resumen-row{display:flex;justify-content:space-between;font-size:13px;font-weight:800;padding:7px 0;border-bottom:1px solid var(--fb-border);}
 .pc-hdr{padding:14px 16px;border-bottom:1px solid var(--fb-border);display:flex;align-items:center;justify-content:space-between;}
 .pc-title{font-size:16px;font-weight:800;}
 .pc-total-lbl{font-family:'Arial Black',Impact,sans-serif;font-size:22px;color:var(--fb-yellow);}
@@ -345,14 +357,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .dash-kpi-value{font-family:'Arial Black',Impact,sans-serif;font-size:22px;color:var(--fb-yellow);}
 .dash-kpi-sub{font-size:10px;color:var(--text-muted);margin-top:2px;}
 .dash-kpi.green .dash-kpi-value{color:var(--success);}
-.dash-kpi.teal .dash-kpi-value{color:var(--bl-teal);}
 .dash-kpi.orange .dash-kpi-value{color:var(--fb-orange);}
 .dash-section-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin:16px 0 8px;}
 .dash-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .dash-bar-label{font-size:12px;font-weight:700;min-width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .dash-bar-track{flex:1;background:var(--fb-border);border-radius:4px;height:8px;overflow:hidden;}
 .dash-bar-fill{height:100%;border-radius:4px;background:var(--fb-orange);transition:width .4s;}
-.dash-bar-fill.teal{background:var(--bl-teal);}
 .dash-bar-val{font-size:12px;font-weight:800;color:var(--fb-yellow);min-width:40px;text-align:right;}
 .dash-day-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #2a2a2a;font-size:13px;}
 .dash-day-date{font-weight:700;color:var(--text);}
@@ -449,40 +459,55 @@ window.onerror = function(msg, src, line, col, err) {
 
 <!-- MÉTODOS: checkboxes -->
 <div class="pc-body">
-<div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">Selecciona los métodos de pago</div>
+<div class="pc-tabs" id="pc-tabs">
+  <button class="pc-tab sel" id="pc-tab-metodos" onclick="pcSwitchTab('metodos')">💳 Métodos</button>
+  <button class="pc-tab" id="pc-tab-productos" onclick="pcSwitchTab('productos')">🍽️ Por producto</button>
+  <button class="pc-tab" id="pc-tab-tandas" onclick="pcSwitchTab('tandas')">✂️ Por tandas</button>
+</div>
+
+<div id="pc-panel-metodos">
+<div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px;">Selecciona los métodos de pago</div>
+<div style="font-size:10.5px;color:var(--text-muted);margin-bottom:10px;">Toca para agregar · vuelve a tocar para sumar otro (ej. 2 Yapes)</div>
 
 <div class="pc-metodo-grid" id="pc-metodo-grid">
   <div class="pc-metodo-card" id="pcm-efectivo" onclick="pcToggleMetodo('efectivo')">
+    <div class="pc-metodo-count" id="pcc-efectivo" onclick="event.stopPropagation();pcQuitarUnoDeMetodo('efectivo')"></div>
     <div class="pc-metodo-check" id="pck-efectivo">✓</div>
     <div class="pc-metodo-icon">💵</div>
     <div class="pc-metodo-name">Efectivo</div>
   </div>
   <div class="pc-metodo-card" id="pcm-yape" onclick="pcToggleMetodo('yape')">
+    <div class="pc-metodo-count" id="pcc-yape" onclick="event.stopPropagation();pcQuitarUnoDeMetodo('yape')"></div>
     <div class="pc-metodo-check" id="pck-yape">✓</div>
     <div class="pc-metodo-icon">📱</div>
     <div class="pc-metodo-name">Yape</div>
   </div>
   <div class="pc-metodo-card" id="pcm-plin" onclick="pcToggleMetodo('plin')">
+    <div class="pc-metodo-count" id="pcc-plin" onclick="event.stopPropagation();pcQuitarUnoDeMetodo('plin')"></div>
     <div class="pc-metodo-check" id="pck-plin">✓</div>
     <div class="pc-metodo-icon">💙</div>
     <div class="pc-metodo-name">Plin</div>
   </div>
   <div class="pc-metodo-card" id="pcm-visa" onclick="pcToggleMetodo('visa')">
+    <div class="pc-metodo-count" id="pcc-visa" onclick="event.stopPropagation();pcQuitarUnoDeMetodo('visa')"></div>
     <div class="pc-metodo-check" id="pck-visa">✓</div>
     <div class="pc-metodo-icon">💳</div>
     <div class="pc-metodo-name">Visa</div>
   </div>
   <div class="pc-metodo-card" id="pcm-mastercard" onclick="pcToggleMetodo('mastercard')">
+    <div class="pc-metodo-count" id="pcc-mastercard" onclick="event.stopPropagation();pcQuitarUnoDeMetodo('mastercard')"></div>
     <div class="pc-metodo-check" id="pck-mastercard">✓</div>
     <div class="pc-metodo-icon">🟡</div>
     <div class="pc-metodo-name">Mastercard</div>
   </div>
   <div class="pc-metodo-card" id="pcm-pedidosya" onclick="pcToggleMetodo('pedidosya')" style="border-color:#FF4500;">
+    <div class="pc-metodo-count" id="pcc-pedidosya" onclick="event.stopPropagation();pcQuitarUnoDeMetodo('pedidosya')"></div>
     <div class="pc-metodo-check" id="pck-pedidosya">✓</div>
     <div class="pc-metodo-icon">🍕</div>
     <div class="pc-metodo-name" style="color:#FF4500;">PedidosYa</div>
   </div>
   <div class="pc-metodo-card" id="pcm-rappi" onclick="pcToggleMetodo('rappi')" style="border-color:#FC4F00;">
+    <div class="pc-metodo-count" id="pcc-rappi" onclick="event.stopPropagation();pcQuitarUnoDeMetodo('rappi')"></div>
     <div class="pc-metodo-check" id="pck-rappi">✓</div>
     <div class="pc-metodo-icon">🟠</div>
     <div class="pc-metodo-name" style="color:#FC4F00;">Rappi</div>
@@ -504,12 +529,85 @@ window.onerror = function(msg, src, line, col, err) {
 
 <!-- Sin método seleccionado -->
 <div id="pc-none-msg" style="margin-top:16px;padding:12px;text-align:center;font-size:13px;color:var(--text-muted);">☝️ Selecciona al menos un método</div>
+<!-- VUELTO: aparece cuando hay efectivo en el pago -->
+<div id="pc-vuelto-box" style="display:none;margin-top:12px;background:rgba(251,146,60,.08);border:2px solid rgba(251,146,60,.35);border-radius:12px;padding:12px 14px;">
+  <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--fb-orange);margin-bottom:8px;">💵 Vuelto Efectivo</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div style="flex:1;font-size:12px;font-weight:800;color:var(--text-muted);">Cliente paga con</div>
+    <input id="pc-paga-con" type="number" step="1" min="0" placeholder="S/ 0" oninput="pcCalcVuelto()"
+      style="width:100px;background:var(--fb-dark);border:2px solid var(--fb-orange);color:var(--fb-yellow);border-radius:8px;padding:8px 10px;font-size:18px;font-weight:900;text-align:right;outline:none;">
+  </div>
+  <div id="pc-vuelto-result" style="margin-top:8px;text-align:center;font-size:20px;font-weight:900;display:none;"></div>
+  <!-- Botones rápidos de billetes -->
+  <div id="pc-billetes" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+</div>
+</div><!-- /pc-panel-metodos -->
 
-</div><!-- /pc-body -->
+<div id="pc-panel-productos" style="display:none;">
+<div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px;">Asigna cada producto a un método de pago</div>
+<div style="font-size:10.5px;color:var(--text-muted);margin-bottom:12px;">Toca un producto y elige con qué pagó. Ideal cuando cada cliente paga lo suyo.</div>
+<div id="pc-prod-list"></div>
+<div id="pc-prod-resumen" style="margin-top:14px;"></div>
+<!-- VUELTO PRODUCTOS -->
+<div id="pp-vuelto-box" style="display:none;margin-top:12px;background:rgba(251,146,60,.08);border:2px solid rgba(251,146,60,.35);border-radius:12px;padding:12px 14px;">
+  <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--fb-orange);margin-bottom:8px;">💵 Vuelto Efectivo</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div style="flex:1;font-size:12px;font-weight:800;color:var(--text-muted);">Cliente paga con</div>
+    <input id="pp-paga-con" type="number" step="1" min="0" placeholder="S/ 0" oninput="ppCalcVuelto()"
+      style="width:100px;background:var(--fb-dark);border:2px solid var(--fb-orange);color:var(--fb-yellow);border-radius:8px;padding:8px 10px;font-size:18px;font-weight:900;text-align:right;outline:none;">
+  </div>
+  <div id="pp-vuelto-result" style="margin-top:8px;text-align:center;font-size:20px;font-weight:900;display:none;"></div>
+  <div id="pp-billetes" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+</div>
+</div><!-- /pc-panel-productos -->
+
+<div id="pc-panel-tandas" style="display:none;">
+<div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px;">Cobro por tandas</div>
+<div style="font-size:10.5px;color:var(--text-muted);margin-bottom:10px;">Selecciona productos y método → cobra una tanda. Repite hasta saldar todo.</div>
+<div id="pc-tandas-pendientes" style="margin-bottom:12px;"></div>
+<div id="pc-tandas-seleccion" style="margin-bottom:10px;"></div>
+<div id="pc-tandas-metodo-row" style="display:none;margin-bottom:10px;">
+  <div style="font-size:11px;font-weight:900;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Métodos de pago para esta tanda</div>
+  <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;">Puedes combinar varios métodos. Selecciona uno o más e ingresa el monto por cada uno.</div>
+  <div id="pc-tandas-metodo-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;">
+    <div class="pc-metodo-card" id="ptm-efectivo" onclick="ptToggleMetodo('efectivo')"><div class="pc-metodo-count" id="ptc-efectivo" onclick="event.stopPropagation();ptQuitarUnoDeMetodo('efectivo')"></div><div class="pc-metodo-check" id="ptk-efectivo">✓</div><div class="pc-metodo-icon">💵</div><div class="pc-metodo-name">Efectivo</div></div>
+    <div class="pc-metodo-card" id="ptm-yape" onclick="ptToggleMetodo('yape')"><div class="pc-metodo-count" id="ptc-yape" onclick="event.stopPropagation();ptQuitarUnoDeMetodo('yape')"></div><div class="pc-metodo-check" id="ptk-yape">✓</div><div class="pc-metodo-icon">📱</div><div class="pc-metodo-name">Yape</div></div>
+    <div class="pc-metodo-card" id="ptm-plin" onclick="ptToggleMetodo('plin')"><div class="pc-metodo-count" id="ptc-plin" onclick="event.stopPropagation();ptQuitarUnoDeMetodo('plin')"></div><div class="pc-metodo-check" id="ptk-plin">✓</div><div class="pc-metodo-icon">💙</div><div class="pc-metodo-name">Plin</div></div>
+    <div class="pc-metodo-card" id="ptm-visa" onclick="ptToggleMetodo('visa')"><div class="pc-metodo-count" id="ptc-visa" onclick="event.stopPropagation();ptQuitarUnoDeMetodo('visa')"></div><div class="pc-metodo-check" id="ptk-visa">✓</div><div class="pc-metodo-icon">💳</div><div class="pc-metodo-name">Visa</div></div>
+    <div class="pc-metodo-card" id="ptm-mastercard" onclick="ptToggleMetodo('mastercard')"><div class="pc-metodo-count" id="ptc-mastercard" onclick="event.stopPropagation();ptQuitarUnoDeMetodo('mastercard')"></div><div class="pc-metodo-check" id="ptk-mastercard">✓</div><div class="pc-metodo-icon">🟡</div><div class="pc-metodo-name">Mastercard</div></div>
+    <div class="pc-metodo-card" id="ptm-pedidosya" onclick="ptToggleMetodo('pedidosya')" style="border-color:#FF4500;"><div class="pc-metodo-count" id="ptc-pedidosya" onclick="event.stopPropagation();ptQuitarUnoDeMetodo('pedidosya')"></div><div class="pc-metodo-check" id="ptk-pedidosya">✓</div><div class="pc-metodo-icon">🍕</div><div class="pc-metodo-name" style="color:#FF4500;">PedidosYa</div></div>
+    <div class="pc-metodo-card" id="ptm-rappi" onclick="ptToggleMetodo('rappi')" style="border-color:#FC4F00;"><div class="pc-metodo-count" id="ptc-rappi" onclick="event.stopPropagation();ptQuitarUnoDeMetodo('rappi')"></div><div class="pc-metodo-check" id="ptk-rappi">✓</div><div class="pc-metodo-icon">🟠</div><div class="pc-metodo-name" style="color:#FC4F00;">Rappi</div></div>
+  </div>
+  <!-- Inputs de monto por cada método seleccionado -->
+  <div id="pc-tandas-montos-container"></div>
+  <div id="pc-tandas-monto-hint" style="font-size:11px;color:var(--text-muted);margin-top:4px;text-align:right;"></div>
+</div>
+<!-- hidden input kept for compatibility -->
+<div id="pc-tandas-monto-row" style="display:none;">
+  <input id="pc-tandas-monto-input" type="hidden" value="0">
+</div>
+<div id="pc-tandas-resumen" style="margin-top:10px;"></div>
+<div id="pc-tandas-cobradas" style="margin-top:12px;"></div>
+<!-- VUELTO TANDAS -->
+<div id="pt-vuelto-box" style="display:none;margin-top:12px;background:rgba(251,146,60,.08);border:2px solid rgba(251,146,60,.35);border-radius:12px;padding:12px 14px;">
+  <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--fb-orange);margin-bottom:8px;">💵 Vuelto Efectivo</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div style="flex:1;font-size:12px;font-weight:800;color:var(--text-muted);">Cliente paga con</div>
+    <input id="pt-paga-con" type="number" step="1" min="0" placeholder="S/ 0" oninput="ptCalcVuelto()"
+      style="width:100px;background:var(--fb-dark);border:2px solid var(--fb-orange);color:var(--fb-yellow);border-radius:8px;padding:8px 10px;font-size:18px;font-weight:900;text-align:right;outline:none;">
+  </div>
+  <div id="pt-vuelto-result" style="margin-top:8px;text-align:center;font-size:20px;font-weight:900;display:none;"></div>
+  <div id="pt-billetes" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+</div>
+</div><!-- /pc-panel-tandas -->
+
+</div>
+
 
 <div class="pc-footer">
 <button class="btn-secondary" onclick="closePagoComb()" style="flex:1;padding:14px;border-radius:10px;cursor:pointer;font-weight:800;">Cancelar</button>
 <button class="btn-primary btn-success" onclick="confirmarPagoComb()" id="pc-confirm-btn" style="flex:2;padding:14px;border-radius:10px;cursor:pointer;font-weight:900;background:var(--success);color:#fff;border:none;display:none;">✓ Confirmar pago</button>
+<button class="btn-primary" onclick="ptCobrarTanda()" id="pc-tanda-btn" style="flex:2;padding:14px;border-radius:10px;cursor:pointer;font-weight:900;background:var(--fb-orange);color:#fff;border:none;display:none;">💰 Cobrar tanda</button>
 </div>
 
 </div>
@@ -569,10 +667,6 @@ window.onerror = function(msg, src, line, col, err) {
 <div class="role-btn" onclick="selectRole('cocina')">
 <div class="icon">👨‍🍳</div>
 <div class="label">Cocina</div>
-</div>
-<div class="role-btn bl" onclick="selectRole('bocaloca')">
-<div class="icon">🌯</div>
-<div class="label">Boca Loca</div>
 </div>
 <div class="role-btn" onclick="selectRole('admin')" style="grid-column:span 2">
 <div class="icon">👑</div>
@@ -766,48 +860,6 @@ foodbiker: {
 { id:'ce3', name:'Cusqueña Trigo', price:13.00, priceRappi:17.60 },
 ],
 },
-bocaloca: {
-'Shawarma Clásico 🌯': [
-{ id:'s1', name:'Shawarma Pollo + bebida', price:17.00, desc:'Pan especial, pollo, papas al hilo, lechuga, salsas' },
-{ id:'s2', name:'Shawarma Carne + bebida', price:19.00, desc:'Pan especial, carne, papas al hilo, lechuga, salsas' },
-{ id:'s3', name:'Shawarma Mixto + bebida', price:20.00, desc:'Pollo + carne, papas al hilo, lechuga, salsas' },
-],
-'Shawarma Especial ⭐': [
-{ id:'s4', name:'Pollo + Cecina + bebida', price:21.00 },
-{ id:'s5', name:'Mixto + Cecina + bebida', price:25.00 },
-{ id:'s6', name:'Pollo + Doble Queso + bebida', price:20.00 },
-{ id:'s7', name:'Carne + Doble Queso + bebida', price:22.00 },
-{ id:'s8', name:'Pollo + Cabanossi + bebida', price:21.00 },
-{ id:'s9', name:'Mixto + Cabanossi + bebida', price:25.00 },
-],
-'Crepes 🥞': [
-{ id:'cr1', name:'Crepe Dulce Clásico', price:12.00, desc:'2 frutas, manjar o fudge, 2 toppings', sabores:true, maxSabores:2, opciones:['Fresa','Plátano','Mango','Durazno','Kiwi','Manzana'] },
-{ id:'cr2', name:'Crepe Dulce Especial', price:16.00, desc:'2 frutas, manjar o fudge, 3 toppings, chantilly, helado', sabores:true, maxSabores:2, opciones:['Fresa','Plátano','Mango','Durazno','Kiwi','Manzana'] },
-{ id:'cr3', name:'Crepe Salado Pollo + bebida', price:15.00, desc:'Pollo, lechuga, tomate, mayonesa, orégano' },
-{ id:'cr4', name:'Crepe Salado Mixto + bebida', price:13.00, desc:'Jamón, doble queso, orégano' },
-],
-'Bebidas BL 🥤': [
-{ id:'bl1', name:'Vaso Chicha', price:6.00 },
-{ id:'bl2', name:'Vaso Maracuyá', price:6.00 },
-{ id:'bl3', name:'Gaseosa', price:6.00 },
-{ id:'bl4', name:'Agua Embotellada', price:5.00 },
-{ id:'bl5', name:'Jugo Fresa vaso grande', price:12.00 },
-{ id:'bl6', name:'Jugo Fresa con leche', price:12.00 },
-{ id:'bl7', name:'Jugo Piña vaso grande', price:12.00 },
-{ id:'bl8', name:'Jugo Papaya vaso grande', price:12.00 },
-],
-'Promos BL 🎉': [
-{ id:'pm1', name:'2 Shawarmas Pollo + 2 bebidas', price:32.00, desc:'Promo especial' },
-{ id:'pm2', name:'2 Shawarmas Mixto + 2 bebidas', price:38.00 },
-{ id:'pm3', name:'2 Jugos/Café/Chicha + 2 Crepes Salados', price:45.00 },
-{ id:'pm4', name:'🐟 Combo Pejerrey Fin de Semana', price:15.90, priceRappi:21.52,
-  desc:'2 panes con pejerrey, sarza de cebolla, salsa tártara + bebida a elección',
-  ingredientes:['sarza de cebolla','salsa tártara'],
-  pair:true, pairLabel:'Bebida', pairOptions:['Té frutado caliente','Té frutado helado','Café'],
-  pairOptional:true
-},
-],
-}
 };
 const STORAGE_KEY = 'foodbiker_comandas_v3';
 let state = {
@@ -979,7 +1031,7 @@ function enterApp(role) {
 state.role = role;
 document.getElementById('login-screen').style.display = 'none';
 document.getElementById('app').style.display = 'flex';
-const labels = { mesero:'Mesero', caja:'Caja', cocina:'Cocina 🍔', bocaloca:'🌯 Boca Loca', admin:'👑 Administrador' };
+const labels = { mesero:'Mesero', caja:'Caja', cocina:'Cocina 🍔', admin:'👑 Administrador' };
 document.getElementById('current-role-label').textContent = labels[role] || role;
 
 // ── TEMAS COMPLETOS POR ROL ──────────────────────────────────────────────
@@ -1048,26 +1100,6 @@ if (role === 'caja') {
   }
   if (roleLabel) { roleLabel.style.color = '#FF9999'; }
 
-} else if (role === 'bocaloca') {
-  // ── BOCA LOCA: teal oscuro (igual que antes) ─────────────────────────
-  root.style.setProperty('--fb-darker', '#0a1a1a');
-  root.style.setProperty('--fb-dark',   '#0d2020');
-  root.style.setProperty('--fb-card',   '#162828');
-  root.style.setProperty('--fb-border', '#1f4040');
-  root.style.setProperty('--text',      '#F0F0F0');
-  root.style.setProperty('--text-muted','#888888');
-  root.style.setProperty('--fb-orange', '#FF6B00');
-  root.style.setProperty('--fb-yellow', '#FFD600');
-  body.style.background = '#0a1a1a';
-  body.style.color = '#F0F0F0';
-  if (topBar) {
-    topBar.style.background = '#0d2020';
-    topBar.style.borderBottomColor = '#00B4A0';
-    topBar.style.borderBottomWidth = '4px';
-    topBar.style.boxShadow = 'none';
-  }
-  if (roleLabel) roleLabel.style.color = '#00B4A0';
-
 } else {
   // ── MESERO / ADMIN: oscuro naranja (por defecto) ─────────────────────
   root.style.setProperty('--fb-darker', '#111111');
@@ -1107,11 +1139,10 @@ let tabs = [];
 if (role === 'mesero') tabs = [{id:'mesas',label:'Mesas'},{id:'delivery',label:'Delivery'},{id:'externo',label:'PedidosYa/Rappi'}];
 else if (role === 'caja') tabs = [{id:'cobrar',label:'Por cobrar'},{id:'historial',label:'Historial'},{id:'reporte-caja',label:'📊 Reporte'}];
 else if (role === 'cocina') tabs = [{id:'cocina-view',label:'Cocina 🍔'}];
-else if (role === 'bocaloca') tabs = [{id:'bl-view',label:'Pedidos 🌯'},{id:'bl-reporte',label:'Reporte'}];
-else if (role === 'admin') tabs = [{id:'admin-fb',label:'FoodBiker'},{id:'admin-bl',label:'Boca Loca'},{id:'admin-mesas',label:'Mesas/Config'}];
+else if (role === 'admin') tabs = [{id:'admin-fb',label:'FoodBiker'},{id:'admin-mesas',label:'Mesas/Config'}];
 tabs.forEach((t,i) => {
 const tab = document.createElement('div');
-tab.className = 'nav-tab' + (i===0?' active':'') + (role==='bocaloca'?' bl-tab':'');
+tab.className = 'nav-tab' + (i===0?' active':'');
 tab.textContent = t.label;
 tab.onclick = () => switchTab(t.id);
 tab.dataset.tab = t.id;
@@ -1131,7 +1162,7 @@ document.getElementById('view-' + tabId).classList.add('active');
 renderView(tabId);
 }
 function renderCurrentViews(role) {
-const firstTabs = {mesero:'mesas',caja:'cobrar',cocina:'cocina-view',bocaloca:'bl-view',admin:'admin-fb'};
+const firstTabs = {mesero:'mesas',caja:'cobrar',cocina:'cocina-view',admin:'admin-fb'};
 renderView(firstTabs[role]);
 }
 function renderView(tabId) {
@@ -1145,10 +1176,7 @@ else if (tabId === 'cobrar') renderCobrarView(el);
 else if (tabId === 'historial') renderHistorialView(el);
 else if (tabId === 'reporte-caja') renderReporteCaja(el);
 else if (tabId === 'cocina-view') renderCocinaView(el);
-else if (tabId === 'bl-view') renderBLView(el);
-else if (tabId === 'bl-reporte') renderBLReporte(el);
 else if (tabId === 'admin-fb') renderAdminMenu(el, 'foodbiker');
-else if (tabId === 'admin-bl') renderAdminMenu(el, 'bocaloca');
 else if (tabId === 'admin-mesas') renderAdminMesas(el);
 } catch(err) {
 el.innerHTML = `<div style="background:#2a0000;border:2px solid var(--danger);border-radius:10px;padding:16px;margin:16px;font-size:12px;color:#ff9999;">
@@ -1161,7 +1189,7 @@ console.error('renderView error:', tabId, err);
 }
 }
 function mesaEstadoVisual(mesa) {
-if (mesa.estado === 'libre') return { clase: 'libre', icon: '🪑', label: 'Libre' };
+if (mesa.estado === 'libre' || mesa.estado === 'entregado' || mesa.estado === 'cerrado') return { clase: 'libre', icon: '🪑', label: 'Libre' };
 if (mesa.estado === 'listo-entregar') return { clase: 'listo-entregar', icon: '🔔', label: '¡Listo! Entregar' };
 if (mesa.estado === 'pagado') return { clase: 'pagado', icon: '✅', label: 'Pagado' };
 if (mesa.estado === 'por-cobrar') return { clase: 'por-cobrar', icon: '💳', label: 'Por cobrar' };
@@ -1173,7 +1201,7 @@ return { clase: 'ocupada', icon: '🍽️', label: 'Ocupada' };
 }
 function renderMesasView(el) {
 const cajasRapidas = Object.entries(state.mesas).filter(([k,m]) => k.startsWith('CR_') && !['libre','pagado','entregado','cerrado'].includes(m.estado));
-const ESTADOS_ACTIVOS = ['libre','ocupada','en-elaboracion','listo-entregar','en-camino','por-cobrar','ya-pagado','pagado','por-entregar','por-entregar-motorizado'];
+const ESTADOS_ACTIVOS = ['libre','ocupada','en-elaboracion','listo-entregar','en-camino','por-cobrar','ya-pagado','pagado','por-entregar','por-entregar-motorizado','entregado','cerrado'];
 const mesasNumeradas = Object.entries(state.mesas).filter(([k,m]) => k.startsWith('M') && ESTADOS_ACTIVOS.includes(m.estado));
 let html = `<div class="caja-rapida-btn" onclick="openCajaRapida()">⚡ Caja Rápida — Cliente paga directo</div>`;
 // ── LISTOS PARA RECOGER — siempre primero ──────────────────────────────────
@@ -1501,6 +1529,11 @@ let currentPedidoKey = null;
 function openMesa(key) {
 currentPedidoKey = key;
 const mesa = state.mesas[key];
+// Auto-limpiar estados huérfanos (entregado/cerrado que no se resetearon)
+if (mesa.estado === 'entregado' || mesa.estado === 'cerrado') {
+  state.mesas[key] = { num: mesa.num, estado: 'libre', items: [], modalidad: '', total: 0, info: {}, enviadoTs: null, limpiadoTs: Date.now() };
+  saveState();
+}
 if (mesa.estado === 'libre' && !mesa.items.length) {
 mesa.modalidad = '';
 mesa.createdTs = Date.now(); // timestamp de apertura para detectar pedidos nuevos vs fantasmas
@@ -1528,7 +1561,7 @@ function openCajaRapida() {
           style="background:var(--fb-dark);border:2px solid var(--fb-border);color:var(--text);border-radius:12px;padding:16px 10px;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">
           🥡<br>Para Llevar</button>
         <button onclick="crAbrirConModalidad('recojo',this.closest('div').closest('div').closest('div'))"
-          style="background:var(--fb-dark);border:2px solid var(--bl-teal);color:var(--bl-teal);border-radius:12px;padding:16px 10px;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">
+          style="background:var(--fb-dark);border:2px solid var(--fb-orange);color:var(--fb-orange);border-radius:12px;padding:16px 10px;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">
           📦<br>Recojo</button>
       </div>
       <button onclick="this.closest('[style*=fixed]').remove()" 
@@ -1565,7 +1598,7 @@ function crAbrirConModalidad(modalidad, overlayEl) {
           <button onclick="this.closest('[style*=fixed]').remove()" 
             style="flex:1;background:none;border:1px solid var(--fb-border);color:var(--text-muted);border-radius:10px;padding:13px;font-size:13px;cursor:pointer;font-family:Arial,sans-serif;">Cancelar</button>
           <button onclick="crConfirmarRecojo(${nextNum}, this.closest('[style*=fixed]'))"
-            style="flex:2;background:var(--bl-teal);color:#fff;border:none;border-radius:10px;padding:13px;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">✅ Continuar</button>
+            style="flex:2;background:var(--fb-orange);color:#fff;border:none;border-radius:10px;padding:13px;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">✅ Continuar</button>
         </div>
       </div>`;
     document.body.appendChild(overlay2);
@@ -1687,7 +1720,6 @@ ${modalidadPendiente ? '<div class="modalidad-required">🏷️ Selecciona modal
 </div>
 <div class="menu-tabs">
 <button class="menu-tab-btn active" onclick="switchMenuTab('foodbiker',this)">🍔 FoodBiker</button>
-<button class="menu-tab-btn bl" onclick="switchMenuTab('bocaloca',this)">🌯 Boca Loca</button>
 </div>
 <div id="pedido-items-container">
 </div>
@@ -1822,7 +1854,7 @@ const key = item.id + '_' + (sabores.join('+')||'solo') + '_' + (detalles.sin.jo
 const existing = mesa.items.find(i => i.key === key && i.nota === nota);
 if (existing) { existing.qty++; }
 else {
-mesa.items.push({ key, id: item.id, name: item.name, price: finalPrice, basePrice: item.price, priceRappi: item.priceRappi, qty: 1, sabores, nota, brand: state.currentMenuTab, promo: item.promo||'', termino:detalles.termino, hielo:detalles.hielo, sin:detalles.sin, adicionales:detalles.adicionales, pair:detalles.pair, itemModalidad:detalles.itemModalidad });
+mesa.items.push({ key, id: item.id, name: item.name, price: finalPrice, basePrice: item.price, priceRappi: item.priceRappi, qty: 1, sabores, nota, brand: item.brand || state.currentMenuTab, promo: item.promo||'', termino:detalles.termino, hielo:detalles.hielo, sin:detalles.sin, adicionales:detalles.adicionales, pair:detalles.pair, itemModalidad:detalles.itemModalidad });
 }
 if (mesa.estado === 'libre') mesa.estado = 'ocupada';
 renderPedidoItems();
@@ -1860,7 +1892,7 @@ return `<div class="pedido-item" style="${locked==='hecho'?'opacity:.55':''}">
 <div class="pedido-item-info">
 <div class="pedido-item-name">${item.name} ${lockBadge}</div>
 ${details}
-<span class="tag ${item.brand==='bocaloca'?'tag-teal':'tag-orange'}">${item.brand==='bocaloca'?'🌯 BL':'🍔 FB'}</span>
+<span class="tag tag-orange">🍔 FB</span>
 </div>
 <div class="qty-ctrl">
 ${canEdit ? `<button class="qty-btn" onclick="changeQty(${idx},-1)">−</button>` : `<div style="width:26px"></div>`}
@@ -2099,12 +2131,15 @@ state.itemPersonalizacion.adicionales = [];
 const adicionalesBtns = document.getElementById('adicionales-btns');
 const esBurgerOAla = item.carne || (item.sabores && item.opciones && item.opciones.includes('Smoked BBQ'));
 if (item.id === 'pm4' || (!esBurgerOAla && !item.carne)) {
-  adicionalesBtns.innerHTML = item.id === 'pm4' ? '' :
-    `<button class="adicional-btn" onclick="toggleAdicional(this,'Extra salsa')">🫙 Extra salsa</button>`;
+  adicionalesBtns.innerHTML = item.id === 'pm4' ?
+    `<button class="adicional-btn" onclick="toggleAdicional(this,'Extra huevo +S/3.00')">🥚 Extra huevo +S/3</button>` :
+    `<button class="adicional-btn" onclick="toggleAdicional(this,'Extra salsa')">🫙 Extra salsa</button>
+     <button class="adicional-btn" onclick="toggleAdicional(this,'Extra huevo +S/3.00')">🥚 Extra huevo +S/3</button>`;
 } else {
   adicionalesBtns.innerHTML =
     `<button class="adicional-btn" onclick="toggleAdicional(this,'Extra queso cheddar +S/3.00')">🧀 Extra queso cheddar +S/3</button>
      <button class="adicional-btn" onclick="toggleAdicional(this,'Extra tocino crocante +S/4.00')">🥓 Extra tocino +S/4</button>
+     <button class="adicional-btn" onclick="toggleAdicional(this,'Extra huevo +S/3.00')">🥚 Extra huevo +S/3</button>
      <button class="adicional-btn" onclick="toggleAdicional(this,'Extra Onion Rings +S/9.90')">🧅 Extra Onion Rings +S/9.90</button>
      <button class="adicional-btn" onclick="toggleAdicional(this,'Extra salsa')">🫙 Extra salsa</button>
      <button class="adicional-btn" onclick="toggleAdicional(this,'3 Alitas extra +S/10.90')">🍗 +3 Alitas extra +S/10.90</button>`;
@@ -2336,7 +2371,7 @@ ${(mesa.info&&mesa.info.telefono&&(mesa.modalidad==='delivery'||mesa.modalidad==
 <div class="caja-items">
 ${mesa.items.map((item, idx) => {
 const esCortesia = item.cortesia === true;
-const esBebida = ['be1','be2','be3','be4','be5','be6','be7','be8','be9','be10','be11','be12','be13','be14','be15'].includes(item.id) || (item.brand && ['bocaloca'].includes(item.brand) && item.name && (item.name.toLowerCase().includes('jugo')||item.name.toLowerCase().includes('gaseosa')||item.name.toLowerCase().includes('agua')||item.name.toLowerCase().includes('chicha')));
+const esBebida = ['be1','be2','be3','be4','be5','be6','be7','be8','be9','be10','be11','be12','be13','be14','be15'].includes(item.id);
 return `<div class="caja-item-row" style="${esCortesia?'opacity:.6':''};border-left:3px solid ${esBebida?'#60a5fa':'#fb923c'};padding-left:6px;">
 <span>${item.qty}x ${item.name}${esCortesia?' <span style="background:rgba(34,197,94,.2);color:var(--success);font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;">🎁 CORTESÍA</span>':''}</span>
 <div style="display:flex;align-items:center;gap:8px">
@@ -2807,8 +2842,7 @@ const pedidos = Object.entries(state.mesas).filter(([k,m]) => {
   // Mostrar si hay items pendientes O todos listos pero aún no se avisó (estado en-elaboracion u ocupada)
   const hayPendientes = allFbItems.some(i => i.listo !== true);
   const todosListosSinAvisar = allFbItems.every(i => i.listo === true) && (m.estado === 'en-elaboracion' || m.estado === 'ocupada');
-  const fbListoPendiente = m.fbListo === true;
-  return hayPendientes || todosListosSinAvisar || fbListoPendiente || m.estado === 'listo-entregar' || m.estado === 'en-camino';
+  return hayPendientes || todosListosSinAvisar || m.estado === 'listo-entregar' || m.estado === 'en-camino';
 });
 if (!pedidos.length) { el.innerHTML = `<div class="empty-state">
 <div class="empty-icon">👨‍🍳</div>
@@ -2897,136 +2931,15 @@ renderView('cocina-view');
 function marcarPedidoListo(key) {
 const mesa = state.mesas[key];
 if (!mesa) return;
-const blItems = mesa.items.filter(i => i.brand === 'bocaloca' && i.enviadoCocina);
-mesa.items.forEach(i => { if ((i.brand === 'foodbiker' || i.brand === 'custom') && i.enviadoCocina) i.listo = true; });
-mesa.fbListo = true;
-if (blItems.length === 0 || mesa.blListo) {
+mesa.items.forEach(i => { if (i.enviadoCocina) i.listo = true; });
 mesa.estado = 'listo-entregar';
-mesa.congeladoTs = Date.now(); // ❄️ congela el timer
-delete mesa.fbListo;
-delete mesa.blListo;
-}
+mesa.congeladoTs = Date.now();
 saveState();
 renderView('cocina-view');
 }
-function renderBLView(el) {
-const pedidos = Object.entries(state.mesas).filter(([k,m]) => {
-if (!m.items || !m.items.length) return false;
-const blItems = m.items.filter(i => i.brand === 'bocaloca' && i.enviadoCocina);
-if (!blItems.length) return false;
-const hayItemsPendientes = blItems.some(i => !i.listo);
-const todosListosSinAvisar = blItems.every(i => i.listo === true) && (m.estado === 'en-elaboracion' || m.estado === 'ocupada' || m.estado === 'ya-pagado' || m.estado === 'pagado');
-const estadoActivo = m.estado === 'en-elaboracion' || m.estado === 'ocupada' || m.estado === 'ya-pagado' || m.estado === 'pagado' || m.estado === 'listo-entregar' || m.estado === 'en-camino';
-const esperandoFB = m.blListo === true;
-return (hayItemsPendientes && estadoActivo) || todosListosSinAvisar || esperandoFB || (m.estado === 'listo-entregar') || (m.estado === 'en-camino');
-});
-if (!pedidos.length) { el.innerHTML = `<div class="empty-state">
-<div class="empty-icon">🌯</div>
-<p>Sin pedidos de Boca Loca</p>
-</div>`; return; }
-let html = '';
-pedidos.forEach(([key, mesa]) => {
-const blItems = mesa.items.filter(i => i.brand === 'bocaloca' && i.enviadoCocina);
-const todosListos = blItems.length > 0 && blItems.every(i => i.listo);
-const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
-html += `<div class="cocina-card bl">
-<div class="cocina-header">
-<div>
-<div class="cocina-title">${mesaLabel}</div>
-${mesa.clienteNombre ? `<div class="cocina-cliente">👤 ${mesa.clienteNombre}</div>` : ''}
-</div>
-<div class="cocina-time">${new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})}</div>
-</div>
-<div class="cocina-items">
-${blItems.map((item)=>{
-const realIdx = mesa.items.indexOf(item);
-const detalleClean = (() => {
-const parts = [];
-if (item.sabores && item.sabores.length) parts.push(`🌶 ${item.sabores.join(' + ')}`);
-if (item.pair && item.pair.length) parts.push(`🍹 ${item.pair.join(' + ')}`);
-if (item.termino && item.termino !== 'Normal') parts.push(`🥩 ${item.termino}`);
-if (item.sin && item.sin.length) parts.push(`🚫 SIN: ${item.sin.join(', ')}`);
-if (item.adicionales && item.adicionales.length) parts.push(`➕ ${item.adicionales.join(', ')}`);
-if (item.nota) parts.push(`📝 ${item.nota}`);
-if (item.itemModalidad === 'llevar') parts.push(`🥡 PARA LLEVAR`);
-return parts.join(' · ');
-})();
-return `<div class="cocina-item ${item.listo?'done':''}">
-<button class="check-btn ${item.listo?'done':''}" onclick="toggleBLItem('${key}',${realIdx})">✓</button>
-<div class="cocina-item-name">${item.name}
-${detalleClean ? `<div class="cocina-detail">${detalleClean}</div>` : ''}
-</div>
-<div class="cocina-item-qty">${item.qty}</div>
-</div>`;
-}).join('')}
-</div>
-<div class="cocina-footer" style="padding:12px 16px;border-top:1px solid var(--fb-border);">
-${mesa.estado === 'listo-entregar'
-  ? `<div style="background:#0a2a14;border:1.5px solid #22C55E;border-radius:10px;padding:12px 14px;text-align:center;">
-      <div style="font-size:14px;font-weight:900;color:#22C55E;">✅ Enviado al mesero</div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Esperando que el mesero recoja</div>
-    </div>`
-  : mesa.estado === 'en-camino'
-  ? `<div style="background:#1a1a2e;border:1.5px solid #818CF8;border-radius:10px;padding:12px 14px;text-align:center;">
-      <div style="font-size:14px;font-weight:900;color:#818CF8;">🚶 Mesero en camino</div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">El mesero ya recogió el pedido</div>
-    </div>`
-  : todosListos
-  ? `<button class="btn-primary btn-teal" onclick="marcarBLListo('${key}')">🔔 ¡Listo! Avisar al mesero</button>`
-  : `<div style="font-size:12px;color:var(--text-muted);text-align:center;">Marca cada ítem cuando esté listo</div>`
-}
-</div>
-</div>`;
-});
-el.innerHTML = html;
-}
-function toggleBLItem(mesaKey, itemIdx) {
-state.mesas[mesaKey].items[itemIdx].listo = !state.mesas[mesaKey].items[itemIdx].listo;
-saveState();
-renderView('bl-view');
-}
-function marcarBLListo(key) {
-const mesa = state.mesas[key];
-if (!mesa) return;
-const fbItems = mesa.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom') && i.enviadoCocina);
-mesa.items.forEach(i => { if (i.brand === 'bocaloca' && i.enviadoCocina) i.listo = true; });
-mesa.blListo = true;
-if (fbItems.length === 0 || mesa.fbListo) {
-mesa.estado = 'listo-entregar';
-mesa.congeladoTs = Date.now();
-delete mesa.fbListo;
-delete mesa.blListo;
-}
-saveState();
-renderView('bl-view');
-}
-function renderBLReporte(el) {
-const blPagos = state.historialPagos.filter(p => p.items.some(i => i.brand === 'bocaloca'));
-const total = blPagos.reduce((s,p) => s + p.items.filter(i=>i.brand==='bocaloca').reduce((a,i)=>a+i.price*i.qty,0), 0);
-const byMetodo = {};
-blPagos.forEach(p => {
-const sub = p.items.filter(i=>i.brand==='bocaloca').reduce((a,i)=>a+i.price*i.qty,0);
-byMetodo[p.metodoPago] = (byMetodo[p.metodoPago]||0)+sub;
-});
-el.innerHTML = `
-<div class="report-card">
-<h3>🌯 Boca Loca — Ventas del día</h3>
-<div class="report-total teal">S/ ${total.toFixed(2)}</div>
-</div>
-${Object.keys(byMetodo).length?`<div class="report-card">
-<h3>Por método de pago</h3>${Object.entries(byMetodo).map(([m,v])=>`<div class="report-row">
-<span>${m}</span>
-<span>S/${v.toFixed(2)}</span>
-</div>`).join('')}</div>`:''}
-${!blPagos.length?`<div class="empty-state">
-<div class="empty-icon">📊</div>
-<p>Sin ventas registradas</p>
-</div>`:''}`;
-}
 function renderAdminMenu(el, brand) {
 const cats = menuData[brand];
-const color = brand === 'bocaloca' ? 'teal' : '';
-let html = `<div class="section-divider">${brand === 'bocaloca' ? '🌯 Boca Loca' : '🍔 FoodBiker'} — Gestión de Menú</div>`;
+let html = `<div class="section-divider">🍔 FoodBiker — Gestión de Menú</div>`;
 Object.entries(cats).forEach(([cat, items]) => {
 html += `<div class="admin-section">
 <div class="admin-section-header">
@@ -3072,14 +2985,14 @@ function toggleAgotado(brand, cat, idx) {
 menuData[brand][cat][idx].agotado = !menuData[brand][cat][idx].agotado;
 saveState();
 pushMenuToFirebase();
-renderView(brand === 'foodbiker' ? 'admin-fb' : 'admin-bl');
+renderView('admin-fb');
 }
 function deleteItem(brand, cat, idx) {
 if (confirm(`¿Eliminar "${menuData[brand][cat][idx].name}"?`)) {
 menuData[brand][cat].splice(idx, 1);
 saveState();
 pushMenuToFirebase();
-renderView(brand === 'foodbiker' ? 'admin-fb' : 'admin-bl');
+renderView('admin-fb');
 }
 }
 function addMenuItem(brand, cat) {
@@ -3094,7 +3007,7 @@ if (priceRappi && !isNaN(priceRappi)) newItem.priceRappi = priceRappi;
 menuData[brand][cat].push(newItem);
 saveState();
 pushMenuToFirebase();
-renderView(brand === 'foodbiker' ? 'admin-fb' : 'admin-bl');
+renderView('admin-fb');
 }
 function renderAdminMesas(el) {
 const count = Object.keys(state.mesas).filter(k => k.startsWith('M')).length;
@@ -3215,37 +3128,22 @@ const subtotal = calcTotal(mesa.items);
 const total = subtotal + delivery;
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 const ahora = new Date().toLocaleString('es-PE', {dateStyle:'short', timeStyle:'short'});
-let html = `<div class="ticket">
-<div class="ticket-center">
-<div class="ticket-logo">LA FOODBIKER</div>
-<div class="ticket-sub">Burgers · Wings · Bar</div>
-<div class="ticket-sub">RUC: 10757066721 · Local 01</div>
+const B = 'font-weight:900;';
+let html = `<div class="ticket" style="font-family:'Courier New',monospace;font-weight:900;">
+<div class="ticket-center" style="${B}">
+<div class="ticket-logo" style="${B}font-size:51px;">LA FOODBIKER</div>
+<div class="ticket-sub" style="${B}font-size:30px;">Burgers · Wings · Bar</div>
+<div class="ticket-sub" style="${B}font-size:30px;">RUC: 10757066721 · Local 01</div>
 </div>
 <hr class="ticket-divider">
-<div class="ticket-row">
-<span>
-<b>${mesaLabel}</b>
-</span>
-<span>${modalidadLabel(mesa.modalidad)}</span>
-</div>
-${mesa.clienteNombre ? `<div class="ticket-row">
-<span>
-<b>Cliente:</b>
-</span>
-<span>
-<b>${mesa.clienteNombre}</b>
-</span>
-</div>` : ''}
-<div class="ticket-row">
-<span>Fecha:</span>
-<span>${ahora}</span>
-</div>
+<div class="ticket-row" style="${B}"><span style="${B}">${mesaLabel}</span><span style="${B}">${modalidadLabel(mesa.modalidad)}</span></div>`;
+if (mesa.clienteNombre) {
+html += `<div class="ticket-row" style="${B}"><span style="${B}">Cliente:</span><span style="${B}">${mesa.clienteNombre}</span></div>`;
+}
+html += `<div class="ticket-row" style="${B}"><span style="${B}">Fecha:</span><span style="${B}">${ahora}</span></div>
 <hr class="ticket-divider">`;
 mesa.items.forEach(item => {
-html += `<div class="ticket-row">
-<span>${item.qty}x ${item.name}</span>
-<span>S/${(item.price*item.qty).toFixed(2)}</span>
-</div>`;
+html += `<div class="ticket-row" style="${B}"><span style="${B}">${item.qty}x ${item.name}</span><span style="${B}">S/${(item.price*item.qty).toFixed(2)}</span></div>`;
 const details = [];
 if (item.sabores && item.sabores.length) details.push(`Sabor: ${item.sabores.join(', ')}`);
 if (item.pair && item.pair.length) details.push(`Bebidas: ${item.pair.join(' + ')}`);
@@ -3253,27 +3151,18 @@ if (item.termino && item.termino !== 'Normal') details.push(`Término: ${item.te
 if (item.sin && item.sin.length) details.push(`Sin: ${item.sin.join(', ')}`);
 if (item.adicionales && item.adicionales.length) details.push(`Extra: ${item.adicionales.join(', ')}`);
 if (item.nota) details.push(item.nota);
-details.forEach(d => { html += `<div class="ticket-row-detail">${d}</div>`; });
+details.forEach(d => { html += `<div class="ticket-row-detail" style="${B}">${d}</div>`; });
 });
 html += `<hr class="ticket-divider">
-<div class="ticket-row">
-<span>Subtotal</span>
-<span>S/${subtotal.toFixed(2)}</span>
-</div>`;
-if (delivery > 0) html += `<div class="ticket-row">
-<span>Delivery</span>
-<span>S/${delivery.toFixed(2)}</span>
-</div>`;
-html += `<div class="ticket-total-row">
-<span>TOTAL</span>
-<span>S/${total.toFixed(2)}</span>
-</div>
+<div class="ticket-row" style="${B}"><span style="${B}">Subtotal</span><span style="${B}">S/${subtotal.toFixed(2)}</span></div>`;
+if (delivery > 0) html += `<div class="ticket-row" style="${B}"><span style="${B}">Delivery</span><span style="${B}">S/${delivery.toFixed(2)}</span></div>`;
+html += `<div class="ticket-total-row" style="${B}font-size:42px;"><span style="${B}">TOTAL</span><span style="${B}">S/${total.toFixed(2)}</span></div>
 <hr class="ticket-divider">
-<div class="ticket-footer">
+<div class="ticket-footer" style="${B}">
 *** PRE-CUENTA ***<br>
 No es comprobante de pago.<br>
-¡Gracias por visitarnos!<br>
-FoodBiker 🍔
+Gracias por visitarnos!<br>
+FoodBiker
 </div>
 </div>`;
 document.getElementById('ticket-print-area').innerHTML = html;
@@ -3281,7 +3170,9 @@ window.print();
 }
 // ── MODAL DE PAGO CON CHECKBOXES ──────────────────────────────────────────
 let pagoCombKey = null;
-let pcMetodosSeleccionados = []; // ['yape','efectivo',...]
+let pcMetodosSeleccionados = []; // lista de slots, ej: ['yape','yape','efectivo'] (permite repetir método)
+let pcTabActual = 'metodos'; // 'metodos' | 'productos'
+let pcProdAsignaciones = {}; // { unitKey: metodoId }  — una entrada por CADA UNIDAD (qty se desglosa)
 const PC_METODOS = [
   { id:'efectivo',   label:'💵 Efectivo',    name:'Efectivo' },
   { id:'yape',       label:'📱 Yape',        name:'Yape' },
@@ -3295,6 +3186,12 @@ const PC_METODOS = [
 function abrirPagoComb(key) {
   pagoCombKey = key;
   pcMetodosSeleccionados = [];
+  pcProdAsignaciones = {};
+  pcTabActual = 'metodos';
+  // Reset tandas state
+  ptTandasCobradas = [];
+  ptSeleccionados = {};
+  ptMetodosActuales = [];
   const mesa = state.mesas[key];
   if (!mesa) return;
   // Siempre recalcular desde el estado actual — no usar valores cacheados
@@ -3303,11 +3200,15 @@ function abrirPagoComb(key) {
   const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
   document.getElementById('pc-total-lbl').textContent = `S/ ${total.toFixed(2)}`;
   document.getElementById('pc-mesa-lbl').textContent = mesaLabel;
+  document.getElementById('pc-tanda-btn').style.display = 'none';
   // Reset all cards
   PC_METODOS.forEach(m => {
     const card = document.getElementById('pcm-' + m.id);
-    if (card) card.classList.remove('sel');
+    if (card) { card.classList.remove('sel','has-count'); }
+    const cnt = document.getElementById('pcc-' + m.id);
+    if (cnt) cnt.textContent = '';
   });
+  pcSwitchTab('metodos');
   pcRenderState();
   document.getElementById('pago-comb-overlay').classList.add('show');
 }
@@ -3316,18 +3217,55 @@ function closePagoComb() {
   document.getElementById('pago-comb-overlay').classList.remove('show');
   pagoCombKey = null;
   pcMetodosSeleccionados = [];
+  pcProdAsignaciones = {};
+  ptTandasCobradas = [];
+  ptSeleccionados = {};
+  ptMetodosActuales = [];
+  pcResetVuelto();
 }
 
+function pcSwitchTab(tab) {
+  pcTabActual = tab;
+  document.getElementById('pc-tab-metodos').classList.toggle('sel', tab === 'metodos');
+  document.getElementById('pc-tab-productos').classList.toggle('sel', tab === 'productos');
+  document.getElementById('pc-tab-tandas').classList.toggle('sel', tab === 'tandas');
+  document.getElementById('pc-panel-metodos').style.display = tab === 'metodos' ? '' : 'none';
+  document.getElementById('pc-panel-productos').style.display = tab === 'productos' ? '' : 'none';
+  document.getElementById('pc-panel-tandas').style.display = tab === 'tandas' ? '' : 'none';
+  document.getElementById('pc-confirm-btn').style.display = 'none';
+  document.getElementById('pc-tanda-btn').style.display = 'none';
+  pcResetVuelto();
+  if (tab === 'productos') pcRenderProductos();
+  else if (tab === 'tandas') ptRender();
+  else pcRenderState();
+}
+
+// Tocar una tarjeta de método suma 1 más a ese método (permite 2x Yape, 2x Visa, etc.)
+// Long-press / tocar el check cuando ya está seleccionado lo quita de a uno.
 function pcToggleMetodo(id) {
-  const idx = pcMetodosSeleccionados.indexOf(id);
-  if (idx === -1) {
-    pcMetodosSeleccionados.push(id);
-    document.getElementById('pcm-' + id)?.classList.add('sel');
-  } else {
-    pcMetodosSeleccionados.splice(idx, 1);
-    document.getElementById('pcm-' + id)?.classList.remove('sel');
-  }
+  pcMetodosSeleccionados.push(id);
+  pcRefrescarTarjetas();
   pcRenderState();
+}
+
+function pcQuitarUnoDeMetodo(id) {
+  const idx = pcMetodosSeleccionados.lastIndexOf(id);
+  if (idx !== -1) pcMetodosSeleccionados.splice(idx, 1);
+  pcRefrescarTarjetas();
+  pcRenderState();
+}
+
+function pcRefrescarTarjetas() {
+  PC_METODOS.forEach(m => {
+    const count = pcMetodosSeleccionados.filter(x => x === m.id).length;
+    const card = document.getElementById('pcm-' + m.id);
+    const cnt = document.getElementById('pcc-' + m.id);
+    if (card) card.classList.toggle('sel', count > 0);
+    if (cnt) {
+      if (count > 1) { cnt.textContent = '×' + count; card.classList.add('has-count'); }
+      else { cnt.textContent = ''; card.classList.remove('has-count'); }
+    }
+  });
 }
 
 function pcGetTotal() {
@@ -3344,6 +3282,7 @@ function pcRenderState() {
   const montosSection = document.getElementById('pc-montos-section');
   const noneMsg    = document.getElementById('pc-none-msg');
   const confirmBtn = document.getElementById('pc-confirm-btn');
+  if (pcTabActual !== 'metodos') return;
 
   if (n === 0) {
     singleMsg.style.display = 'none';
@@ -3363,14 +3302,20 @@ function pcRenderState() {
     document.getElementById('pc-single-name').textContent = m ? m.label : pcMetodosSeleccionados[0];
     document.getElementById('pc-single-total').textContent = `S/ ${total.toFixed(2)}`;
     confirmBtn.style.display = 'block';
+    // Vuelto: si el único método es efectivo
+    const efTotal = pcMetodosSeleccionados[0] === 'efectivo' ? total : 0;
+    pcRenderVueltoBox('pc-vuelto-box', 'pc-billetes', efTotal);
+    if (efTotal <= 0) { const el = document.getElementById('pc-vuelto-box'); if(el) el.style.display='none'; }
     return;
   }
 
-  // 2+ métodos: mostrar inputs de monto
+  // 2+ métodos (pueden repetirse): mostrar inputs de monto
   singleMsg.style.display = 'none';
   montosSection.style.display = 'block';
   confirmBtn.style.display = 'block';
   pcRenderMontos();
+  // Vuelto tras renderizar (después de pcRenderMontos para que los inputs existan)
+  setTimeout(() => pcRenderVueltoBox('pc-vuelto-box', 'pc-billetes', pcGetTotalEfectivoMetodos()), 0);
 }
 
 function pcRenderMontos() {
@@ -3378,19 +3323,29 @@ function pcRenderMontos() {
   const list = document.getElementById('pc-montos-list');
   if (!list) return;
   const n = pcMetodosSeleccionados.length;
+  // slotId único por cada instancia (permite 2 filas "Yape" independientes)
   list.innerHTML = pcMetodosSeleccionados.map((id, i) => {
     const m = PC_METODOS.find(x => x.id === id);
     const isLast = i === n - 1;
+    const sameBefore = pcMetodosSeleccionados.slice(0, i).filter(x => x === id).length;
+    const ordinal = sameBefore > 0 ? ` #${sameBefore + 1}` : (pcMetodosSeleccionados.filter(x=>x===id).length > 1 ? ' #1' : '');
     // Último campo: se autocompleta con el restante
     return `<div class="pc-monto-row">
-      <div class="pc-monto-label">${m ? m.label : id}</div>
+      <div class="pc-monto-label">${m ? m.label : id}${ordinal}</div>
       ${isLast
-        ? `<input class="pc-monto-input autocomplete" id="pcv-${id}" type="number" step="0.10" min="0" placeholder="auto" readonly>`
-        : `<input class="pc-monto-input" id="pcv-${id}" type="number" step="0.10" min="0" value="" placeholder="S/ 0.00" oninput="pcActualizarRestante()">`
+        ? `<input class="pc-monto-input autocomplete" id="pcv-${i}" type="number" step="0.10" min="0" placeholder="auto" readonly>`
+        : `<input class="pc-monto-input" id="pcv-${i}" type="number" step="0.10" min="0" value="" placeholder="S/ 0.00" oninput="pcActualizarRestante()">`
       }
+      <button onclick="pcQuitarSlot(${i})" style="background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer;padding:4px;">✕</button>
     </div>`;
   }).join('');
   pcActualizarRestante();
+}
+
+function pcQuitarSlot(i) {
+  pcMetodosSeleccionados.splice(i, 1);
+  pcRefrescarTarjetas();
+  pcRenderState();
 }
 
 function pcActualizarRestante() {
@@ -3398,15 +3353,14 @@ function pcActualizarRestante() {
   const n = pcMetodosSeleccionados.length;
   const restanteEl = document.getElementById('pc-restante');
   if (n < 2) return;
-  const lastId = pcMetodosSeleccionados[n - 1];
-  // Suma de todos menos el último
+  // Suma de todos menos el último (que se autocompleta)
   let sumParcial = 0;
-  pcMetodosSeleccionados.slice(0, -1).forEach(id => {
-    const val = parseFloat(document.getElementById('pcv-' + id)?.value || 0);
+  for (let i = 0; i < n - 1; i++) {
+    const val = parseFloat(document.getElementById('pcv-' + i)?.value || 0);
     sumParcial += isNaN(val) ? 0 : val;
-  });
+  }
   const restante = total - sumParcial;
-  const lastInput = document.getElementById('pcv-' + lastId);
+  const lastInput = document.getElementById('pcv-' + (n - 1));
   if (lastInput) {
     lastInput.value = Math.max(0, restante).toFixed(2);
   }
@@ -3420,9 +3374,190 @@ function pcActualizarRestante() {
     restanteEl.className = 'pc-restante ok';
     document.getElementById('pc-confirm-btn').style.display = 'block';
   }
+  // Actualizar vuelto efectivo
+  pcRenderVueltoBox('pc-vuelto-box', 'pc-billetes', pcGetTotalEfectivoMetodos());
+  pcCalcVuelto();
 }
 
 function updatePcRestante() { pcActualizarRestante(); } // legacy alias
+
+// ── POR PRODUCTO: cada unidad de cada item se asigna a un método ──────────
+function pcGetUnidades() {
+  // Desglosa items con qty>1 en unidades individuales para poder asignarlas por separado
+  if (!pagoCombKey) return [];
+  const mesa = state.mesas[pagoCombKey];
+  if (!mesa) return [];
+  const unidades = [];
+  (mesa.items || []).forEach((item, idx) => {
+    const qty = item.qty || 1;
+    const precioUnit = item.cortesia ? 0 : (item.price || 0);
+    for (let u = 0; u < qty; u++) {
+      unidades.push({ unitKey: `${idx}_${u}`, name: item.name, precio: precioUnit, itemIdx: idx });
+    }
+  });
+  const delivery = parseFloat(mesa.info?.costoDelivery || 0);
+  if (delivery > 0 && !mesa.info?.deliveryCortesia) {
+    unidades.push({ unitKey: 'delivery', name: '🛵 Delivery', precio: delivery, itemIdx: -1 });
+  }
+  return unidades;
+}
+
+function pcRenderProductos() {
+  const unidades = pcGetUnidades();
+  const list = document.getElementById('pc-prod-list');
+  if (!list) return;
+  list.innerHTML = unidades.map(u => {
+    const asignado = pcProdAsignaciones[u.unitKey];
+    const m = asignado ? PC_METODOS.find(x => x.id === asignado) : null;
+    return `<div class="pc-prod-row ${asignado ? 'asignado' : ''}">
+      <div class="pc-prod-row-top">
+        <div class="pc-prod-name">${u.name}</div>
+        <div class="pc-prod-price">S/${u.precio.toFixed(2)}</div>
+      </div>
+      ${m ? `<div class="pc-prod-tag">✓ Pagado con ${m.label}</div>` : ''}
+      <div class="pc-prod-metodos">
+        ${PC_METODOS.map(metodo => `<button class="pc-prod-metodo-btn ${asignado===metodo.id?'sel':''}" onclick="pcAsignarUnidad('${u.unitKey}','${metodo.id}')">${metodo.label}</button>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  pcRenderResumenProductos();
+}
+
+function pcAsignarUnidad(unitKey, metodoId) {
+  if (pcProdAsignaciones[unitKey] === metodoId) {
+    delete pcProdAsignaciones[unitKey]; // toca de nuevo para desasignar
+  } else {
+    pcProdAsignaciones[unitKey] = metodoId;
+  }
+  pcRenderProductos();
+}
+
+function pcRenderResumenProductos() {
+  const unidades = pcGetUnidades();
+  const total = pcGetTotal();
+  const resumenEl = document.getElementById('pc-prod-resumen');
+  const confirmBtn = document.getElementById('pc-confirm-btn');
+  if (!resumenEl) return;
+
+  const porMetodo = {};
+  let asignadoTotal = 0;
+  unidades.forEach(u => {
+    const metodoId = pcProdAsignaciones[u.unitKey];
+    if (metodoId) {
+      porMetodo[metodoId] = (porMetodo[metodoId] || 0) + u.precio;
+      asignadoTotal += u.precio;
+    }
+  });
+
+  const faltante = unidades.filter(u => !pcProdAsignaciones[u.unitKey]).length;
+  const filas = Object.keys(porMetodo).map(id => {
+    const m = PC_METODOS.find(x => x.id === id);
+    return `<div class="pc-prod-resumen-row"><span>${m ? m.label : id}</span><span>S/${porMetodo[id].toFixed(2)}</span></div>`;
+  }).join('');
+
+  resumenEl.innerHTML = `
+    ${filas || '<div style="font-size:12px;color:var(--text-muted);text-align:center;padding:8px;">Sin asignar todavía</div>'}
+    <div class="pc-restante ${faltante > 0 ? 'falta' : 'ok'}" style="margin-top:10px;">
+      ${faltante > 0 ? `⚠️ Faltan ${faltante} producto(s) por asignar` : `✓ Total cubierto: S/ ${asignadoTotal.toFixed(2)}`}
+    </div>`;
+
+  confirmBtn.style.display = (faltante === 0 && unidades.length > 0) ? 'block' : 'none';
+  // Vuelto efectivo por producto
+  const efProd = pcGetTotalEfectivoProductos();
+  pcRenderVueltoBox('pp-vuelto-box', 'pp-billetes', efProd);
+  if (faltante > 0) { const b = document.getElementById('pp-vuelto-box'); if(b) b.style.display='none'; }
+  ppCalcVuelto();
+}
+
+// ── VUELTO EFECTIVO (helper compartido por los 3 tabs) ────────────────────
+const BILLETES_PERU = [10, 20, 50, 100, 200];
+
+function pcGetTotalEfectivoMetodos() {
+  // Suma todos los slots de efectivo en el tab Métodos
+  const n = pcMetodosSeleccionados.length;
+  const total = pcGetTotal();
+  if (n === 0) return 0;
+  if (n === 1) return pcMetodosSeleccionados[0] === 'efectivo' ? total : 0;
+  let suma = 0;
+  pcMetodosSeleccionados.forEach((id, i) => {
+    if (id === 'efectivo') {
+      const v = parseFloat(document.getElementById('pcv-' + i)?.value || 0);
+      suma += isNaN(v) ? 0 : v;
+    }
+  });
+  return suma;
+}
+
+function pcGetTotalEfectivoProductos() {
+  const unidades = pcGetUnidades();
+  let suma = 0;
+  unidades.forEach(u => { if (pcProdAsignaciones[u.unitKey] === 'efectivo') suma += u.precio; });
+  return suma;
+}
+
+function pcGetTotalEfectivoTandas() {
+  // Suma efectivo de tandas ya cobradas + tanda actual en progreso
+  let suma = 0;
+  ptTandasCobradas.forEach(t => {
+    (t.metodos || []).forEach(mt => { if (mt.id === 'efectivo') suma += mt.monto; });
+  });
+  // Tanda actual en progreso
+  ptMetodosActuales.forEach((sl, i) => {
+    if (sl.id === 'efectivo') {
+      const v = parseFloat(document.getElementById('ptv-' + i)?.value || sl.monto || 0);
+      suma += isNaN(v) ? 0 : v;
+    }
+  });
+  return suma;
+}
+
+function pcRenderVueltoBox(boxId, billetesId, totalEfectivo) {
+  const box = document.getElementById(boxId);
+  if (!box) return;
+  if (totalEfectivo <= 0.01) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  // Billetes rápidos: solo los >= totalEfectivo (redondeado al siguiente billete)
+  const billetesEl = document.getElementById(billetesId);
+  if (billetesEl) {
+    const inputId = boxId.replace('-box', '').replace('vuelto', 'paga-con');
+    const resultId = boxId.replace('-box', '').replace('vuelto', 'vuelto-result');
+    const calcFn = boxId.includes('pc-v') ? 'pcCalcVuelto' : (boxId.includes('pt-v') ? 'ptCalcVuelto' : 'ppCalcVuelto');
+    const candidatos = BILLETES_PERU.filter(b => b >= totalEfectivo);
+    if (candidatos.length === 0) candidatos.push(Math.ceil(totalEfectivo / 10) * 10);
+    billetesEl.innerHTML = candidatos.slice(0, 5).map(b =>
+      `<button onclick="document.getElementById('${inputId}').value=${b};${calcFn}();"
+        style="background:var(--fb-border);border:1.5px solid var(--fb-border);color:var(--text);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:900;cursor:pointer;">
+        S/${b}
+      </button>`
+    ).join('');
+  }
+}
+
+function _calcVueltoGenerico(inputId, resultId, totalEfectivo) {
+  const pagaCon = parseFloat(document.getElementById(inputId)?.value || 0);
+  const resultEl = document.getElementById(resultId);
+  if (!resultEl) return;
+  if (!pagaCon || pagaCon <= 0) { resultEl.style.display = 'none'; return; }
+  const vuelto = pagaCon - totalEfectivo;
+  resultEl.style.display = 'block';
+  if (vuelto < -0.01) {
+    resultEl.innerHTML = `<span style="color:var(--danger);">⚠️ Falta S/ ${Math.abs(vuelto).toFixed(2)}</span>`;
+  } else if (Math.abs(vuelto) <= 0.01) {
+    resultEl.innerHTML = `<span style="color:var(--success);">✓ Exacto</span>`;
+  } else {
+    resultEl.innerHTML = `<span style="color:var(--success);">Vuelto: </span><span style="color:var(--fb-yellow);">S/ ${vuelto.toFixed(2)}</span>`;
+  }
+}
+
+function pcCalcVuelto() { _calcVueltoGenerico('pc-paga-con', 'pc-vuelto-result', pcGetTotalEfectivoMetodos()); }
+function ptCalcVuelto() { _calcVueltoGenerico('pt-paga-con', 'pt-vuelto-result', pcGetTotalEfectivoTandas()); }
+function ppCalcVuelto() { _calcVueltoGenerico('pp-paga-con', 'pp-vuelto-result', pcGetTotalEfectivoProductos()); }
+
+function pcResetVuelto() {
+  ['pc-paga-con','pt-paga-con','pp-paga-con'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['pc-vuelto-result','pt-vuelto-result','pp-vuelto-result'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  ['pc-vuelto-box','pt-vuelto-box','pp-vuelto-box'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+}
 
 function confirmarPagoComb() {
   if (!pagoCombKey) return;
@@ -3431,8 +3566,30 @@ function confirmarPagoComb() {
   if (!mesa) return;
   const delivery = parseFloat(mesa.info?.costoDelivery || 0);
   const total = calcTotal(mesa.items) + delivery;
-  const n = pcMetodosSeleccionados.length;
 
+  if (pcTabActual === 'productos') {
+    // Construir pagos a partir de las asignaciones por unidad
+    const unidades = pcGetUnidades();
+    const sinAsignar = unidades.filter(u => !pcProdAsignaciones[u.unitKey]);
+    if (unidades.length === 0) { alert('No hay productos para asignar'); return; }
+    if (sinAsignar.length > 0) { alert(`Faltan ${sinAsignar.length} producto(s) por asignar a un método de pago`); return; }
+    const porMetodo = {};
+    unidades.forEach(u => {
+      const metodoId = pcProdAsignaciones[u.unitKey];
+      porMetodo[metodoId] = (porMetodo[metodoId] || 0) + u.precio;
+    });
+    const pagos = Object.keys(porMetodo).map(id => {
+      const m = PC_METODOS.find(x => x.id === id);
+      return { label: m ? m.name : id, monto: porMetodo[id] };
+    });
+    const metodoPago = pagos.map(p => `${p.label} S/${p.monto.toFixed(2)}`).join(' + ');
+    closePagoComb();
+    ejecutarCobro(key, metodoPago, total, mesa);
+    return;
+  }
+
+  // Modo "métodos" (con o sin repetidos)
+  const n = pcMetodosSeleccionados.length;
   if (n === 0) { alert('Selecciona al menos un método de pago'); return; }
 
   let pagos = [];
@@ -3440,9 +3597,9 @@ function confirmarPagoComb() {
     const m = PC_METODOS.find(x => x.id === pcMetodosSeleccionados[0]);
     pagos = [{ label: m ? m.name : pcMetodosSeleccionados[0], monto: total }];
   } else {
-    pagos = pcMetodosSeleccionados.map(id => {
+    pagos = pcMetodosSeleccionados.map((id, i) => {
       const m = PC_METODOS.find(x => x.id === id);
-      const monto = parseFloat(document.getElementById('pcv-' + id)?.value || 0);
+      const monto = parseFloat(document.getElementById('pcv-' + i)?.value || 0);
       return { label: m ? m.name : id, monto };
     }).filter(p => p.monto > 0.001);
     const ingresado = pagos.reduce((s, p) => s + p.monto, 0);
@@ -3456,6 +3613,379 @@ function confirmarPagoComb() {
   closePagoComb();
   ejecutarCobro(key, metodoPago, total, mesa);
 }
+
+// ── POR TANDAS: cobrar la cuenta en múltiples partes ──────────────────────
+// Estado global de tandas
+let ptTandasCobradas = [];   // [{ unitKeys: [...], metodos: [{id,monto},...], montoTotal: 35.00 }]
+let ptSeleccionados = {};    // { unitKey: true }
+let ptMetodosActuales = [];  // [{ id, monto }] — slots de métodos para la tanda actual (permite repetir)
+
+// Paleta de colores por tanda (hasta 8 tandas, luego rota)
+const PT_COLORES = [
+  { hex: '#60A5FA', rgba: 'rgba(96,165,250,', name: 'Tanda 1' },   // azul
+  { hex: '#F472B6', rgba: 'rgba(244,114,182,', name: 'Tanda 2' },   // rosa
+  { hex: '#34D399', rgba: 'rgba(52,211,153,',  name: 'Tanda 3' },   // verde menta
+  { hex: '#FBBF24', rgba: 'rgba(251,191,36,',  name: 'Tanda 4' },   // amarillo
+  { hex: '#A78BFA', rgba: 'rgba(167,139,250,', name: 'Tanda 5' },   // violeta
+  { hex: '#FB923C', rgba: 'rgba(251,146,60,',  name: 'Tanda 6' },   // naranja
+  { hex: '#2DD4BF', rgba: 'rgba(45,212,191,',  name: 'Tanda 7' },   // teal
+  { hex: '#F87171', rgba: 'rgba(248,113,113,', name: 'Tanda 8' },   // rojo claro
+];
+
+function ptGetUnidades() {
+  if (!pagoCombKey) return [];
+  const mesa = state.mesas[pagoCombKey];
+  if (!mesa) return [];
+  const unidades = [];
+  (mesa.items || []).forEach((item, idx) => {
+    const qty = item.qty || 1;
+    const precioUnit = item.cortesia ? 0 : (item.price || 0);
+    for (let u = 0; u < qty; u++) {
+      unidades.push({ unitKey: `${idx}_${u}`, name: item.name, precio: precioUnit, itemIdx: idx });
+    }
+  });
+  const delivery = parseFloat(mesa.info?.costoDelivery || 0);
+  if (delivery > 0 && !mesa.info?.deliveryCortesia) {
+    unidades.push({ unitKey: 'delivery', name: '🛵 Delivery', precio: delivery, itemIdx: -1 });
+  }
+  return unidades;
+}
+
+function ptUnidadesPendientes() {
+  const todas = ptGetUnidades();
+  const yaUsadas = new Set(ptTandasCobradas.flatMap(t => t.unitKeys));
+  return todas.filter(u => !yaUsadas.has(u.unitKey));
+}
+
+function ptTotalPendiente() {
+  return ptUnidadesPendientes().reduce((s, u) => s + u.precio, 0);
+}
+
+function ptTotalTandas() {
+  return ptTandasCobradas.reduce((s, t) => s + t.montoTotal, 0);
+}
+
+function ptRender() {
+  const todasUnidades = ptGetUnidades();
+  const pendientes = ptUnidadesPendientes();
+  const totalGeneral = pcGetTotal();
+  const totalPendiente = ptTotalPendiente();
+  const totalCobrado = ptTotalTandas();
+
+  const haySeleccionados = Object.keys(ptSeleccionados).some(k => ptSeleccionados[k]);
+
+  // Construir mapa: unitKey → índice de tanda (para colores)
+  const unitKeyATanda = {};
+  ptTandasCobradas.forEach((t, i) => {
+    t.unitKeys.forEach(k => { unitKeyATanda[k] = i; });
+  });
+
+  // Render lista unificada (todos los productos: cobrados + pendientes)
+  const pendEl = document.getElementById('pc-tandas-pendientes');
+  if (pendEl) {
+    const totalSel = Object.keys(ptSeleccionados).filter(k => ptSeleccionados[k]).reduce((s, k) => {
+      const u = pendientes.find(x => x.unitKey === k);
+      return s + (u ? u.precio : 0);
+    }, 0);
+
+    // Leyenda de tandas cobradas (solo si hay alguna)
+    let leyenda = '';
+    if (ptTandasCobradas.length > 0) {
+      leyenda = `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">` +
+        ptTandasCobradas.map((t, i) => {
+          const c = PT_COLORES[i % PT_COLORES.length];
+          const metodosStr = t.metodos.map(mt => {
+            const m = PC_METODOS.find(x => x.id === mt.id);
+            return m ? m.label : mt.id;
+          }).join('+');
+          return `<div style="display:flex;align-items:center;gap:5px;background:${c.rgba}0.12);border:1.5px solid ${c.hex};border-radius:8px;padding:4px 9px;">
+            <div style="width:10px;height:10px;border-radius:3px;background:${c.hex};flex-shrink:0;"></div>
+            <span style="font-size:11px;font-weight:900;color:${c.hex};">${c.name}</span>
+            <span style="font-size:10px;color:var(--text-muted);">${metodosStr} · S/${t.montoTotal.toFixed(2)}</span>
+          </div>`;
+        }).join('') +
+      `</div>`;
+    }
+
+    // Botones selección solo si hay pendientes
+    let botonesSeleccion = '';
+    if (pendientes.length > 0) {
+      botonesSeleccion = `
+        <div style="font-size:11px;font-weight:900;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">
+          Pendientes (${pendientes.length}) · S/ ${totalPendiente.toFixed(2)}
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <button onclick="ptSeleccionarTodos()" style="flex:1;background:var(--fb-border);border:none;color:var(--text);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer;">✓ Todos</button>
+          <button onclick="ptDeseleccionarTodos()" style="flex:1;background:var(--fb-border);border:none;color:var(--text);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer;">✕ Ninguno</button>
+          ${totalSel > 0 ? `<div style="flex:1;background:rgba(251,146,60,.15);border-radius:8px;padding:6px 8px;font-size:11px;font-weight:900;color:var(--fb-orange);text-align:center;">S/ ${totalSel.toFixed(2)}</div>` : ''}
+        </div>`;
+    } else {
+      botonesSeleccion = `<div style="color:var(--success);font-weight:900;text-align:center;padding:6px 0 10px;">✅ Todos los productos asignados</div>`;
+    }
+
+    // Lista unificada de productos
+    const filas = todasUnidades.map(u => {
+      const tandaIdx = unitKeyATanda[u.unitKey];
+      const cobrado = tandaIdx !== undefined;
+      const sel = !cobrado && !!ptSeleccionados[u.unitKey];
+
+      if (cobrado) {
+        const c = PT_COLORES[tandaIdx % PT_COLORES.length];
+        return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:${c.rgba}0.08);border:2px solid ${c.rgba}0.35);border-radius:10px;margin-bottom:6px;opacity:0.85;">
+          <div style="width:22px;height:22px;border-radius:6px;background:${c.hex};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0;">✓</div>
+          <div style="flex:1;font-size:13px;font-weight:800;text-decoration:line-through;color:${c.hex};">${u.name}</div>
+          <div style="font-size:11px;font-weight:900;color:${c.hex};white-space:nowrap;">T${tandaIdx + 1}</div>
+          <div style="font-size:13px;font-weight:900;color:${c.hex};text-decoration:line-through;">S/${u.precio.toFixed(2)}</div>
+        </div>`;
+      } else {
+        return `<div onclick="ptToggleUnidad('${u.unitKey}')" style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:${sel ? 'rgba(251,146,60,.12)' : 'var(--fb-dark)'};border:2px solid ${sel ? 'var(--fb-orange)' : 'var(--fb-border)'};border-radius:10px;margin-bottom:6px;cursor:pointer;">
+          <div style="width:22px;height:22px;border-radius:6px;border:2px solid ${sel ? 'var(--fb-orange)' : 'var(--fb-border)'};background:${sel ? 'var(--fb-orange)' : 'transparent'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0;">${sel ? '✓' : ''}</div>
+          <div style="flex:1;font-size:13px;font-weight:800;">${u.name}</div>
+          <div style="font-size:13px;font-weight:900;color:var(--fb-yellow);">S/${u.precio.toFixed(2)}</div>
+        </div>`;
+      }
+    }).join('');
+
+    pendEl.innerHTML = leyenda + botonesSeleccion + filas;
+  }
+
+  // Mostrar panel de métodos si hay seleccionados
+  const metodoRow = document.getElementById('pc-tandas-metodo-row');
+  if (metodoRow) metodoRow.style.display = haySeleccionados ? 'block' : 'none';
+
+  // Refrescar tarjetas de método (con badges de cuenta, igual que Métodos)
+  PC_METODOS.forEach(m => {
+    const count = ptMetodosActuales.filter(s => s.id === m.id).length;
+    const card = document.getElementById('ptm-' + m.id);
+    const badge = document.getElementById('ptc-' + m.id);
+    if (card) {
+      card.classList.toggle('sel', count > 0);
+      card.classList.toggle('has-count', count > 1);
+    }
+    if (badge) {
+      badge.textContent = count > 1 ? count : '';
+      badge.style.display = count > 1 ? 'flex' : 'none';
+    }
+  });
+
+  // Renderizar inputs de monto para cada slot seleccionado
+  const montosContainer = document.getElementById('pc-tandas-montos-container');
+  const hintEl = document.getElementById('pc-tandas-monto-hint');
+  if (montosContainer && haySeleccionados) {
+    const n = ptMetodosActuales.length;
+    if (n === 0) {
+      montosContainer.innerHTML = '';
+      if (hintEl) { hintEl.textContent = ''; }
+    } else {
+      montosContainer.innerHTML = ptMetodosActuales.map((slot, i) => {
+        const m = PC_METODOS.find(x => x.id === slot.id);
+        const isLast = i === n - 1;
+        const sameBefore = ptMetodosActuales.slice(0, i).filter(s => s.id === slot.id).length;
+        const ordinal = sameBefore > 0 ? ` #${sameBefore + 1}` : (ptMetodosActuales.filter(s => s.id === slot.id).length > 1 ? ' #1' : '');
+        return `<div class="pc-monto-row" style="margin-bottom:6px;">
+          <div class="pc-monto-label" style="font-size:12px;">${m ? m.label : slot.id}${ordinal}</div>
+          ${isLast
+            ? `<input class="pc-monto-input autocomplete" id="ptv-${i}" type="number" step="0.10" min="0" placeholder="auto" readonly>`
+            : `<input class="pc-monto-input" id="ptv-${i}" type="number" step="0.10" min="0" value="${slot.monto > 0 ? slot.monto : ''}" placeholder="S/ 0.00" oninput="ptActualizarRestante()">`
+          }
+          <button onclick="ptQuitarSlot(${i})" style="background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer;padding:4px;">✕</button>
+        </div>`;
+      }).join('');
+      ptActualizarRestante();
+    }
+  } else if (montosContainer) {
+    montosContainer.innerHTML = '';
+    if (hintEl) hintEl.textContent = '';
+  }
+
+  // Botón cobrar tanda
+  const hayMetodos = ptMetodosActuales.some(s => (parseFloat(s.monto) || 0) > 0) || ptMetodosActuales.length > 0;
+  const tandaBtn = document.getElementById('pc-tanda-btn');
+  const confirmBtn = document.getElementById('pc-confirm-btn');
+  if (confirmBtn) confirmBtn.style.display = 'none';
+  if (tandaBtn) {
+    tandaBtn.style.display = (haySeleccionados && hayMetodos) ? 'block' : 'none';
+  }
+
+  // Resumen de tandas cobradas (total + botón finalizar)
+  ptRenderCobradas();
+}
+
+function ptActualizarRestante() {
+  const totalSel = Object.keys(ptSeleccionados).filter(k => ptSeleccionados[k]).reduce((s, k) => {
+    const u = ptGetUnidades().find(x => x.unitKey === k);
+    return s + (u ? u.precio : 0);
+  }, 0);
+  const n = ptMetodosActuales.length;
+  const hintEl = document.getElementById('pc-tandas-monto-hint');
+  if (n === 0) { if (hintEl) hintEl.textContent = ''; return; }
+  // Guardar valores actuales de los inputs (todos excepto el último)
+  for (let i = 0; i < n - 1; i++) {
+    const input = document.getElementById('ptv-' + i);
+    if (input) ptMetodosActuales[i].monto = parseFloat(input.value) || 0;
+  }
+  // El último se autocompleta con el restante
+  let sumParcial = 0;
+  for (let i = 0; i < n - 1; i++) sumParcial += ptMetodosActuales[i].monto;
+  const restante = parseFloat((totalSel - sumParcial).toFixed(2));
+  ptMetodosActuales[n - 1].monto = Math.max(0, restante);
+  const lastInput = document.getElementById('ptv-' + (n - 1));
+  if (lastInput) lastInput.value = ptMetodosActuales[n - 1].monto > 0 ? ptMetodosActuales[n - 1].monto : '';
+  // Hint
+  const totalIngresado = ptMetodosActuales.reduce((s, sl) => s + (sl.monto || 0), 0);
+  const diff = totalSel - totalIngresado;
+  if (hintEl) {
+    if (Math.abs(diff) <= 0.01) { hintEl.textContent = '✓ Monto exacto para esta tanda'; hintEl.style.color = 'var(--success)'; }
+    else if (diff > 0.01) { hintEl.textContent = `⚠️ Faltan S/ ${diff.toFixed(2)}`; hintEl.style.color = 'var(--warning)'; }
+    else { hintEl.textContent = `⚠️ Excede S/ ${Math.abs(diff).toFixed(2)}`; hintEl.style.color = 'var(--danger)'; }
+  }
+  // Mostrar/ocultar botón
+  const tandaBtn = document.getElementById('pc-tanda-btn');
+  if (tandaBtn) tandaBtn.style.display = ptMetodosActuales.length > 0 ? 'block' : 'none';
+  // Vuelto efectivo tanda actual
+  pcRenderVueltoBox('pt-vuelto-box', 'pt-billetes', pcGetTotalEfectivoTandas());
+  ptCalcVuelto();
+}
+
+function ptQuitarSlot(i) {
+  ptMetodosActuales.splice(i, 1);
+  ptRender();
+}
+
+function ptQuitarUnoDeMetodo(id) {
+  const idx = ptMetodosActuales.map(s => s.id).lastIndexOf(id);
+  if (idx !== -1) ptMetodosActuales.splice(idx, 1);
+  ptRender();
+}
+
+function ptRenderCobradas() {
+  const el = document.getElementById('pc-tandas-cobradas');
+  if (!el || ptTandasCobradas.length === 0) { if (el) el.innerHTML = ''; return; }
+  const totalCobrado = ptTotalTandas();
+  const totalGeneral = pcGetTotal();
+  el.innerHTML = `
+    <div style="font-size:11px;font-weight:900;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Resumen de tandas (${ptTandasCobradas.length})</div>
+    ${ptTandasCobradas.map((t, i) => {
+      const c = PT_COLORES[i % PT_COLORES.length];
+      const metodosStr = t.metodos.map(mt => {
+        const m = PC_METODOS.find(x => x.id === mt.id);
+        return `${m ? m.label : mt.id} S/${mt.monto.toFixed(2)}`;
+      }).join(' + ');
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:${c.rgba}0.08);border:1.5px solid ${c.rgba}0.4);border-radius:10px;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+          <div style="width:12px;height:12px;border-radius:4px;background:${c.hex};flex-shrink:0;"></div>
+          <div style="min-width:0;">
+            <div style="font-size:12px;font-weight:900;color:${c.hex};">${c.name}</div>
+            <div style="font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${metodosStr}</div>
+            <div style="font-size:10px;color:var(--text-muted);">${t.unitKeys.length} producto(s)</div>
+          </div>
+        </div>
+        <div style="font-size:15px;font-weight:900;color:${c.hex};margin-left:8px;">S/${t.montoTotal.toFixed(2)}</div>
+        <button onclick="ptEliminarTanda(${i})" style="background:none;border:none;color:var(--danger);font-size:14px;cursor:pointer;padding:4px 6px;margin-left:4px;">✕</button>
+      </div>`;
+    }).join('')}
+    <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--fb-dark);border-radius:10px;font-size:13px;font-weight:900;margin-top:4px;">
+      <span>Total cobrado</span>
+      <span style="color:var(--fb-yellow)">S/${totalCobrado.toFixed(2)} / S/${totalGeneral.toFixed(2)}</span>
+    </div>
+    ${Math.abs(totalCobrado - totalGeneral) <= 0.01
+      ? `<button onclick="ptFinalizarTodas()" style="width:100%;margin-top:10px;padding:14px;background:var(--success);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer;">✅ Finalizar — Total cubierto</button>`
+      : ''}`;
+  // Vuelto efectivo acumulado en tandas cobradas
+  pcRenderVueltoBox('pt-vuelto-box', 'pt-billetes', pcGetTotalEfectivoTandas());
+  ptCalcVuelto();
+}
+
+function ptToggleUnidad(unitKey) {
+  ptSeleccionados[unitKey] = !ptSeleccionados[unitKey];
+  // Reset montos al cambiar selección
+  ptMetodosActuales = [];
+  ptRender();
+}
+
+function ptSeleccionarTodos() {
+  ptUnidadesPendientes().forEach(u => { ptSeleccionados[u.unitKey] = true; });
+  ptMetodosActuales = [];
+  ptRender();
+}
+
+function ptDeseleccionarTodos() {
+  ptSeleccionados = {};
+  ptMetodosActuales = [];
+  ptRender();
+}
+
+function ptToggleMetodo(id) {
+  // Calcular cuánto falta por cubrir
+  const totalSel = Object.keys(ptSeleccionados).filter(k => ptSeleccionados[k]).reduce((s, k) => {
+    const u = ptGetUnidades().find(x => x.unitKey === k);
+    return s + (u ? u.precio : 0);
+  }, 0);
+  const yaIngresado = ptMetodosActuales.reduce((s, sl) => s + (sl.monto || 0), 0);
+  const restante = Math.max(0, parseFloat((totalSel - yaIngresado).toFixed(2)));
+  // Agregar slot: si es el único, pone el monto completo (se autocompleta igual que Métodos)
+  ptMetodosActuales.push({ id, monto: restante });
+  ptRender();
+}
+
+function ptCobrarTanda() {
+  const selKeys = Object.keys(ptSeleccionados).filter(k => ptSeleccionados[k]);
+  if (selKeys.length === 0) { alert('Selecciona al menos un producto para esta tanda'); return; }
+  // Leer valores actuales de los inputs antes de cobrar
+  ptMetodosActuales.forEach((slot, i) => {
+    const input = document.getElementById('ptv-' + i);
+    if (input) slot.monto = parseFloat(input.value) || 0;
+  });
+  const metodosValidos = ptMetodosActuales.filter(sl => (sl.monto || 0) > 0);
+  if (metodosValidos.length === 0) { alert('Selecciona al menos un método de pago e ingresa el monto'); return; }
+  const montoTotal = metodosValidos.reduce((s, sl) => s + sl.monto, 0);
+  if (montoTotal <= 0) { alert('El monto total debe ser mayor a cero'); return; }
+  // Registrar tanda con múltiples slots (puede repetir método)
+  const metodos = metodosValidos.map(sl => ({ id: sl.id, monto: sl.monto }));
+  ptTandasCobradas.push({ unitKeys: [...selKeys], metodos, montoTotal });
+  // Limpiar para próxima tanda
+  ptSeleccionados = {};
+  ptMetodosActuales = [];
+  // Prellenar "todos" si quedan pendientes
+  const pendientes = ptUnidadesPendientes();
+  if (pendientes.length > 0) {
+    pendientes.forEach(u => { ptSeleccionados[u.unitKey] = true; });
+  }
+  ptRender();
+}
+
+function ptEliminarTanda(i) {
+  ptTandasCobradas.splice(i, 1);
+  ptRender();
+}
+
+function ptFinalizarTodas() {
+  if (!pagoCombKey) return;
+  const pendientes = ptUnidadesPendientes();
+  if (pendientes.length > 0) { alert(`Aún faltan ${pendientes.length} producto(s) sin asignar`); return; }
+  const key = pagoCombKey;
+  const mesa = state.mesas[key];
+  if (!mesa) return;
+  const totalGeneral = pcGetTotal();
+  const totalCobrado = ptTotalTandas();
+  if (totalCobrado < totalGeneral - 0.05) {
+    alert(`Falta S/${(totalGeneral - totalCobrado).toFixed(2)} para completar el pago`);
+    return;
+  }
+  // Construir string de metodoPago combinando todas las tandas
+  const resumen = {};
+  ptTandasCobradas.forEach(t => {
+    (t.metodos || [{ id: t.metodo, monto: t.montoTotal || t.monto }]).forEach(mt => {
+      const m = PC_METODOS.find(x => x.id === mt.id);
+      const name = m ? m.name : mt.id;
+      resumen[name] = (resumen[name] || 0) + mt.monto;
+    });
+  });
+  const metodoPago = Object.entries(resumen).map(([name, monto]) => `${name} S/${monto.toFixed(2)}`).join(' + ');
+  closePagoComb();
+  ejecutarCobro(key, metodoPago, totalGeneral, mesa);
+}
+
 function ejecutarCobro(key, metodoPago, totalFinal, mesa) {
 if (!mesa) mesa = state.mesas[key];
 if (!mesa) return;
@@ -3468,10 +3998,8 @@ const now = _ahora.toLocaleString('es-PE', {
 // 'fechaISO' = UTC — solo para ordenar y buscar por exactitud, NO para filtrar por día
 const nowISO = _ahora.toISOString();
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
-const fbItems = mesa.items.filter(i => i.brand === 'foodbiker' || i.brand === 'custom');
-const blItems = mesa.items.filter(i => i.brand === 'bocaloca');
+const fbItems = mesa.items.filter(i => i.brand === 'foodbiker' || i.brand === 'custom' || i.isCustom || (!i.brand));
 if (fbItems.length) saveToSheet('FoodBiker_Ventas', [now, mesaLabel, mesa.modalidad, fbItems.map(itemLineText).join(' | '), calcTotal(fbItems).toFixed(2), metodoPago, mesa.info?.nombre||mesa.clienteNombre||'', mesa.info?.direccion||'']);
-if (blItems.length) saveToSheet('BocaLoca_Ventas', [now, mesaLabel, mesa.modalidad, blItems.map(itemLineText).join(' | '), calcTotal(blItems).toFixed(2), metodoPago]);
 // Copiar items por valor (no referencia) para evitar mutaciones posteriores
 const itemsSnap = JSON.parse(JSON.stringify(mesa.items || []));
 // uid único para detectar duplicados al sincronizar
@@ -3603,95 +4131,62 @@ imprimirComprobante(pago, compTipoSel, { tel, ruc, razon, dni });
 function imprimirComprobante(pago, tipo, datos) {
 const tipoLabel = tipo === 'simple' ? 'BOLETA SIMPLE' : tipo === 'electronica' ? 'BOLETA ELECTRÓNICA' : 'FACTURA';
 const ahora = new Date().toLocaleString('es-PE', {dateStyle:'short', timeStyle:'short'});
-let html = `<div class="ticket">
-<div class="ticket-center">
-<div class="ticket-logo">LA FOODBIKER</div>
-<div class="ticket-sub">Burgers · Wings · Bar</div>
-<div class="ticket-sub">RUC Emisor: 10757066721 · Local 01</div>
+const B = 'font-weight:900;'; // shorthand para negrita inline
+let html = `<div class="ticket" style="font-family:'Courier New',monospace;font-weight:900;">
+<div class="ticket-center" style="${B}">
+<div class="ticket-logo" style="${B}font-size:51px;">LA FOODBIKER</div>
+<div class="ticket-sub" style="${B}font-size:30px;">Burgers · Wings · Bar</div>
+<div class="ticket-sub" style="${B}font-size:30px;">RUC Emisor: 10757066721 · Local 01</div>
 </div>
 <hr class="ticket-divider">
-<div class="ticket-center" style="font-size:13px;font-weight:900;margin:4px 0;">${tipoLabel}</div>`;
+<div class="ticket-center" style="${B}font-size:36px;margin:4px 0;">${tipoLabel}</div>`;
 if (tipo === 'electronica' && datos.dni) {
-html += `<div class="ticket-row">
-<span>DNI Cliente:</span>
-<span>${datos.dni}</span>
-</div>`;
+html += `<div class="ticket-row" style="${B}"><span style="${B}">DNI Cliente:</span><span style="${B}">${datos.dni}</span></div>`;
 }
 if (tipo === 'factura') {
-html += `<div class="ticket-row">
-<span>RUC Cliente:</span>
-<span>${datos.ruc}</span>
-</div>
-<div class="ticket-row">
-<span>Razón Social:</span>
-<span style="font-size:10px">${datos.razon}</span>
-</div>`;
+html += `<div class="ticket-row" style="${B}"><span style="${B}">RUC Cliente:</span><span style="${B}">${datos.ruc}</span></div>
+<div class="ticket-row" style="${B}"><span style="${B}">Razón Social:</span><span style="${B}font-size:28px;">${datos.razon}</span></div>`;
 }
 html += `<hr class="ticket-divider">
-<div class="ticket-row">
-<span>
-<b>${pago.mesa}</b>
-</span>
-<span>${modalidadLabel(pago.modalidad)}</span>
-</div>
-${pago.clienteNombre ? `<div class="ticket-row">
-<span>
-<b>Cliente:</b>
-</span>
-<span>
-<b>${pago.clienteNombre}</b>
-</span>
-</div>` : ''}
-<div class="ticket-row">
-<span>Fecha:</span>
-<span>${ahora}</span>
-</div>
+<div class="ticket-row" style="${B}">
+<span style="${B}">${pago.mesa}</span>
+<span style="${B}">${modalidadLabel(pago.modalidad)}</span>
+</div>`;
+if (pago.clienteNombre) {
+html += `<div class="ticket-row" style="${B}"><span style="${B}">Cliente:</span><span style="${B}">${pago.clienteNombre}</span></div>`;
+}
+html += `<div class="ticket-row" style="${B}"><span style="${B}">Fecha:</span><span style="${B}">${ahora}</span></div>
 <hr class="ticket-divider">`;
 pago.items.forEach(item => {
-html += `<div class="ticket-row">
-<span>${item.qty}x ${item.name}</span>
-<span>S/${(item.price*item.qty).toFixed(2)}</span>
-</div>`;
+html += `<div class="ticket-row" style="${B}"><span style="${B}">${item.qty}x ${item.name}</span><span style="${B}">S/${(item.price*item.qty).toFixed(2)}</span></div>`;
 const details = [];
 if (item.sabores && item.sabores.length) details.push(`Sabor: ${item.sabores.join(', ')}`);
 if (item.pair && item.pair.length) details.push(`Bebidas: ${item.pair.join(' + ')}`);
 if (item.termino && item.termino !== 'Normal') details.push(`Término: ${item.termino}`);
 if (item.sin && item.sin.length) details.push(`Sin: ${item.sin.join(', ')}`);
 if (item.adicionales && item.adicionales.length) details.push(`Extra: ${item.adicionales.join(', ')}`);
-details.forEach(d => { html += `<div class="ticket-row-detail">${d}</div>`; });
+details.forEach(d => { html += `<div class="ticket-row-detail" style="${B}">${d}</div>`; });
 });
 const subtotal = pago.total - (pago.delivery || 0);
 html += `<hr class="ticket-divider">
-<div class="ticket-row">
-<span>Subtotal</span>
-<span>S/${subtotal.toFixed(2)}</span>
-</div>`;
-if (pago.delivery > 0) html += `<div class="ticket-row">
-<span>Delivery</span>
-<span>S/${pago.delivery.toFixed(2)}</span>
-</div>`;
-html += `<div class="ticket-total-row">
-<span>TOTAL</span>
-<span>S/${pago.total.toFixed(2)}</span>
-</div>
+<div class="ticket-row" style="${B}"><span style="${B}">Subtotal</span><span style="${B}">S/${subtotal.toFixed(2)}</span></div>`;
+if (pago.delivery > 0) {
+html += `<div class="ticket-row" style="${B}"><span style="${B}">Delivery</span><span style="${B}">S/${pago.delivery.toFixed(2)}</span></div>`;
+}
+html += `<div class="ticket-total-row" style="${B}font-size:42px;"><span style="${B}">TOTAL</span><span style="${B}">S/${pago.total.toFixed(2)}</span></div>
 <hr class="ticket-divider">
-<div class="ticket-row">
-<span>Pago:</span>
-<span style="font-size:10px;text-align:right;max-width:160px">${pago.metodoPago}</span>
-</div>
+<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}font-size:28px;text-align:right;max-width:160px;">${pago.metodoPago}</span></div>
 <hr class="ticket-divider">`;
 if (tipo !== 'simple' && datos.tel) {
-html += `<div class="ticket-footer">
-El número de tu comprobante te<br>
-llegará por <b>WhatsApp</b> al:<br>
-<b>${datos.tel}</b>
-<br>
-<br>
+html += `<div class="ticket-footer" style="${B}">
+El numero de tu comprobante te<br>
+llegara por WhatsApp al:<br>
+<span style="${B}font-size:36px;">${datos.tel}</span><br><br>
 </div>`;
 }
-html += `<div class="ticket-footer">
-¡Gracias por tu visita!<br>
-FoodBiker 🍔🔥<br>
+html += `<div class="ticket-footer" style="${B}">
+Gracias por tu visita!<br>
+FoodBiker<br>
 @lafoodbiker
 </div>
 </div>`;
@@ -3895,22 +4390,13 @@ function renderReporteDetalle(el) {
   const productoCount = {};
 
   pagos.forEach(p => {
-    const fbSub = (p.items||[]).filter(i=>i.brand==='foodbiker'||i.brand==='custom'||!i.brand).reduce((s,i)=>s+(i.cortesia?0:(i.price||0)*(i.qty||1)),0);
-    const blSub = (p.items||[]).filter(i=>i.brand==='bocaloca').reduce((s,i)=>s+(i.cortesia?0:(i.price||0)*(i.qty||1)),0);
-    const totalSub = fbSub + blSub;
-    if (totalSub === 0) return;
-    const rFb = totalSub>0 ? fbSub/totalSub : 0;
-    const rBl = totalSub>0 ? blSub/totalSub : 0;
+    const sub = (p.items||[]).reduce((s,i)=>s+(i.cortesia?0:(i.price||0)*(i.qty||1)),0);
+    if (sub === 0) return;
     const mp = parsePagos(p.metodoPago, p.total);
-    fb.bruto+=fbSub; bl.bruto+=blSub;
-    fb.efectivo+=mp.efectivo*rFb; bl.efectivo+=mp.efectivo*rBl;
-    fb.yapePlin+=(mp.yape+mp.plin)*rFb; bl.yapePlin+=(mp.yape+mp.plin)*rBl;
-    fb.tarjeta+=mp.tarjeta*rFb; bl.tarjeta+=mp.tarjeta*rBl;
-    fb.externo+=mp.externo*rFb; bl.externo+=mp.externo*rBl;
-    // Por modalidad
-    if (p.modalidad==='salon'||p.modalidad==='salón'||!p.modalidad) { salonTotal.fb+=fbSub; salonTotal.bl+=blSub; }
-    else if (p.modalidad==='llevar') { llevarTotal.fb+=fbSub; llevarTotal.bl+=blSub; }
-    // Conteo de productos
+    fb.bruto += sub;
+    fb.efectivo += mp.efectivo; fb.yapePlin += mp.yape + mp.plin; fb.tarjeta += mp.tarjeta; fb.externo += mp.externo;
+    if (p.modalidad==='salon'||p.modalidad==='salón'||!p.modalidad) salonTotal.fb += sub;
+    else if (p.modalidad==='llevar') llevarTotal.fb += sub;
     (p.items||[]).forEach(i => {
       if (i.cortesia) return;
       const k = i.name;
@@ -3920,21 +4406,18 @@ function renderReporteDetalle(el) {
     });
   });
 
-  const tot = {bruto:fb.bruto+bl.bruto,efectivo:fb.efectivo+bl.efectivo,yapePlin:fb.yapePlin+bl.yapePlin,tarjeta:fb.tarjeta+bl.tarjeta,externo:fb.externo+bl.externo};
   const COMISION = 0.03;
-  const neto = tot.bruto-(tot.tarjeta*COMISION);
+  const neto = fb.bruto - (fb.tarjeta * COMISION);
 
   // ── KPIs ──
   html += `<div class="dash-kpi-grid">
-    <div class="dash-kpi"><div class="dash-kpi-label">💰 Ingreso Bruto</div><div class="dash-kpi-value">S/${tot.bruto.toFixed(2)}</div><div class="dash-kpi-sub">${pagos.length} pedidos</div></div>
+    <div class="dash-kpi"><div class="dash-kpi-label">💰 Ingreso Bruto</div><div class="dash-kpi-value">S/${fb.bruto.toFixed(2)}</div><div class="dash-kpi-sub">${pagos.length} pedidos</div></div>
     <div class="dash-kpi green"><div class="dash-kpi-label">✅ Ingreso Neto</div><div class="dash-kpi-value">S/${neto.toFixed(2)}</div><div class="dash-kpi-sub">Desc. comisión tarjeta</div></div>
-    <div class="dash-kpi orange"><div class="dash-kpi-label">🍔 FoodBiker</div><div class="dash-kpi-value">S/${fb.bruto.toFixed(2)}</div><div class="dash-kpi-sub">${pagos.filter(p=>(p.items||[]).some(i=>i.brand!=='bocaloca')).length} pedidos</div></div>
-    <div class="dash-kpi teal"><div class="dash-kpi-label">🌯 Boca Loca</div><div class="dash-kpi-value">S/${bl.bruto.toFixed(2)}</div><div class="dash-kpi-sub">${pagos.filter(p=>(p.items||[]).some(i=>i.brand==='bocaloca')).length} pedidos</div></div>
   </div>`;
 
   // ── Desglose pagos ──
   html += `<div class="report-card"><h3>💳 Desglose por método de pago</h3>`;
-  const metodos = [['💵 Efectivo',tot.efectivo],['📱 Yape + Plin',tot.yapePlin],['💳 Visa + Mastercard',tot.tarjeta],['🛵 PedidosYa / Rappi',tot.externo]];
+  const metodos = [['💵 Efectivo',fb.efectivo],['📱 Yape + Plin',fb.yapePlin],['💳 Visa + Mastercard',fb.tarjeta],['🛵 PedidosYa / Rappi',fb.externo]];
   const maxPago = Math.max(...metodos.map(m=>m[1]),1);
   metodos.forEach(([label,val])=>{
     if (val<=0) return;
@@ -3945,15 +4428,15 @@ function renderReporteDetalle(el) {
       <div class="dash-bar-val">S/${val.toFixed(0)}</div>
     </div>`;
   });
-  if (tot.tarjeta>0) html += `<div style="font-size:11px;color:var(--text-muted);margin-top:6px">Comisión tarjeta (3%): S/${(tot.tarjeta*COMISION).toFixed(2)}</div>`;
+  if (fb.tarjeta>0) html += `<div style="font-size:11px;color:var(--text-muted);margin-top:6px">Comisión tarjeta (3%): S/${(fb.tarjeta*COMISION).toFixed(2)}</div>`;
   html += `</div>`;
 
   // ── Por modalidad ──
-  const salonTot = salonTotal.fb+salonTotal.bl;
-  const llevarTot = llevarTotal.fb+llevarTotal.bl;
+  const salonTot = salonTotal.fb;
+  const llevarTot = llevarTotal.fb;
   html += `<div class="report-card"><h3>🪑 Salón vs 🥡 Para Llevar</h3>
     <div class="dash-bar-row"><div class="dash-bar-label">🪑 Salón</div><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${Math.round(salonTot/(Math.max(salonTot+llevarTot,1))*100)}%"></div></div><div class="dash-bar-val">S/${salonTot.toFixed(0)}</div></div>
-    <div class="dash-bar-row"><div class="dash-bar-label">🥡 Para Llevar</div><div class="dash-bar-track"><div class="dash-bar-fill teal" style="width:${Math.round(llevarTot/(Math.max(salonTot+llevarTot,1))*100)}%"></div></div><div class="dash-bar-val">S/${llevarTot.toFixed(0)}</div></div>
+    <div class="dash-bar-row"><div class="dash-bar-label">🥡 Para Llevar</div><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${Math.round(llevarTot/(Math.max(salonTot+llevarTot,1))*100)}%"></div></div><div class="dash-bar-val">S/${llevarTot.toFixed(0)}</div></div>
   </div>`;
 
   // ── Top 5 productos ──
@@ -3964,7 +4447,7 @@ function renderReporteDetalle(el) {
     const pct = Math.round(data.qty/maxQty*100);
     html += `<div class="dash-bar-row">
       <div class="dash-bar-label">${i+1}. ${name.length>18?name.slice(0,17)+'…':name}</div>
-      <div class="dash-bar-track"><div class="dash-bar-fill ${data.brand==='bocaloca'?'teal':''}" style="width:${pct}%"></div></div>
+      <div class="dash-bar-track"><div class="dash-bar-fill" style="width:${pct}%"></div></div>
       <div class="dash-bar-val">${data.qty}u</div>
     </div>`;
   });
@@ -3978,7 +4461,7 @@ function renderReporteDetalle(el) {
   </div>`;
   todosProds.forEach(([name,data])=>{
     html += `<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;padding:7px 0;border-bottom:1px solid #2a2a2a;font-size:12px">
-      <span style="font-weight:700;color:${data.brand==='bocaloca'?'var(--bl-teal)':'var(--text)'}">${name}</span>
+      <span style="font-weight:700;color:var(--text)">${name}</span>
       <span style="text-align:center;font-weight:800;color:var(--fb-yellow)">${data.qty}</span>
       <span style="text-align:right;font-weight:700">S/${data.total.toFixed(2)}</span>
     </div>`;
@@ -4090,7 +4573,7 @@ function renderReporteResumen(el) {
 
   function calcT(pList, brand) {
     return pList.reduce((s,p)=>{
-      return s + (p.items||[]).filter(i=>brand==='all'?true:brand==='bocaloca'?i.brand==='bocaloca':i.brand!=='bocaloca').reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0);
+      return s + (p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0);
     },0);
   }
 
@@ -4111,8 +4594,6 @@ function renderReporteResumen(el) {
   });
 
   const totalGen = calcT(pagos,'all');
-  const totalFB  = calcT(pagos,'foodbiker');
-  const totalBL  = calcT(pagos,'bocaloca');
   const COMISION = 0.03;
   const neto = totalGen - (desg.tarjeta * COMISION);
 
@@ -4120,8 +4601,6 @@ function renderReporteResumen(el) {
   html += `<div class="dash-kpi-grid">
     <div class="dash-kpi"><div class="dash-kpi-label">💰 Ingreso Bruto</div><div class="dash-kpi-value">S/${totalGen.toFixed(2)}</div><div class="dash-kpi-sub">${pagos.length} pedidos</div></div>
     <div class="dash-kpi green"><div class="dash-kpi-label">✅ Ingreso Neto</div><div class="dash-kpi-value">S/${neto.toFixed(2)}</div><div class="dash-kpi-sub">Desc. comisión tarjeta</div></div>
-    <div class="dash-kpi orange"><div class="dash-kpi-label">🍔 FoodBiker</div><div class="dash-kpi-value">S/${totalFB.toFixed(2)}</div></div>
-    <div class="dash-kpi teal"><div class="dash-kpi-label">🌯 Boca Loca</div><div class="dash-kpi-value">S/${totalBL.toFixed(2)}</div></div>
   </div>`;
 
   // Modalidad
@@ -4132,7 +4611,7 @@ function renderReporteResumen(el) {
   const maxMod = Math.max(salonTot, llevarTot, delivTot, 1);
   html += `<div class="report-card"><h3>🪑 Salón vs 🥡 Llevar vs 🛵 Delivery</h3>
     <div class="dash-bar-row"><div class="dash-bar-label">🪑 Salón (${salon.length})</div><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${Math.round(salonTot/maxMod*100)}%"></div></div><div class="dash-bar-val">S/${salonTot.toFixed(0)}</div></div>
-    <div class="dash-bar-row"><div class="dash-bar-label">🥡 Llevar (${llevar.length})</div><div class="dash-bar-track"><div class="dash-bar-fill teal" style="width:${Math.round(llevarTot/maxMod*100)}%"></div></div><div class="dash-bar-val">S/${llevarTot.toFixed(0)}</div></div>
+    <div class="dash-bar-row"><div class="dash-bar-label">🥡 Llevar (${llevar.length})</div><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${Math.round(llevarTot/maxMod*100)}%"></div></div><div class="dash-bar-val">S/${llevarTot.toFixed(0)}</div></div>
     ${delivTot>0?`<div class="dash-bar-row"><div class="dash-bar-label">🛵 Delivery (${deliv.length})</div><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${Math.round(delivTot/maxMod*100)}%;background:var(--warning)"></div></div><div class="dash-bar-val">S/${delivTot.toFixed(0)}</div></div>`:''}
   </div>`;
 
@@ -4195,8 +4674,6 @@ function renderReporteProductos(el) {
   }));
   const todos=Object.entries(conteo).sort((a,b)=>b[1].qty-a[1].qty);
   const top5=todos.slice(0,5);
-  const fb=todos.filter(([,d])=>d.brand!=='bocaloca');
-  const bl=todos.filter(([,d])=>d.brand==='bocaloca');
 
   // Top 5
   html+=`<div class="report-card"><h3>⭐ Top 5 más vendidos</h3>`;
@@ -4212,16 +4689,10 @@ function renderReporteProductos(el) {
   });
   html+=`</div>`;
 
-  // FoodBiker
-  if(fb.length){
+  // Todos los productos
+  if(todos.length){
     html+=`<div class="report-card"><h3>🍔 FoodBiker — todos los platos</h3>`;
-    fb.forEach(([name,d])=>{html+=`<div class="report-row"><span>${name}</span><span style="text-align:right"><b>${d.qty} und</b><br><span style="font-size:11px;color:var(--text-muted)">S/${d.total.toFixed(2)}</span></span></div>`;});
-    html+=`</div>`;
-  }
-  // Boca Loca
-  if(bl.length){
-    html+=`<div class="report-card"><h3>🌯 Boca Loca — todos los platos</h3>`;
-    bl.forEach(([name,d])=>{html+=`<div class="report-row"><span>${name}</span><span style="text-align:right"><b>${d.qty} und</b><br><span style="font-size:11px;color:var(--text-muted)">S/${d.total.toFixed(2)}</span></span></div>`;});
+    todos.forEach(([name,d])=>{html+=`<div class="report-row"><span>${name}</span><span style="text-align:right"><b>${d.qty} und</b><br><span style="font-size:11px;color:var(--text-muted)">S/${d.total.toFixed(2)}</span></span></div>`;});
     html+=`</div>`;
   }
   el.innerHTML=html;
@@ -4259,8 +4730,6 @@ function renderReportePersonalizado(el) {
     }
     function calcT(pList){return pList.reduce((s,p)=>s+(p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0)+(p.costoDelivery||0),0);}
     const totalGen=calcT(pagos);
-    const totalFB=pagos.reduce((s,p)=>s+(p.items||[]).filter(i=>i.brand!=='bocaloca').reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0),0);
-    const totalBL=pagos.reduce((s,p)=>s+(p.items||[]).filter(i=>i.brand==='bocaloca').reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0),0);
 
     // Por día
     const porDia={};
@@ -4270,8 +4739,6 @@ function renderReportePersonalizado(el) {
     html+=`<div class="report-card"><h3>💰 ${desde} → ${hasta}</h3>
       <div class="dash-kpis">
         <div class="dash-kpi"><div class="dash-kpi-label">Total</div><div class="dash-kpi-value" style="color:var(--fb-orange)">S/${totalGen.toFixed(2)}</div><div class="dash-kpi-sub">${pagos.length} pedidos</div></div>
-        <div class="dash-kpi"><div class="dash-kpi-label">🍔 FB</div><div class="dash-kpi-value">S/${totalFB.toFixed(2)}</div></div>
-        <div class="dash-kpi teal"><div class="dash-kpi-label">🌯 BL</div><div class="dash-kpi-value">S/${totalBL.toFixed(2)}</div></div>
       </div></div>`;
 
     if(dias.length){
@@ -4576,11 +5043,10 @@ setInterval(() => {
   });
 }, 1000);
 
-// Auto-refresh local cada 8s para cocina/BL/mesero (refresca UI con estado en memoria)
+// Auto-refresh local cada 8s para cocina/mesero (refresca UI con estado en memoria)
 setInterval(() => {
   if (!state.role) return;
   if (state.role === 'cocina') renderView('cocina-view');
-  else if (state.role === 'bocaloca') renderView('bl-view');
   else if (state.role === 'mesero') {
     const active = document.querySelector('.nav-tab.active');
     if (active && active.dataset.tab === 'mesas') renderView('mesas');
