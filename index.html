@@ -638,7 +638,7 @@ window.onerror = function(msg, src, line, col, err) {
 <div id="pc-none-msg" style="margin-top:16px;padding:12px;text-align:center;font-size:13px;color:var(--text-muted);">☝️ Selecciona al menos un método</div>
 <!-- VUELTO: aparece cuando hay efectivo en el pago -->
 <div id="pc-vuelto-box" style="display:none;margin-top:12px;background:rgba(251,146,60,.08);border:2px solid rgba(251,146,60,.35);border-radius:12px;padding:12px 14px;">
-  <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--fb-orange);margin-bottom:8px;">💵 Vuelto Efectivo</div>
+  <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--fb-orange);margin-bottom:8px;">💵 Vuelto</div>
   <div style="display:flex;align-items:center;gap:10px;">
     <div style="flex:1;font-size:12px;font-weight:800;color:var(--text-muted);">Cliente paga con</div>
     <input id="pc-paga-con" type="number" step="1" min="0" placeholder="S/ 0" oninput="pcCalcVuelto()"
@@ -669,7 +669,7 @@ window.onerror = function(msg, src, line, col, err) {
 <div id="pc-prod-resumen" style="margin-top:14px;"></div>
 <!-- VUELTO PRODUCTOS -->
 <div id="pp-vuelto-box" style="display:none;margin-top:12px;background:rgba(251,146,60,.08);border:2px solid rgba(251,146,60,.35);border-radius:12px;padding:12px 14px;">
-  <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--fb-orange);margin-bottom:8px;">💵 Vuelto Efectivo</div>
+  <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--fb-orange);margin-bottom:8px;">💵 Vuelto</div>
   <div style="display:flex;align-items:center;gap:10px;">
     <div style="flex:1;font-size:12px;font-weight:800;color:var(--text-muted);">Cliente paga con</div>
     <input id="pp-paga-con" type="number" step="1" min="0" placeholder="S/ 0" oninput="ppCalcVuelto()"
@@ -3846,8 +3846,8 @@ function pcRenderState() {
     document.getElementById('pc-single-name').textContent = m ? m.label : pcMetodosSeleccionados[0];
     document.getElementById('pc-single-total').textContent = `S/ ${total.toFixed(2)}`;
     confirmBtn.style.display = 'block';
-    // Vuelto: si el único método es efectivo
-    const efTotal = pcMetodosSeleccionados[0] === 'efectivo' ? total : 0;
+    // Vuelto: si el único método es efectivo, yape o plin
+    const efTotal = METODOS_CON_VUELTO.includes(pcMetodosSeleccionados[0]) ? total : 0;
     pcRenderVueltoBox('pc-vuelto-box', 'pc-billetes', efTotal);
     if (efTotal <= 0) { const el = document.getElementById('pc-vuelto-box'); if(el) el.style.display='none'; }
     return;
@@ -4013,18 +4013,22 @@ function pcRenderResumenProductos() {
   ppCalcVuelto();
 }
 
-// ── VUELTO EFECTIVO (helper compartido por los 3 tabs) ────────────────────
+// ── VUELTO (helper compartido por los 3 tabs) ──────────────────────────────
+// Métodos que pueden generar vuelto: Efectivo, Yape y Plin (todos pueden recibirse
+// "de más" — efectivo físico, o un Yape/Plin redondeado — y requerir devolución).
 const BILLETES_PERU = [10, 20, 50, 100, 200];
+const METODOS_CON_VUELTO = ['efectivo', 'yape', 'plin'];
+const METODOS_CON_VUELTO_LABELS = ['Efectivo', 'Yape', 'Plin'];
 
 function pcGetTotalEfectivoMetodos() {
-  // Suma todos los slots de efectivo en el tab Métodos
+  // Suma todos los slots de efectivo/yape/plin en el tab Métodos
   const n = pcMetodosSeleccionados.length;
   const total = pcGetTotal();
   if (n === 0) return 0;
-  if (n === 1) return pcMetodosSeleccionados[0] === 'efectivo' ? total : 0;
+  if (n === 1) return METODOS_CON_VUELTO.includes(pcMetodosSeleccionados[0]) ? total : 0;
   let suma = 0;
   pcMetodosSeleccionados.forEach((id, i) => {
-    if (id === 'efectivo') {
+    if (METODOS_CON_VUELTO.includes(id)) {
       const v = parseFloat(document.getElementById('pcv-' + i)?.value || 0);
       suma += isNaN(v) ? 0 : v;
     }
@@ -4035,15 +4039,15 @@ function pcGetTotalEfectivoMetodos() {
 function pcGetTotalEfectivoProductos() {
   const unidades = pcGetUnidades();
   let suma = 0;
-  unidades.forEach(u => { if (pcProdAsignaciones[u.unitKey] === 'efectivo') suma += u.precio; });
+  unidades.forEach(u => { if (METODOS_CON_VUELTO.includes(pcProdAsignaciones[u.unitKey])) suma += u.precio; });
   return suma;
 }
 
 function pcGetTotalEfectivoTandas() {
-  // Solo el efectivo de la tanda ACTUAL en progreso (cada tanda es un cliente independiente)
+  // Solo el efectivo/yape/plin de la tanda ACTUAL en progreso (cada tanda es un cliente independiente)
   let suma = 0;
   ptMetodosActuales.forEach((sl, i) => {
-    if (sl.id === 'efectivo') {
+    if (METODOS_CON_VUELTO.includes(sl.id)) {
       const v = parseFloat(document.getElementById('ptv-' + i)?.value || sl.monto || 0);
       suma += isNaN(v) ? 0 : v;
     }
@@ -4198,7 +4202,7 @@ function confirmarPagoComb() {
       return { label: m ? m.name : id, monto: porMetodo[id] };
     });
     const metodoPago = pagos.map(p => `${p.label} S/${p.monto.toFixed(2)}`).join(' + ');
-    const efPP = pagos.filter(p => p.label === 'Efectivo').reduce((s,p)=>s+p.monto,0);
+    const efPP = pagos.filter(p => METODOS_CON_VUELTO_LABELS.includes(p.label)).reduce((s,p)=>s+p.monto,0);
     const pagaConPP = parseFloat(document.getElementById('pp-paga-con')?.value || 0);
     const vueltoPP = efPP > 0 && pagaConPP > efPP + 0.005 ? parseFloat((pagaConPP - efPP).toFixed(2)) : null;
     const detalle = efPP > 0 ? {
@@ -4233,7 +4237,7 @@ function confirmarPagoComb() {
   }
 
   const metodoPago = pagos.map(p => `${p.label} S/${p.monto.toFixed(2)}`).join(' + ');
-  const efPC = pagos.filter(p => p.label === 'Efectivo').reduce((s,p)=>s+p.monto,0);
+  const efPC = pagos.filter(p => METODOS_CON_VUELTO_LABELS.includes(p.label)).reduce((s,p)=>s+p.monto,0);
   const pagaConPC = parseFloat(document.getElementById('pc-paga-con')?.value || 0);
   const vueltoPC = efPC > 0 && pagaConPC > efPC + 0.005 ? parseFloat((pagaConPC - efPC).toFixed(2)) : null;
   const detalle = efPC > 0 ? {
@@ -4588,7 +4592,7 @@ function ptCobrarTanda() {
   // Registrar tanda con múltiples slots (puede repetir método)
   const metodos = metodosValidos.map(sl => ({ id: sl.id, monto: sl.monto }));
   // Guardar vuelto de efectivo si aplica a esta tanda
-  const efTanda = metodosValidos.filter(sl => sl.id === 'efectivo').reduce((s, sl) => s + sl.monto, 0);
+  const efTanda = metodosValidos.filter(sl => METODOS_CON_VUELTO.includes(sl.id)).reduce((s, sl) => s + sl.monto, 0);
   const pagaConInput = document.getElementById('pt-paga-con');
   const pagaConVal = pagaConInput ? parseFloat(pagaConInput.value) || 0 : 0;
   const vueltoEfectivo = efTanda > 0 && pagaConVal > efTanda + 0.005 ? parseFloat((pagaConVal - efTanda).toFixed(2)) : null;
@@ -4955,11 +4959,11 @@ if (det && det.tandas && det.tandas.length) {
   });
   html += `<hr class="ticket-divider">`;
 } else if (det && det.efectivo) {
-  // Métodos o Por Producto con efectivo
+  // Métodos o Por Producto con efectivo/yape/plin (cualquier método que pueda generar vuelto)
   const _vueltoLabel = { efectivo: 'Efectivo', yape: 'Yape', plin: 'Plin' };
   html += `<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}font-size:28px;text-align:right;max-width:160px;">${pago.metodoPago}</span></div>
   <hr class="ticket-divider">
-  <div class="ticket-row" style="${B}"><span style="${B}">Total Efectivo</span><span style="${B}">S/${det.efectivo.monto.toFixed(2)}</span></div>`;
+  <div class="ticket-row" style="${B}"><span style="${B}">Total recibido</span><span style="${B}">S/${det.efectivo.monto.toFixed(2)}</span></div>`;
   if (det.efectivo.recibido) {
     html += `<div class="ticket-row" style="${B}"><span style="${B}">Cliente pagó con</span><span style="${B}">S/${det.efectivo.recibido.toFixed(2)}</span></div>`;
     const vueltoLbl = det.vueltoMetodo ? _vueltoLabel[det.vueltoMetodo] || 'Efectivo' : 'Efectivo';
