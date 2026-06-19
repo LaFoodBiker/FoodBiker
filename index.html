@@ -647,6 +647,18 @@ window.onerror = function(msg, src, line, col, err) {
   <div id="pc-vuelto-result" style="margin-top:8px;text-align:center;font-size:20px;font-weight:900;display:none;"></div>
   <!-- Botones rápidos de billetes -->
   <div id="pc-billetes" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+  <!-- Método en que se da el vuelto (igual que Tandas) -->
+  <div id="pc-vuelto-metodo-row" style="display:none;margin-top:10px;">
+    <div style="font-size:11px;font-weight:900;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Devuelvo el vuelto en:</div>
+    <div style="display:flex;gap:8px;">
+      <button id="pc-vmet-efectivo" onclick="pcSetVueltoMetodo('efectivo')"
+        style="flex:1;padding:8px 4px;border-radius:8px;border:2px solid var(--fb-border);background:var(--fb-orange);color:#fff;font-size:12px;font-weight:900;cursor:pointer;">💵 Efectivo</button>
+      <button id="pc-vmet-yape" onclick="pcSetVueltoMetodo('yape')"
+        style="flex:1;padding:8px 4px;border-radius:8px;border:2px solid var(--fb-border);background:var(--fb-dark);color:var(--text);font-size:12px;font-weight:900;cursor:pointer;">📱 Yape</button>
+      <button id="pc-vmet-plin" onclick="pcSetVueltoMetodo('plin')"
+        style="flex:1;padding:8px 4px;border-radius:8px;border:2px solid var(--fb-border);background:var(--fb-dark);color:var(--text);font-size:12px;font-weight:900;cursor:pointer;">💙 Plin</button>
+    </div>
+  </div>
 </div>
 </div><!-- /pc-panel-metodos -->
 
@@ -665,6 +677,18 @@ window.onerror = function(msg, src, line, col, err) {
   </div>
   <div id="pp-vuelto-result" style="margin-top:8px;text-align:center;font-size:20px;font-weight:900;display:none;"></div>
   <div id="pp-billetes" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+  <!-- Método en que se da el vuelto -->
+  <div id="pp-vuelto-metodo-row" style="display:none;margin-top:10px;">
+    <div style="font-size:11px;font-weight:900;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Devuelvo el vuelto en:</div>
+    <div style="display:flex;gap:8px;">
+      <button id="pp-vmet-efectivo" onclick="ppSetVueltoMetodo('efectivo')"
+        style="flex:1;padding:8px 4px;border-radius:8px;border:2px solid var(--fb-border);background:var(--fb-orange);color:#fff;font-size:12px;font-weight:900;cursor:pointer;">💵 Efectivo</button>
+      <button id="pp-vmet-yape" onclick="ppSetVueltoMetodo('yape')"
+        style="flex:1;padding:8px 4px;border-radius:8px;border:2px solid var(--fb-border);background:var(--fb-dark);color:var(--text);font-size:12px;font-weight:900;cursor:pointer;">📱 Yape</button>
+      <button id="pp-vmet-plin" onclick="ppSetVueltoMetodo('plin')"
+        style="flex:1;padding:8px 4px;border-radius:8px;border:2px solid var(--fb-border);background:var(--fb-dark);color:var(--text);font-size:12px;font-weight:900;cursor:pointer;">💙 Plin</button>
+    </div>
+  </div>
 </div>
 </div><!-- /pc-panel-productos -->
 
@@ -2694,7 +2718,9 @@ const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
 html += `<div class="caja-card">
 <div class="caja-card-header">
 <div>
-<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><div class="caja-card-title">${mesaLabel}</div>${semaforoHTML(mesa)}${(mesa.estado === 'pagado' || mesa.estado === 'entregado') ? '<span style="background:rgba(34,197,94,.25);color:#22C55E;font-size:11px;font-weight:900;padding:3px 10px;border-radius:20px;border:1px solid #22C55E88;">✅ PAGADO</span>' : mesa.prepagado ? '<span style="background:rgba(34,197,94,.2);color:#22C55E;font-size:11px;font-weight:900;padding:3px 10px;border-radius:20px;border:1px solid #22C55E55;">💰 PREPAGADO</span>' : '<span style="background:rgba(239,68,68,.18);color:#f87171;font-size:11px;font-weight:900;padding:3px 10px;border-radius:20px;border:1px solid rgba(239,68,68,.4);">❌ SIN PAGAR</span>'}</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><div class="caja-card-title">${mesaLabel}</div>${semaforoHTML(mesa)}${mesa._esRecobro
+  ? `<span style="background:rgba(245,158,11,.18);color:var(--warning);font-size:11px;font-weight:900;padding:4px 10px;border-radius:20px;border:2px solid var(--warning);">⚠️ RE-COBRO — ${(()=>{ const orig=state.historialPagos[mesa._recobroHistIdx]; return orig?orig.mesa:'Pedido original'; })()}</span>`
+  : ''}${(mesa.estado === 'pagado' || mesa.estado === 'entregado') ? '<span style="background:rgba(34,197,94,.25);color:#22C55E;font-size:11px;font-weight:900;padding:3px 10px;border-radius:20px;border:1px solid #22C55E88;">✅ PAGADO</span>' : mesa.prepagado ? '<span style="background:rgba(34,197,94,.2);color:#22C55E;font-size:11px;font-weight:900;padding:3px 10px;border-radius:20px;border:1px solid #22C55E55;">💰 PREPAGADO</span>' : '<span style="background:rgba(239,68,68,.18);color:#f87171;font-size:11px;font-weight:900;padding:3px 10px;border-radius:20px;border:1px solid rgba(239,68,68,.4);">❌ SIN PAGAR</span>'}</div>
 ${(mesa.info&&mesa.info.telefono&&(mesa.modalidad==='delivery'||mesa.modalidad==='recojo'))?`<a href="https://wa.me/51${(mesa.info.telefono||'').replace(/\D/g,'').replace(/^0/,'')}?text=${encodeURIComponent('¡Hola, '+(mesa.clienteNombre||mesa.info.nombre||'')+'! ⚡ TU PEDIDO ESTÁ LISTO PARA RECOJO 🤤\nVen por él a nuestro local en 📍 Jirón Inclán 238, San Miguel.\n¡Te esperamos! ⚡🏍️💨\nSomos LaFoodBiker')}" target="_blank" style="display:inline-block;background:#25D366;color:#fff;padding:4px 12px;border-radius:10px;font-size:12px;font-weight:900;text-decoration:none;margin-top:4px;">📱 Avisar por WhatsApp</a>`:''}
 <div style="display:flex;gap:6px;align-items:center;margin-top:3px;"><span style="font-size:11px;color:var(--text-muted);">${modalidadLabel(mesa.modalidad)}</span>${mesa.estado==="en-elaboracion"?'<span style="font-size:10px;font-weight:900;background:rgba(129,140,248,.2);color:#818CF8;padding:2px 8px;border-radius:10px;">👨‍🍳 En cocina</span>':''}${mesa.estado==="listo-entregar"?'<span style="font-size:10px;font-weight:900;background:rgba(34,197,94,.2);color:#22C55E;padding:2px 8px;border-radius:10px;">🔔 Listo</span>':''}${mesa.estado==="en-camino"?'<span style="font-size:10px;font-weight:900;background:rgba(129,140,248,.2);color:#818CF8;padding:2px 8px;border-radius:10px;">🚶 En camino</span>':''}${mesa.estado==="ocupada"?'<span style="font-size:10px;font-weight:900;background:rgba(255,107,0,.2);color:var(--fb-orange);padding:2px 8px;border-radius:10px;">📝 Tomando pedido</span>':''}</div>${mesa.clienteNombre?`<div style="font-size:12px;font-weight:800;color:var(--fb-yellow);margin-top:2px;">👤 ${mesa.clienteNombre}</div>`:''}</div>
 <div class="caja-card-total" id="total-lbl-${key}">S/ ${totalFinal.toFixed(2)}</div>
@@ -2888,39 +2914,58 @@ function renderHistorialView(el) {
     const idx2 = state.historialPagos.length - 1 - ri;
     const subtotal = (p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0)+(p.costoDelivery||0);
     const modLabel = {salon:'🪑 Salón',llevar:'🥡 Llevar',recojo:'📦 Recojo',delivery:'🛵 Delivery',externo:'📱 App'}[p.modalidad] || p.modalidad || '';
-    html += `<div class="caja-card" style="margin-bottom:8px">
+    // Badge de auditoría para pedidos re-liquidados
+    const badgeAudit = p.editado
+      ? `<div style="margin:4px 0 6px;background:rgba(245,158,11,.15);border:2px solid var(--warning);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:900;color:var(--warning);">
+           ⚠️ PAGO MODIFICADO / RE-LIQUIDADO
+           ${p.historialCambios?`<span style="font-weight:700;font-size:10px;color:var(--text-muted);margin-left:6px;">${p.historialCambios.fecha||''}</span>`:''}
+         </div>
+         ${p.historialCambios?`<div style="font-size:10px;color:var(--text-muted);padding:0 2px 4px;">Original: ${p.historialCambios.metodoPagoOriginal||''} · S/${(p.historialCambios.totalOriginal||0).toFixed(2)}</div>`:''}`
+      : '';
+    html += `<div class="caja-card" style="margin-bottom:8px${p.editado?';border-color:var(--warning);border-width:2px;':''}" >
       <div class="caja-card-header">
-        <div>
+        <div style="flex:1">
           <div class="caja-card-title">${p.mesa||''}</div>
           <div style="font-size:11px;color:var(--text-muted)">${modLabel} · ${p.fecha||''}</div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${p.metodoPago||''}</div>
           ${p.clienteNombre?`<div style="font-size:11px;color:var(--fb-yellow);margin-top:2px">👤 ${p.clienteNombre}</div>`:''}
+          ${badgeAudit}
         </div>
         <div style="text-align:right">
           <div class="caja-card-total">S/${subtotal.toFixed(2)}</div>
           <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end">
-            <button onclick="solicitarEdicionHistorial(${idx2})" style="background:#818CF8;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;cursor:pointer">✏️ Editar</button>
-            <button onclick="solicitarEliminarHistorial(${idx2})" style="background:var(--danger);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;cursor:pointer">🗑 Eliminar</button>
+            <button onclick="solicitarEdicionHistorial(${idx2})" style="background:#818CF8;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;cursor:pointer">✏️ Re-cobrar</button>
+            <button onclick="solicitarEliminarHistorial(${idx2})" style="background:var(--danger);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;cursor:pointer">🗑</button>
           </div>
         </div>
       </div>
       <div style="padding:8px 14px">
         ${(p.items||[]).map(i=>`<div class="caja-item-row">
-          <span>${i.cortesia?'🎁 ':''} ${i.qty||1}x ${i.name}</span>
+          <span>${i.cortesia?'🎁 CORTESÍA · ':''} ${i.qty||1}x ${i.name}</span>
           <span style="${i.cortesia?'color:var(--success)':''}">S/${i.cortesia?'0.00':((i.price||0)*(i.qty||1)).toFixed(2)}</span>
         </div>`).join('')}
         ${(p.costoDelivery||0)>0?`<div class="caja-item-row"><span>🛵 Delivery</span><span>S/${parseFloat(p.costoDelivery).toFixed(2)}</span></div>`:''}
         ${(() => {
           // Desglose de vuelto por tanda en historial
           const det = p.pagoDetalle;
-          if (!det || !det.tandas || !det.tandas.length) return '';
+          if (!det) return '';
           const _vl = { efectivo: '💵 Efectivo', yape: '📱 Yape', plin: '💙 Plin' };
-          const lineas = det.tandas.filter(t => t.vueltoEfectivo != null && t.vueltoEfectivo > 0.005).map(t =>
-            '<div class="caja-item-row" style="color:var(--fb-yellow)">' +
-            '<span>↩ Vuelto T' + t.numero + ' (' + (_vl[t.vueltoMetodo] || '💵 Efectivo') + ')</span>' +
-            '<span>S/' + t.vueltoEfectivo.toFixed(2) + '</span></div>'
-          );
-          return lineas.join('');
+          let lineas = '';
+          // Vuelto de tandas
+          if (det.tandas && det.tandas.length) {
+            lineas += det.tandas.filter(t => t.vueltoEfectivo != null && t.vueltoEfectivo > 0.005).map(t =>
+              '<div class="caja-item-row" style="color:var(--fb-yellow)">' +
+              '<span>↩ Vuelto T' + t.numero + ' (' + (_vl[t.vueltoMetodo] || '💵 Efectivo') + ')</span>' +
+              '<span>S/' + t.vueltoEfectivo.toFixed(2) + '</span></div>'
+            ).join('');
+          }
+          // Vuelto de métodos combinados (pc)
+          if (det.vueltoEfectivo != null && det.vueltoEfectivo > 0.005) {
+            lineas += '<div class="caja-item-row" style="color:var(--fb-yellow)">' +
+              '<span>↩ Vuelto (' + (_vl[det.vueltoMetodo] || '💵 Efectivo') + ')</span>' +
+              '<span>S/' + det.vueltoEfectivo.toFixed(2) + '</span></div>';
+          }
+          return lineas;
         })()}
       </div>
     </div>`;
@@ -2947,10 +2992,65 @@ function solicitarEliminarHistorial(idx) {
   alert('✅ Pedido eliminado. El reporte se actualizó.');
 }
 function solicitarEdicionHistorial(idx2) {
-  // Pedir PIN 1234
   const pin = prompt('🔒 Ingresa la clave para editar (4 dígitos):');
   if (pin !== '1234') { alert('❌ Clave incorrecta'); return; }
-  abrirEditorHistorial(idx2);
+  recargarPedidoEnCaja(idx2);
+}
+
+// ── RE-COBRO: recarga un pedido del historial directamente en la interfaz nativa de Caja ──
+function recargarPedidoEnCaja(idx2) {
+  const p = state.historialPagos[idx2];
+  if (!p) return;
+
+  const subtotalOriginal = ((p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0)+(p.costoDelivery||0)).toFixed(2);
+  if (!confirm(
+    `⚠️ RE-COBRAR / EDITAR PEDIDO\n\n${p.mesa} — S/${subtotalOriginal}\nFecha original: ${p.fecha||''}\n\nEste pedido se abrirá en Caja para modificarlo y re-liquidarlo.\nEl registro original quedará sobreescrito con la nueva liquidación.\n\n¿Continuar?`
+  )) return;
+
+  // ── Generar key con prefijo RCB_ (nunca colisiona con M,CR_,DEL_,EXT_) ──
+  // Sufijo = timestamp en base36 (6 chars) → ultra-corto y único
+  const ts = Date.now().toString(36).toUpperCase();
+  const tempKey = 'RCB_' + ts;
+
+  // ── Label inteligente: indica la mesa original + marca de re-cobro ──
+  // Ejemplo: "Mesa 1 ↺ RC-A1B2C3"  /  "Caja Rápida ↺ RC-A1B2C3"
+  const labelBase = p.mesa || 'Pedido';
+  // Limpiar prefijos anteriores de re-cobro si hubiera re-re-cobros
+  const labelLimpio = labelBase.replace(/\s*↺\s*RC-\w+$/,'').trim();
+  const labelMesa = `${labelLimpio} ↺ RC-${ts}`;
+
+  state.mesas[tempKey] = {
+    num: 0,
+    label: labelMesa,
+    estado: 'por-cobrar',
+    modalidad: p.modalidad || 'salon',
+    items: JSON.parse(JSON.stringify(p.items || [])),
+    info: {
+      costoDelivery: p.costoDelivery || 0,
+      nombre: p.clienteNombre || '',
+      direccion: p.direccion || ''
+    },
+    clienteNombre: p.clienteNombre || '',
+    enviadoTs: Date.now(),
+    congeladoTs: Date.now(),
+    _esRecobro: true,
+    _recobroHistIdx: idx2,
+    _recobroTs: ts         // guardado para posible limpieza futura
+  };
+
+  saveState();
+
+  // Registrar en historial de cambios
+  if (!state.historialCambios) state.historialCambios = [];
+  state.historialCambios.push({
+    hora: new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}),
+    desc: `RE-COBRO iniciado: ${p.mesa} · S/${(p.total||0).toFixed(2)} · método original: ${p.metodoPago}`
+  });
+  saveState();
+
+  // Ir a la vista Cobrar y abrir el modal de pago para esta mesa
+  renderView('cobrar');
+  setTimeout(() => { abrirPagoComb(tempKey); }, 120);
 }
 
 function eliminarDesdeEditor(idx2) {
@@ -3649,6 +3749,14 @@ function abrirPagoComb(key) {
 }
 
 function closePagoComb() {
+  // Si se cancela un re-cobro, limpiar la mesa fantasma RCB_ para no dejarla huérfana
+  if (pagoCombKey && pagoCombKey.startsWith('RCB_')) {
+    const mesaRCB = state.mesas[pagoCombKey];
+    if (mesaRCB && mesaRCB._esRecobro) {
+      delete state.mesas[pagoCombKey];
+      saveState();
+    }
+  }
   document.getElementById('pago-comb-overlay').classList.remove('show');
   pagoCombKey = null;
   pcMetodosSeleccionados = [];
@@ -3981,7 +4089,16 @@ function _calcVueltoGenerico(inputId, resultId, totalEfectivo) {
   }
 }
 
-function pcCalcVuelto() { _calcVueltoGenerico('pc-paga-con', 'pc-vuelto-result', pcGetTotalEfectivoMetodos()); }
+function pcCalcVuelto() {
+  _calcVueltoGenerico('pc-paga-con', 'pc-vuelto-result', pcGetTotalEfectivoMetodos());
+  // Mostrar selector de método de devolución solo cuando hay vuelto positivo
+  const ef = pcGetTotalEfectivoMetodos();
+  const pagaCon = parseFloat(document.getElementById('pc-paga-con')?.value || 0);
+  const hayVuelto = ef > 0 && pagaCon > ef + 0.005;
+  const row = document.getElementById('pc-vuelto-metodo-row');
+  if (row) row.style.display = hayVuelto ? 'block' : 'none';
+  if (hayVuelto) _renderVueltoMetodoBtns('pc');
+}
 function ptCalcVuelto() {
   _calcVueltoGenerico('pt-paga-con', 'pt-vuelto-result', pcGetTotalEfectivoTandas());
   // Mostrar selector de método de devolución solo cuando hay vuelto positivo
@@ -3992,11 +4109,43 @@ function ptCalcVuelto() {
   if (row) row.style.display = hayVuelto ? 'block' : 'none';
   if (hayVuelto) ptRenderVueltoMetodoBtns();
 }
-function ppCalcVuelto() { _calcVueltoGenerico('pp-paga-con', 'pp-vuelto-result', pcGetTotalEfectivoProductos()); }
+function ppCalcVuelto() {
+  _calcVueltoGenerico('pp-paga-con', 'pp-vuelto-result', pcGetTotalEfectivoProductos());
+  const ef = pcGetTotalEfectivoProductos();
+  const pagaCon = parseFloat(document.getElementById('pp-paga-con')?.value || 0);
+  const hayVuelto = ef > 0 && pagaCon > ef + 0.005;
+  const row = document.getElementById('pp-vuelto-metodo-row');
+  if (row) row.style.display = hayVuelto ? 'block' : 'none';
+  if (hayVuelto) _renderVueltoMetodoBtns('pp');
+}
 
 function ptSetVueltoMetodo(metodo) {
   ptVueltoMetodoActual = metodo;
   ptRenderVueltoMetodoBtns();
+}
+
+// ── Vuelto Método para MÉTODOS COMBINADOS (pc) ──
+let pcVueltoMetodoActual = 'efectivo';
+function pcSetVueltoMetodo(metodo) {
+  pcVueltoMetodoActual = metodo;
+  _renderVueltoMetodoBtns('pc');
+}
+// ── Vuelto Método para POR PRODUCTO (pp) ──
+let ppVueltoMetodoActual = 'efectivo';
+function ppSetVueltoMetodo(metodo) {
+  ppVueltoMetodoActual = metodo;
+  _renderVueltoMetodoBtns('pp');
+}
+function _renderVueltoMetodoBtns(prefix) {
+  const actual = prefix === 'pc' ? pcVueltoMetodoActual : ppVueltoMetodoActual;
+  ['efectivo','yape','plin'].forEach(m => {
+    const btn = document.getElementById(prefix + '-vmet-' + m);
+    if (!btn) return;
+    const sel = actual === m;
+    btn.style.background = sel ? 'var(--fb-orange)' : 'var(--fb-dark)';
+    btn.style.borderColor = sel ? 'var(--fb-orange)' : 'var(--fb-border)';
+    btn.style.color       = sel ? '#fff' : 'var(--text)';
+  });
 }
 
 function ptRenderVueltoMetodoBtns() {
@@ -4019,6 +4168,10 @@ function pcResetVuelto() {
   ['pc-paga-con','pt-paga-con','pp-paga-con'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   ['pc-vuelto-result','pt-vuelto-result','pp-vuelto-result'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   ['pc-vuelto-box','pt-vuelto-box','pp-vuelto-box'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  ['pc-vuelto-metodo-row','pt-vuelto-metodo-row','pp-vuelto-metodo-row'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  pcVueltoMetodoActual = 'efectivo';
+  ppVueltoMetodoActual = 'efectivo';
+  ptVueltoMetodoActual = 'efectivo';
 }
 
 function confirmarPagoComb() {
@@ -4047,7 +4200,12 @@ function confirmarPagoComb() {
     const metodoPago = pagos.map(p => `${p.label} S/${p.monto.toFixed(2)}`).join(' + ');
     const efPP = pagos.filter(p => p.label === 'Efectivo').reduce((s,p)=>s+p.monto,0);
     const pagaConPP = parseFloat(document.getElementById('pp-paga-con')?.value || 0);
-    const detalle = efPP > 0 ? { efectivo: { monto: efPP, recibido: pagaConPP || null, vuelto: pagaConPP ? parseFloat((pagaConPP-efPP).toFixed(2)) : null } } : null;
+    const vueltoPP = efPP > 0 && pagaConPP > efPP + 0.005 ? parseFloat((pagaConPP - efPP).toFixed(2)) : null;
+    const detalle = efPP > 0 ? {
+      efectivo: { monto: efPP, recibido: pagaConPP || null, vuelto: pagaConPP ? parseFloat((pagaConPP-efPP).toFixed(2)) : null },
+      vueltoEfectivo: vueltoPP,
+      vueltoMetodo: vueltoPP ? ppVueltoMetodoActual : null
+    } : null;
     closePagoComb();
     ejecutarCobro(key, metodoPago, total, mesa, detalle);
     return;
@@ -4077,7 +4235,12 @@ function confirmarPagoComb() {
   const metodoPago = pagos.map(p => `${p.label} S/${p.monto.toFixed(2)}`).join(' + ');
   const efPC = pagos.filter(p => p.label === 'Efectivo').reduce((s,p)=>s+p.monto,0);
   const pagaConPC = parseFloat(document.getElementById('pc-paga-con')?.value || 0);
-  const detalle = efPC > 0 ? { efectivo: { monto: efPC, recibido: pagaConPC || null, vuelto: pagaConPC ? parseFloat((pagaConPC-efPC).toFixed(2)) : null } } : null;
+  const vueltoPC = efPC > 0 && pagaConPC > efPC + 0.005 ? parseFloat((pagaConPC - efPC).toFixed(2)) : null;
+  const detalle = efPC > 0 ? {
+    efectivo: { monto: efPC, recibido: pagaConPC || null, vuelto: pagaConPC ? parseFloat((pagaConPC-efPC).toFixed(2)) : null },
+    vueltoEfectivo: vueltoPC,
+    vueltoMetodo: vueltoPC ? pcVueltoMetodoActual : null
+  } : null;
   closePagoComb();
   ejecutarCobro(key, metodoPago, total, mesa, detalle);
 }
@@ -4499,6 +4662,70 @@ function ptFinalizarTodas() {
 function ejecutarCobro(key, metodoPago, totalFinal, mesa, pagoDetalle) {
 if (!mesa) mesa = state.mesas[key];
 if (!mesa) return;
+
+// ── AUDITORÍA: si es un re-cobro, sobreescribir el registro original ──
+const esRecobro = mesa._esRecobro === true && mesa._recobroHistIdx !== undefined;
+if (esRecobro) {
+  const histIdx = mesa._recobroHistIdx;
+  const original = state.historialPagos[histIdx];
+  if (original) {
+    const ahora = new Date();
+    const fechaAudit = ahora.toLocaleString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+    const itemsSnap = JSON.parse(JSON.stringify(mesa.items || []));
+    const subtotalNuevo = itemsSnap.reduce((s,i)=>s+(i.cortesia?0:(i.price||0)*(i.qty||1)),0) + parseFloat(mesa.info?.costoDelivery||0);
+    // Sobreescribir manteniendo _uid y key originales
+    state.historialPagos[histIdx] = {
+      ...original,
+      items: itemsSnap,
+      metodoPago,
+      total: subtotalNuevo,
+      modalidad: mesa.modalidad || original.modalidad,
+      costoDelivery: parseFloat(mesa.info?.costoDelivery||0),
+      pagoDetalle: pagoDetalle || null,
+      // ── PROPIEDAD DE AUDITORÍA ──
+      editado: true,
+      historialCambios: {
+        fecha: fechaAudit,
+        fechaISO: ahora.toISOString(),
+        motivo: 'Pago modificado / Re-liquidado',
+        metodoPagoOriginal: original.metodoPago,
+        totalOriginal: original.total,
+        metodoPagoNuevo: metodoPago,
+        totalNuevo: subtotalNuevo
+      }
+    };
+    // Registrar en log global
+    if (!state.historialCambios) state.historialCambios = [];
+    state.historialCambios.push({
+      hora: fechaAudit,
+      desc: `✏️ RE-LIQUIDADO: ${original.mesa} · ${original.metodoPago} S/${(original.total||0).toFixed(2)} → ${metodoPago} S/${subtotalNuevo.toFixed(2)}`
+    });
+    saveState();
+    // Limpiar la mesa fantasma de re-cobro
+    delete state.mesas[key];
+    saveState();
+    window._recobrarHistorialIdx = undefined;
+    window._recobrarOriginalSnapshot = undefined;
+    // Preparar _lastPago con registrado:true para que imprimirComprobante no duplique
+    const pagoLabel = original.mesa;
+    window._lastPago = {
+      key, mesa: pagoLabel, modalidad: mesa.modalidad || original.modalidad,
+      total: subtotalNuevo, metodoPago, items: itemsSnap,
+      delivery: parseFloat(mesa.info?.costoDelivery||0),
+      fecha: fechaAudit, fechaISO: ahora.toISOString(),
+      clienteNombre: mesa.clienteNombre || original.clienteNombre || '',
+      direccion: mesa.info?.direccion || original.direccion || '',
+      pagoDetalle: pagoDetalle || null,
+      registrado: true,  // ya sobreescrito arriba — no volver a insertar
+      pagoAnticipado: true,
+      esRecobro: true
+    };
+    abrirComprobante();
+    renderView('cobrar');
+    return;
+  }
+}
+// ── FIN AUDITORÍA RE-COBRO ──
 const _ahora = new Date();
 // 'fecha' = local del dispositivo (formato peruano) — usado para filtros de día
 const now = _ahora.toLocaleString('es-PE', {
@@ -4685,7 +4912,9 @@ html += `<div class="ticket-row" style="${B}"><span style="${B}">Cliente:</span>
 html += `<div class="ticket-row" style="${B}"><span style="${B}">Fecha:</span><span style="${B}">${ahora}</span></div>
 <hr class="ticket-divider">`;
 pago.items.forEach(item => {
-html += `<div class="ticket-row" style="${B}"><span style="${B}">${item.qty}x ${item.name}</span><span style="${B}">S/${(item.price*item.qty).toFixed(2)}</span></div>`;
+const esCortesia = item.cortesia === true;
+const precioLinea = esCortesia ? 0 : (item.price || 0) * (item.qty || 1);
+html += `<div class="ticket-row" style="${B}"><span style="${B}">${item.qty}x ${item.name}${esCortesia ? ' 🎁 CORTESÍA' : ''}</span><span style="${B}${esCortesia?'color:#22C55E;':''}">S/${precioLinea.toFixed(2)}</span></div>`;
 const details = [];
 if (item.sabores && item.sabores.length) details.push(`Sabor: ${item.sabores.join(', ')}`);
 if (item.pair && item.pair.length) details.push(`Bebidas: ${item.pair.join(' + ')}`);
@@ -4695,13 +4924,15 @@ if (item.sin && item.sin.length) details.push(`Sin: ${item.sin.join(', ')}`);
 if (item.adicionales && item.adicionales.length) details.push(`Extra: ${item.adicionales.join(', ')}`);
 details.forEach(d => { html += `<div class="ticket-row-detail" style="${B}">${d}</div>`; });
 });
-const subtotal = pago.total - (pago.delivery || 0);
+// Subtotal = total ya calculado sin cortesías
+const subtotal = (pago.items||[]).reduce((s,i)=>s+(i.cortesia?0:(i.price||0)*(i.qty||1)),0);
+const totalTicket = subtotal + (pago.delivery || 0);
 html += `<hr class="ticket-divider">
 <div class="ticket-row" style="${B}"><span style="${B}">Subtotal</span><span style="${B}">S/${subtotal.toFixed(2)}</span></div>`;
 if (pago.delivery > 0) {
 html += `<div class="ticket-row" style="${B}"><span style="${B}">Delivery</span><span style="${B}">S/${pago.delivery.toFixed(2)}</span></div>`;
 }
-html += `<div class="ticket-total-row" style="${B}font-size:42px;"><span style="${B}">TOTAL</span><span style="${B}">S/${pago.total.toFixed(2)}</span></div>
+html += `<div class="ticket-total-row" style="${B}font-size:42px;"><span style="${B}">TOTAL</span><span style="${B}">S/${totalTicket.toFixed(2)}</span></div>
 <hr class="ticket-divider">`;
 
 const det = pago.pagoDetalle;
@@ -4714,24 +4945,29 @@ if (det && det.tandas && det.tandas.length) {
     t.metodos.forEach(mt => {
       html += `<div class="ticket-row-detail" style="${B}">${mt.label}: S/${mt.monto.toFixed(2)}</div>`;
     });
-    // Vuelto individual de esta tanda
     if (t.recibidoEfectivo != null) {
       html += `<div class="ticket-row-detail" style="${B}">Recibido: S/${t.recibidoEfectivo.toFixed(2)}</div>`;
     }
     if (t.vueltoEfectivo != null && t.vueltoEfectivo > 0.005) {
       const vLabel = _vueltoLabel[t.vueltoMetodo] || 'Efectivo';
-      html += `<div class="ticket-row-detail" style="${B}font-weight:900;">VUELTO (${vLabel}): S/${t.vueltoEfectivo.toFixed(2)}</div>`;
+      html += `<div class="ticket-row-detail" style="${B}font-weight:900;">↩ VUELTO T${t.numero} (${vLabel}): S/${t.vueltoEfectivo.toFixed(2)}</div>`;
     }
   });
   html += `<hr class="ticket-divider">`;
 } else if (det && det.efectivo) {
   // Métodos o Por Producto con efectivo
+  const _vueltoLabel = { efectivo: 'Efectivo', yape: 'Yape', plin: 'Plin' };
   html += `<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}font-size:28px;text-align:right;max-width:160px;">${pago.metodoPago}</span></div>
   <hr class="ticket-divider">
   <div class="ticket-row" style="${B}"><span style="${B}">Total Efectivo</span><span style="${B}">S/${det.efectivo.monto.toFixed(2)}</span></div>`;
   if (det.efectivo.recibido) {
-    html += `<div class="ticket-row" style="${B}"><span style="${B}">Cliente pagó con</span><span style="${B}">S/${det.efectivo.recibido.toFixed(2)}</span></div>
-    <div class="ticket-row" style="${B}"><span style="${B}">VUELTO</span><span style="${B}">S/${det.efectivo.vuelto.toFixed(2)}</span></div>`;
+    html += `<div class="ticket-row" style="${B}"><span style="${B}">Cliente pagó con</span><span style="${B}">S/${det.efectivo.recibido.toFixed(2)}</span></div>`;
+    const vueltoLbl = det.vueltoMetodo ? _vueltoLabel[det.vueltoMetodo] || 'Efectivo' : 'Efectivo';
+    if (det.vueltoEfectivo != null && det.vueltoEfectivo > 0.005) {
+      html += `<div class="ticket-row" style="${B}"><span style="${B}">↩ VUELTO (${vueltoLbl})</span><span style="${B}">S/${det.vueltoEfectivo.toFixed(2)}</span></div>`;
+    } else if (det.efectivo.vuelto != null) {
+      html += `<div class="ticket-row" style="${B}"><span style="${B}">↩ VUELTO (${vueltoLbl})</span><span style="${B}">S/${det.efectivo.vuelto.toFixed(2)}</span></div>`;
+    }
   }
   html += `<hr class="ticket-divider">`;
 } else {
@@ -5413,8 +5649,10 @@ function applyRemoteMesas(data) {
     merged[k] = v;
   });
   // Eliminar mesas temporales que el remoto ya no tiene (CR_, DEL_, EXT_ cerrados)
+  // EXCEPCIÓN: RCB_ son re-cobros locales del dispositivo de caja — nunca se sincronizan al remoto,
+  // así que jamás deben ser eliminadas por esta lógica.
   Object.keys(merged).forEach(k => {
-    if (!k.startsWith('M') && !(k in remoteMesas)) {
+    if (!k.startsWith('M') && !k.startsWith('RCB_') && !(k in remoteMesas)) {
       delete merged[k];
     }
   });
