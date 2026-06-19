@@ -249,8 +249,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 #ticket-print-area{display:block !important;}
 }
 #ticket-print-area{display:none;}
-.ticket{font-family:'Courier New',monospace;width:840px;margin:0 auto;font-size:36px;color:#000;background:#fff;padding:36px 24px;font-weight:700;}
-.ticket *{font-weight:700 !important;}
+.ticket{font-family:'Courier New',monospace;width:840px;margin:0 auto;font-size:36px;color:#000;background:#fff;padding:36px 24px;font-weight:900;letter-spacing:1.5px;-webkit-text-stroke:0.6px #000;}
+.ticket *{font-weight:900 !important;-webkit-text-stroke:0.6px #000 !important;}
 .ticket-center{text-align:center;}
 .ticket-logo{font-size:51px;font-weight:900;letter-spacing:1px;}
 .ticket-sub{font-size:30px;margin-bottom:9px;}
@@ -259,6 +259,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .ticket-row-detail{font-size:30px;color:#000;padding-left:30px;margin-bottom:6px;}
 .ticket-total-row{display:flex;justify-content:space-between;font-size:42px;font-weight:900;margin:9px 0;}
 .ticket-footer{font-size:30px;text-align:center;margin-top:24px;line-height:1.6;}
+.ticket-feed-final{font-size:30px;line-height:1.6;white-space:pre;color:#fefefe;-webkit-text-stroke:0px transparent !important;}
 .nombre-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:750;align-items:center;justify-content:center;padding:20px;}
 .nombre-overlay.show{display:flex;}
 .nombre-box{background:var(--fb-card);border-radius:var(--radius);width:100%;max-width:360px;padding:24px 20px;}
@@ -590,7 +591,7 @@ window.onerror = function(msg, src, line, col, err) {
 <div id="pc-tandas-cobradas" style="margin-top:12px;"></div>
 <!-- VUELTO TANDAS -->
 <div id="pt-vuelto-box" style="display:none;margin-top:12px;background:rgba(251,146,60,.08);border:2px solid rgba(251,146,60,.35);border-radius:12px;padding:12px 14px;">
-  <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--fb-orange);margin-bottom:8px;">💵 Vuelto Efectivo</div>
+  <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--fb-orange);margin-bottom:8px;">💵 Vuelto</div>
   <div style="display:flex;align-items:center;gap:10px;">
     <div style="flex:1;font-size:12px;font-weight:800;color:var(--text-muted);">Cliente paga con</div>
     <input id="pt-paga-con" type="number" step="1" min="0" placeholder="S/ 0" oninput="ptCalcVuelto()"
@@ -598,6 +599,18 @@ window.onerror = function(msg, src, line, col, err) {
   </div>
   <div id="pt-vuelto-result" style="margin-top:8px;text-align:center;font-size:20px;font-weight:900;display:none;"></div>
   <div id="pt-billetes" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+  <!-- Método en que se da el vuelto -->
+  <div id="pt-vuelto-metodo-row" style="display:none;margin-top:10px;">
+    <div style="font-size:11px;font-weight:900;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Devuelvo el vuelto en:</div>
+    <div style="display:flex;gap:8px;">
+      <button id="pt-vmet-efectivo" onclick="ptSetVueltoMetodo('efectivo')"
+        style="flex:1;padding:8px 4px;border-radius:8px;border:2px solid var(--fb-border);background:var(--fb-dark);color:var(--text);font-size:12px;font-weight:900;cursor:pointer;">💵 Efectivo</button>
+      <button id="pt-vmet-yape" onclick="ptSetVueltoMetodo('yape')"
+        style="flex:1;padding:8px 4px;border-radius:8px;border:2px solid var(--fb-border);background:var(--fb-dark);color:var(--text);font-size:12px;font-weight:900;cursor:pointer;">📱 Yape</button>
+      <button id="pt-vmet-plin" onclick="ptSetVueltoMetodo('plin')"
+        style="flex:1;padding:8px 4px;border-radius:8px;border:2px solid var(--fb-border);background:var(--fb-dark);color:var(--text);font-size:12px;font-weight:900;cursor:pointer;">💙 Plin</button>
+    </div>
+  </div>
 </div>
 </div><!-- /pc-panel-tandas -->
 
@@ -2578,6 +2591,18 @@ function renderHistorialView(el) {
           <span style="${i.cortesia?'color:var(--success)':''}">S/${i.cortesia?'0.00':((i.price||0)*(i.qty||1)).toFixed(2)}</span>
         </div>`).join('')}
         ${(p.costoDelivery||0)>0?`<div class="caja-item-row"><span>🛵 Delivery</span><span>S/${parseFloat(p.costoDelivery).toFixed(2)}</span></div>`:''}
+        ${(() => {
+          // Desglose de vuelto por tanda en historial
+          const det = p.pagoDetalle;
+          if (!det || !det.tandas || !det.tandas.length) return '';
+          const _vl = { efectivo: '💵 Efectivo', yape: '📱 Yape', plin: '💙 Plin' };
+          const lineas = det.tandas.filter(t => t.vueltoEfectivo != null && t.vueltoEfectivo > 0.005).map(t =>
+            '<div class="caja-item-row" style="color:var(--fb-yellow)">' +
+            '<span>↩ Vuelto T' + t.numero + ' (' + (_vl[t.vueltoMetodo] || '💵 Efectivo') + ')</span>' +
+            '<span>S/' + t.vueltoEfectivo.toFixed(2) + '</span></div>'
+          );
+          return lineas.join('');
+        })()}
       </div>
     </div>`;
   });
@@ -3158,6 +3183,9 @@ html += `<hr class="ticket-divider">
 if (delivery > 0) html += `<div class="ticket-row" style="${B}"><span style="${B}">Delivery</span><span style="${B}">S/${delivery.toFixed(2)}</span></div>`;
 html += `<div class="ticket-total-row" style="${B}font-size:42px;"><span style="${B}">TOTAL</span><span style="${B}">S/${total.toFixed(2)}</span></div>
 <hr class="ticket-divider">
+<div class="ticket-feed-final">
+.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.
+</div>
 <div class="ticket-footer" style="${B}">
 *** PRE-CUENTA ***<br>
 No es comprobante de pago.<br>
@@ -3192,6 +3220,7 @@ function abrirPagoComb(key) {
   ptTandasCobradas = [];
   ptSeleccionados = {};
   ptMetodosActuales = [];
+  ptVueltoMetodoActual = "efectivo";
   const mesa = state.mesas[key];
   if (!mesa) return;
   // Siempre recalcular desde el estado actual — no usar valores cacheados
@@ -3221,6 +3250,7 @@ function closePagoComb() {
   ptTandasCobradas = [];
   ptSeleccionados = {};
   ptMetodosActuales = [];
+  ptVueltoMetodoActual = "efectivo";
   pcResetVuelto();
 }
 
@@ -3496,12 +3526,8 @@ function pcGetTotalEfectivoProductos() {
 }
 
 function pcGetTotalEfectivoTandas() {
-  // Suma efectivo de tandas ya cobradas + tanda actual en progreso
+  // Solo el efectivo de la tanda ACTUAL en progreso (cada tanda es un cliente independiente)
   let suma = 0;
-  ptTandasCobradas.forEach(t => {
-    (t.metodos || []).forEach(mt => { if (mt.id === 'efectivo') suma += mt.monto; });
-  });
-  // Tanda actual en progreso
   ptMetodosActuales.forEach((sl, i) => {
     if (sl.id === 'efectivo') {
       const v = parseFloat(document.getElementById('ptv-' + i)?.value || sl.monto || 0);
@@ -3550,8 +3576,38 @@ function _calcVueltoGenerico(inputId, resultId, totalEfectivo) {
 }
 
 function pcCalcVuelto() { _calcVueltoGenerico('pc-paga-con', 'pc-vuelto-result', pcGetTotalEfectivoMetodos()); }
-function ptCalcVuelto() { _calcVueltoGenerico('pt-paga-con', 'pt-vuelto-result', pcGetTotalEfectivoTandas()); }
+function ptCalcVuelto() {
+  _calcVueltoGenerico('pt-paga-con', 'pt-vuelto-result', pcGetTotalEfectivoTandas());
+  // Mostrar selector de método de devolución solo cuando hay vuelto positivo
+  const ef = pcGetTotalEfectivoTandas();
+  const pagaCon = parseFloat(document.getElementById('pt-paga-con')?.value || 0);
+  const hayVuelto = ef > 0 && pagaCon > ef + 0.005;
+  const row = document.getElementById('pt-vuelto-metodo-row');
+  if (row) row.style.display = hayVuelto ? 'block' : 'none';
+  if (hayVuelto) ptRenderVueltoMetodoBtns();
+}
 function ppCalcVuelto() { _calcVueltoGenerico('pp-paga-con', 'pp-vuelto-result', pcGetTotalEfectivoProductos()); }
+
+function ptSetVueltoMetodo(metodo) {
+  ptVueltoMetodoActual = metodo;
+  ptRenderVueltoMetodoBtns();
+}
+
+function ptRenderVueltoMetodoBtns() {
+  const metodos = [
+    { id: 'efectivo', label: '💵 Efectivo' },
+    { id: 'yape',     label: '📱 Yape'     },
+    { id: 'plin',     label: '💙 Plin'     }
+  ];
+  metodos.forEach(m => {
+    const btn = document.getElementById('pt-vmet-' + m.id);
+    if (!btn) return;
+    const sel = ptVueltoMetodoActual === m.id;
+    btn.style.background = sel ? 'var(--fb-orange)' : 'var(--fb-dark)';
+    btn.style.borderColor = sel ? 'var(--fb-orange)' : 'var(--fb-border)';
+    btn.style.color       = sel ? '#fff' : 'var(--text)';
+  });
+}
 
 function pcResetVuelto() {
   ['pc-paga-con','pt-paga-con','pp-paga-con'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
@@ -3583,8 +3639,11 @@ function confirmarPagoComb() {
       return { label: m ? m.name : id, monto: porMetodo[id] };
     });
     const metodoPago = pagos.map(p => `${p.label} S/${p.monto.toFixed(2)}`).join(' + ');
+    const efPP = pagos.filter(p => p.label === 'Efectivo').reduce((s,p)=>s+p.monto,0);
+    const pagaConPP = parseFloat(document.getElementById('pp-paga-con')?.value || 0);
+    const detalle = efPP > 0 ? { efectivo: { monto: efPP, recibido: pagaConPP || null, vuelto: pagaConPP ? parseFloat((pagaConPP-efPP).toFixed(2)) : null } } : null;
     closePagoComb();
-    ejecutarCobro(key, metodoPago, total, mesa);
+    ejecutarCobro(key, metodoPago, total, mesa, detalle);
     return;
   }
 
@@ -3610,15 +3669,19 @@ function confirmarPagoComb() {
   }
 
   const metodoPago = pagos.map(p => `${p.label} S/${p.monto.toFixed(2)}`).join(' + ');
+  const efPC = pagos.filter(p => p.label === 'Efectivo').reduce((s,p)=>s+p.monto,0);
+  const pagaConPC = parseFloat(document.getElementById('pc-paga-con')?.value || 0);
+  const detalle = efPC > 0 ? { efectivo: { monto: efPC, recibido: pagaConPC || null, vuelto: pagaConPC ? parseFloat((pagaConPC-efPC).toFixed(2)) : null } } : null;
   closePagoComb();
-  ejecutarCobro(key, metodoPago, total, mesa);
+  ejecutarCobro(key, metodoPago, total, mesa, detalle);
 }
 
 // ── POR TANDAS: cobrar la cuenta en múltiples partes ──────────────────────
 // Estado global de tandas
-let ptTandasCobradas = [];   // [{ unitKeys: [...], metodos: [{id,monto},...], montoTotal: 35.00 }]
+let ptTandasCobradas = [];   // [{ unitKeys: [...], metodos: [{id,monto},...], montoTotal, recibidoEfectivo, vueltoEfectivo, vueltoMetodo }]
 let ptSeleccionados = {};    // { unitKey: true }
 let ptMetodosActuales = [];  // [{ id, monto }] — slots de métodos para la tanda actual (permite repetir)
+let ptVueltoMetodoActual = 'efectivo'; // metodo de devolucion del vuelto: 'efectivo'|'yape'|'plin'
 
 // Paleta de colores por tanda (hasta 8 tandas, luego rota)
 const PT_COLORES = [
@@ -3871,6 +3934,13 @@ function ptRenderCobradas() {
         const m = PC_METODOS.find(x => x.id === mt.id);
         return `${m ? m.label : mt.id} S/${mt.monto.toFixed(2)}`;
       }).join(' + ');
+      // Vuelto individual de esta tanda (si se guardó)
+      let vueltoHtml = '';
+      if (t.recibidoEfectivo != null && t.vueltoEfectivo != null && t.vueltoEfectivo > 0.005) {
+        vueltoHtml = `<div style="font-size:10px;color:var(--fb-yellow);margin-top:2px;">💵 Recibió S/${t.recibidoEfectivo.toFixed(2)} → Vuelto S/${t.vueltoEfectivo.toFixed(2)}</div>`;
+      } else if (t.recibidoEfectivo != null) {
+        vueltoHtml = `<div style="font-size:10px;color:var(--success);margin-top:2px;">💵 Pago exacto</div>`;
+      }
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:${c.rgba}0.08);border:1.5px solid ${c.rgba}0.4);border-radius:10px;margin-bottom:6px;">
         <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
           <div style="width:12px;height:12px;border-radius:4px;background:${c.hex};flex-shrink:0;"></div>
@@ -3878,6 +3948,7 @@ function ptRenderCobradas() {
             <div style="font-size:12px;font-weight:900;color:${c.hex};">${c.name}</div>
             <div style="font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${metodosStr}</div>
             <div style="font-size:10px;color:var(--text-muted);">${t.unitKeys.length} producto(s)</div>
+            ${vueltoHtml}
           </div>
         </div>
         <div style="font-size:15px;font-weight:900;color:${c.hex};margin-left:8px;">S/${t.montoTotal.toFixed(2)}</div>
@@ -3891,27 +3962,32 @@ function ptRenderCobradas() {
     ${Math.abs(totalCobrado - totalGeneral) <= 0.01
       ? `<button onclick="ptFinalizarTodas()" style="width:100%;margin-top:10px;padding:14px;background:var(--success);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer;">✅ Finalizar — Total cubierto</button>`
       : ''}`;
-  // Vuelto efectivo acumulado en tandas cobradas
-  pcRenderVueltoBox('pt-vuelto-box', 'pt-billetes', pcGetTotalEfectivoTandas());
-  ptCalcVuelto();
+  // El vuelto acumulado ya NO se muestra aquí — cada tanda tiene su propio vuelto independiente
 }
 
 function ptToggleUnidad(unitKey) {
   ptSeleccionados[unitKey] = !ptSeleccionados[unitKey];
   // Reset montos al cambiar selección
   ptMetodosActuales = [];
+  // Reset vuelto field
+  const pc = document.getElementById('pt-paga-con'); if (pc) pc.value = '';
+  const vr = document.getElementById('pt-vuelto-result'); if (vr) vr.style.display = 'none';
   ptRender();
 }
 
 function ptSeleccionarTodos() {
   ptUnidadesPendientes().forEach(u => { ptSeleccionados[u.unitKey] = true; });
   ptMetodosActuales = [];
+  const pc = document.getElementById('pt-paga-con'); if (pc) pc.value = '';
+  const vr = document.getElementById('pt-vuelto-result'); if (vr) vr.style.display = 'none';
   ptRender();
 }
 
 function ptDeseleccionarTodos() {
   ptSeleccionados = {};
   ptMetodosActuales = [];
+  const pc = document.getElementById('pt-paga-con'); if (pc) pc.value = '';
+  const vr = document.getElementById('pt-vuelto-result'); if (vr) vr.style.display = 'none';
   ptRender();
 }
 
@@ -3942,10 +4018,25 @@ function ptCobrarTanda() {
   if (montoTotal <= 0) { alert('El monto total debe ser mayor a cero'); return; }
   // Registrar tanda con múltiples slots (puede repetir método)
   const metodos = metodosValidos.map(sl => ({ id: sl.id, monto: sl.monto }));
-  ptTandasCobradas.push({ unitKeys: [...selKeys], metodos, montoTotal });
-  // Limpiar para próxima tanda
+  // Guardar vuelto de efectivo si aplica a esta tanda
+  const efTanda = metodosValidos.filter(sl => sl.id === 'efectivo').reduce((s, sl) => s + sl.monto, 0);
+  const pagaConInput = document.getElementById('pt-paga-con');
+  const pagaConVal = pagaConInput ? parseFloat(pagaConInput.value) || 0 : 0;
+  const vueltoEfectivo = efTanda > 0 && pagaConVal > efTanda + 0.005 ? parseFloat((pagaConVal - efTanda).toFixed(2)) : null;
+  const recibidoEfectivo = efTanda > 0 && pagaConVal > 0 ? pagaConVal : null;
+  // Guardar metodo de devolucion del vuelto (solo si hay vuelto)
+  const vueltoMetodo = vueltoEfectivo != null && vueltoEfectivo > 0.005 ? ptVueltoMetodoActual : null;
+  ptTandasCobradas.push({ unitKeys: [...selKeys], metodos, montoTotal, recibidoEfectivo, vueltoEfectivo, vueltoMetodo });
+  // Limpiar para proxima tanda
   ptSeleccionados = {};
   ptMetodosActuales = [];
+  ptVueltoMetodoActual = 'efectivo'; // reset al default para siguiente tanda
+  // Reset campo de vuelto y selector
+  if (pagaConInput) pagaConInput.value = '';
+  const vueltoResult = document.getElementById('pt-vuelto-result');
+  if (vueltoResult) vueltoResult.style.display = 'none';
+  const vueltoMetodoRow = document.getElementById('pt-vuelto-metodo-row');
+  if (vueltoMetodoRow) vueltoMetodoRow.style.display = 'none';
   // Prellenar "todos" si quedan pendientes
   const pendientes = ptUnidadesPendientes();
   if (pendientes.length > 0) {
@@ -3982,11 +4073,24 @@ function ptFinalizarTodas() {
     });
   });
   const metodoPago = Object.entries(resumen).map(([name, monto]) => `${name} S/${monto.toFixed(2)}`).join(' + ');
+  // Detalle de tandas: cada una guarda sus metodos + vuelto individual
+  const tandasDetalle = ptTandasCobradas.map((t, idx) => ({
+    numero: idx + 1,
+    metodos: (t.metodos || [{ id: t.metodo, monto: t.montoTotal || t.monto }]).map(mt => {
+      const m = PC_METODOS.find(x => x.id === mt.id);
+      return { label: m ? m.name : mt.id, monto: mt.monto };
+    }),
+    total: t.montoTotal || t.monto || (t.metodos||[]).reduce((s,mt)=>s+mt.monto,0),
+    recibidoEfectivo: t.recibidoEfectivo || null,
+    vueltoEfectivo:   t.vueltoEfectivo   || null,
+    vueltoMetodo:     t.vueltoMetodo     || null
+  }));
+  const detalle = { tandas: tandasDetalle };
   closePagoComb();
-  ejecutarCobro(key, metodoPago, totalGeneral, mesa);
+  ejecutarCobro(key, metodoPago, totalGeneral, mesa, detalle);
 }
 
-function ejecutarCobro(key, metodoPago, totalFinal, mesa) {
+function ejecutarCobro(key, metodoPago, totalFinal, mesa, pagoDetalle) {
 if (!mesa) mesa = state.mesas[key];
 if (!mesa) return;
 const _ahora = new Date();
@@ -3998,21 +4102,17 @@ const now = _ahora.toLocaleString('es-PE', {
 // 'fechaISO' = UTC — solo para ordenar y buscar por exactitud, NO para filtrar por día
 const nowISO = _ahora.toISOString();
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
-const fbItems = mesa.items.filter(i => i.brand === 'foodbiker' || i.brand === 'custom' || i.isCustom || (!i.brand));
-if (fbItems.length) saveToSheet('FoodBiker_Ventas', [now, mesaLabel, mesa.modalidad, fbItems.map(itemLineText).join(' | '), calcTotal(fbItems).toFixed(2), metodoPago, mesa.info?.nombre||mesa.clienteNombre||'', mesa.info?.direccion||'']);
 // Copiar items por valor (no referencia) para evitar mutaciones posteriores
 const itemsSnap = JSON.parse(JSON.stringify(mesa.items || []));
-// uid único para detectar duplicados al sincronizar
-const pagoUid = `${key}_${nowISO}`;
-// Solo agregar si no existe ya un pago con este uid
-if (!state.historialPagos.some(p => p._uid === pagoUid)) {
-  state.historialPagos.push({ _uid: pagoUid, key, mesa: mesaLabel, total: totalFinal, metodoPago, items: itemsSnap, fecha: now, fechaISO: nowISO, modalidad: mesa.modalidad, clienteNombre: mesa.clienteNombre||mesa.info?.nombre||'', costoDelivery: parseFloat(mesa.info?.costoDelivery||0) });
-}
-window._lastPago = { key, mesa: mesaLabel, modalidad: mesa.modalidad, total: totalFinal, metodoPago, items: JSON.parse(JSON.stringify(mesa.items)), delivery: parseFloat(mesa.info?.costoDelivery||0), fecha: now, clienteNombre: mesa.clienteNombre||mesa.info?.nombre||'' };
+// NOTA: el registro en historialPagos, el guardado en Google Sheets y la eliminación
+// de la mesa en Caja se hacen recién al IMPRIMIR el comprobante (ver imprimirComprobante).
+// Aquí solo se prepara todo lo necesario para ese paso final.
+window._lastPago = { key, mesa: mesaLabel, modalidad: mesa.modalidad, total: totalFinal, metodoPago, items: itemsSnap, delivery: parseFloat(mesa.info?.costoDelivery||0), fecha: now, fechaISO: nowISO, clienteNombre: mesa.clienteNombre||mesa.info?.nombre||'', direccion: mesa.info?.direccion||'', pagoDetalle: pagoDetalle || null, registrado: false };
 // Si la comida AÚN está en cocina (en-elaboracion / ocupada) → pago anticipado
 // El timer NO se congela porque la cocina sigue trabajando
 const estadosCocinaActiva = ['en-elaboracion','ocupada'];
 const pagoAnticipado = estadosCocinaActiva.includes(mesa.estado);
+window._lastPago.pagoAnticipado = pagoAnticipado;
 if (pagoAnticipado) {
   // Guardar pago pero mantener estado de cocina intacto
   state.mesas[key] = { ...mesa, prepagado: true, metodoPago, totalPagado: totalFinal, pagadoTs: Date.now() };
@@ -4037,16 +4137,25 @@ renderView('cobrar');
 
 function reimprimirComprobante(key) {
   const mesa = state.mesas[key];
-  if (!mesa) return;
-  const totalFinal = calcTotal(mesa.items) + parseFloat(mesa.info?.costoDelivery||0);
+  // Buscar el pago más reciente de esta mesa en el historial (fuente de verdad para reimpresión)
+  const pagosDeEstaMesa = state.historialPagos.filter(p => p.key === key);
+  const ultimoPago = pagosDeEstaMesa.length ? pagosDeEstaMesa[pagosDeEstaMesa.length - 1] : null;
+  if (!mesa && !ultimoPago) return;
+  const totalFinal = ultimoPago ? ultimoPago.total : (calcTotal(mesa.items) + parseFloat(mesa.info?.costoDelivery||0));
   window._lastPago = {
-    key, mesa: mesa.label || 'Mesa ' + mesa.num,
-    modalidad: mesa.modalidad, total: totalFinal,
-    metodoPago: mesa.metodoPago || mesa.pagadoCon || '',
-    items: JSON.parse(JSON.stringify(mesa.items||[])),
-    delivery: parseFloat(mesa.info?.costoDelivery||0),
-    fecha: new Date().toLocaleString('es-PE'),
-    clienteNombre: mesa.clienteNombre || mesa.info?.nombre || ''
+    key,
+    mesa: ultimoPago ? ultimoPago.mesa : (mesa.label || 'Mesa ' + mesa.num),
+    modalidad: ultimoPago ? ultimoPago.modalidad : mesa.modalidad,
+    total: totalFinal,
+    metodoPago: ultimoPago ? ultimoPago.metodoPago : (mesa.metodoPago || mesa.pagadoCon || ''),
+    items: ultimoPago ? ultimoPago.items : JSON.parse(JSON.stringify(mesa.items||[])),
+    delivery: ultimoPago ? (ultimoPago.costoDelivery||0) : parseFloat(mesa?.info?.costoDelivery||0),
+    fecha: ultimoPago ? ultimoPago.fecha : new Date().toLocaleString('es-PE'),
+    fechaISO: ultimoPago ? ultimoPago.fechaISO : null,
+    clienteNombre: ultimoPago ? ultimoPago.clienteNombre : (mesa.clienteNombre || mesa.info?.nombre || ''),
+    pagoDetalle: ultimoPago ? (ultimoPago.pagoDetalle || null) : null,
+    registrado: true,        // ya está en el historial — no volver a registrar ni eliminar mesa
+    pagoAnticipado: true     // por seguridad, nunca intentar eliminar mesa en una reimpresión
   };
   abrirComprobante();
 }
@@ -4083,6 +4192,18 @@ state.mesas[key] = { num: mesa.num, estado: 'libre', items: [], modalidad: '', t
 delete state.mesas[key];
 }
 saveState();
+renderView('cobrar');
+}
+// Igual que eliminarMesaPagada pero sin confirm() — usada al imprimir comprobante,
+// que ya es en sí mismo la confirmación final del cierre de venta.
+function eliminarMesaPagadaSilencioso(key) {
+const mesa = state.mesas[key];
+if (!mesa) return;
+if (key.startsWith('M')) {
+  state.mesas[key] = { num: mesa.num, estado: 'libre', items: [], modalidad: '', total: 0, info: {} };
+} else {
+  delete state.mesas[key];
+}
 renderView('cobrar');
 }
 let compTipoSel = null;
@@ -4174,9 +4295,42 @@ if (pago.delivery > 0) {
 html += `<div class="ticket-row" style="${B}"><span style="${B}">Delivery</span><span style="${B}">S/${pago.delivery.toFixed(2)}</span></div>`;
 }
 html += `<div class="ticket-total-row" style="${B}font-size:42px;"><span style="${B}">TOTAL</span><span style="${B}">S/${pago.total.toFixed(2)}</span></div>
-<hr class="ticket-divider">
-<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}font-size:28px;text-align:right;max-width:160px;">${pago.metodoPago}</span></div>
 <hr class="ticket-divider">`;
+
+const det = pago.pagoDetalle;
+if (det && det.tandas && det.tandas.length) {
+  // Desglose por tandas — cada una con su propio vuelto
+  const _vueltoLabel = { efectivo: 'Efectivo', yape: 'Yape', plin: 'Plin' };
+  html += `<div class="ticket-row" style="${B}"><span style="${B}">FORMA DE PAGO</span><span style="${B}"></span></div>`;
+  det.tandas.forEach(t => {
+    html += `<div class="ticket-row" style="${B}"><span style="${B}">— Tanda ${t.numero} —</span><span style="${B}">S/${t.total.toFixed(2)}</span></div>`;
+    t.metodos.forEach(mt => {
+      html += `<div class="ticket-row-detail" style="${B}">${mt.label}: S/${mt.monto.toFixed(2)}</div>`;
+    });
+    // Vuelto individual de esta tanda
+    if (t.recibidoEfectivo != null) {
+      html += `<div class="ticket-row-detail" style="${B}">Recibido: S/${t.recibidoEfectivo.toFixed(2)}</div>`;
+    }
+    if (t.vueltoEfectivo != null && t.vueltoEfectivo > 0.005) {
+      const vLabel = _vueltoLabel[t.vueltoMetodo] || 'Efectivo';
+      html += `<div class="ticket-row-detail" style="${B}font-weight:900;">VUELTO (${vLabel}): S/${t.vueltoEfectivo.toFixed(2)}</div>`;
+    }
+  });
+  html += `<hr class="ticket-divider">`;
+} else if (det && det.efectivo) {
+  // Métodos o Por Producto con efectivo
+  html += `<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}font-size:28px;text-align:right;max-width:160px;">${pago.metodoPago}</span></div>
+  <hr class="ticket-divider">
+  <div class="ticket-row" style="${B}"><span style="${B}">Total Efectivo</span><span style="${B}">S/${det.efectivo.monto.toFixed(2)}</span></div>`;
+  if (det.efectivo.recibido) {
+    html += `<div class="ticket-row" style="${B}"><span style="${B}">Cliente pagó con</span><span style="${B}">S/${det.efectivo.recibido.toFixed(2)}</span></div>
+    <div class="ticket-row" style="${B}"><span style="${B}">VUELTO</span><span style="${B}">S/${det.efectivo.vuelto.toFixed(2)}</span></div>`;
+  }
+  html += `<hr class="ticket-divider">`;
+} else {
+  html += `<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}font-size:28px;text-align:right;max-width:160px;">${pago.metodoPago}</span></div>
+  <hr class="ticket-divider">`;
+}
 if (tipo !== 'simple' && datos.tel) {
 html += `<div class="ticket-footer" style="${B}">
 El numero de tu comprobante te<br>
@@ -4184,13 +4338,34 @@ llegara por WhatsApp al:<br>
 <span style="${B}font-size:36px;">${datos.tel}</span><br><br>
 </div>`;
 }
-html += `<div class="ticket-footer" style="${B}">
+html += `<div class="ticket-feed-final">
+.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.
+</div>
+<div class="ticket-footer" style="${B}">
 Gracias por tu visita!<br>
 FoodBiker<br>
 @lafoodbiker
 </div>
 </div>`;
 document.getElementById('ticket-print-area').innerHTML = html;
+
+// ── ÚLTIMO PASO: aquí se registra oficialmente la venta ──────────────────
+// (historial, reporte, Google Sheets) y se libera la mesa de Caja.
+// Si es reimpresión de un pago ya registrado, no se duplica ni se vuelve a eliminar.
+if (!pago.registrado) {
+  const pagoUid = `${pago.key}_${pago.fechaISO || pago.fecha}`;
+  if (!state.historialPagos.some(p => p._uid === pagoUid)) {
+    const fbItems = pago.items.filter(i => i.brand === 'foodbiker' || i.brand === 'custom' || i.isCustom || (!i.brand));
+    if (fbItems.length) saveToSheet('FoodBiker_Ventas', [pago.fecha, pago.mesa, pago.modalidad, fbItems.map(itemLineText).join(' | '), calcTotal(fbItems).toFixed(2), pago.metodoPago, pago.clienteNombre||'', pago.direccion||'']);
+    state.historialPagos.push({ _uid: pagoUid, key: pago.key, mesa: pago.mesa, total: pago.total, metodoPago: pago.metodoPago, items: pago.items, fecha: pago.fecha, fechaISO: pago.fechaISO || new Date().toISOString(), modalidad: pago.modalidad, clienteNombre: pago.clienteNombre || '', costoDelivery: pago.delivery || 0, pagoDetalle: pago.pagoDetalle || null });
+  }
+  pago.registrado = true;
+  // Liberar la mesa de Caja — solo si NO es pago anticipado (la comida sigue en cocina)
+  if (!pago.pagoAnticipado) {
+    eliminarMesaPagadaSilencioso(pago.key);
+  }
+  saveState();
+}
 window.print();
 }
 function mostrarPagos(key) {
