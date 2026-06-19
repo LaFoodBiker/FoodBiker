@@ -99,6 +99,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .badge-agotado{display:inline-block;margin-left:6px;background:rgba(239,68,68,.2);color:var(--danger);border:1px solid rgba(239,68,68,.45);font-size:9px;font-weight:1000;border-radius:999px;padding:2px 7px;letter-spacing:.5px;vertical-align:middle;}
 .option-pill,.termino-btn,.adicional-btn{background:var(--fb-dark);border:2px solid var(--fb-border);color:var(--text);border-radius:999px;padding:8px 10px;font-size:12px;font-weight:800;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;}
 .option-pill.selected,.termino-btn.selected,.adicional-btn.selected{border-color:var(--fb-orange);background:rgba(255,107,0,.18);color:var(--fb-orange);}
+/* Adicional counter row */
+.adic-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--fb-dark);border:2px solid var(--fb-border);border-radius:10px;margin-bottom:6px;transition:border-color .15s;}
+.adic-row.has-count{border-color:var(--fb-orange);background:rgba(255,107,0,.07);}
+.adic-label{flex:1;font-size:13px;font-weight:800;color:var(--text);line-height:1.3;}
+.adic-ctrl{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.adic-ctrl-btn{width:36px;height:36px;border-radius:8px;border:none;font-size:20px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;transition:background .15s;}
+.adic-ctrl-btn.minus{background:var(--fb-border);color:var(--text);}
+.adic-ctrl-btn.minus:active{background:var(--danger);}
+.adic-ctrl-btn.plus{background:var(--fb-orange);color:#fff;}
+.adic-ctrl-btn.plus:active{opacity:.8;}
+.adic-qty{min-width:24px;text-align:center;font-size:16px;font-weight:900;color:var(--fb-yellow);}
 .modalidad-required{margin:10px 16px 0;padding:10px 12px;border:1px solid rgba(245,158,11,.45);background:rgba(245,158,11,.12);color:#FCD34D;border-radius:10px;font-size:12px;font-weight:800;}
 .pair-grid{display:grid;grid-template-columns:1fr;gap:8px;}
 .pair-select{width:100%;background:var(--fb-dark);border:1px solid var(--fb-border);color:var(--text);border-radius:8px;padding:10px 12px;font-size:13px;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;}
@@ -127,9 +138,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .btn-success{background:var(--success);}
 .btn-danger{background:var(--danger);}
 
-.sabores-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:600;align-items:center;justify-content:center;padding:20px;}
+.sabores-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:600;align-items:flex-end;justify-content:center;padding:0;}
 .sabores-modal.show{display:flex;}
-.sabores-box{background:var(--fb-card);border-radius:var(--radius);padding:24px;width:100%;max-width:360px;}
+.sabores-box{background:var(--fb-card);border-radius:var(--radius) var(--radius) 0 0;padding:20px 16px 24px;width:100%;max-width:100%;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .sabores-box h3{font-size:16px;font-weight:800;margin-bottom:6px;}
 .sabores-box p{font-size:12px;color:var(--text-muted);margin-bottom:16px;}
 .sabor-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--fb-dark);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;border:2px solid transparent;transition:border .2s;}
@@ -271,9 +282,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .cliente-name-badge{font-size:11px;font-weight:800;color:var(--fb-yellow);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;}
 .modal-cliente-name{font-size:12px;font-weight:800;color:var(--fb-yellow);background:rgba(255,214,0,.1);border-radius:6px;padding:3px 10px;display:inline-flex;align-items:center;gap:5px;cursor:pointer;margin-left:6px;}
 .cocina-cliente{font-size:13px;font-weight:900;color:var(--fb-yellow);background:rgba(255,214,0,.12);border-radius:6px;padding:4px 10px;margin-top:4px;display:inline-block;}
-.pago-comb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:700;align-items:center;justify-content:center;padding:16px;}
+.pago-comb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:700;align-items:flex-end;justify-content:center;padding:0;}
 .pago-comb-overlay.show{display:flex;}
-.pago-comb-box{background:var(--fb-card);border-radius:var(--radius);width:100%;max-width:400px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;}
+.pago-comb-box{background:var(--fb-card);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;}
 /* Sticky total header */
 .pc-hdr{background:var(--fb-dark);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--fb-border);flex-shrink:0;position:sticky;top:0;z-index:10;}
 .pc-title{font-family:'Arial Black',Impact,sans-serif;font-size:18px;}
@@ -388,6 +399,101 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .hist-del-item{background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;}
 .hist-mod-log{background:rgba(245,158,11,.08);border:1px solid var(--warning);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:11px;color:var(--warning);}
 .hist-mod-log b{display:block;margin-bottom:4px;font-size:12px;}
+
+/* ============================================================
+   RESPONSIVE — Modal de personalización
+   Bottom-sheet nativo: ocupa todo el ancho, sube desde abajo.
+   Botones táctiles generosos. Sin overflow horizontal.
+   ============================================================ */
+
+/* Filas de "Adicionales" (+/-): columna única, fila compacta */
+#adicionales-btns{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+#adicionales-btns .adic-row{
+  margin-bottom:0;
+}
+#adicionales-btns .adic-label{
+  flex:1 1 auto;
+  min-width:0;
+  line-height:1.3;
+}
+
+/* Botones de término de carne y acompañamiento: columna única en móvil */
+#termino-btns,
+#acompanamiento-btns{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  width:100%;
+}
+#termino-btns .termino-btn,
+#acompanamiento-btns .termino-btn{
+  width:100%;
+  padding:12px 14px;
+  font-size:14px;
+  border-radius:10px;
+  text-align:left;
+}
+
+/* Footer del modal: sticky en el fondo con fondo sólido */
+.sabores-box .modal-footer-sticky{
+  position:sticky;
+  bottom:0;
+  background:var(--fb-card);
+  padding:10px 0 4px;
+  z-index:2;
+}
+
+/* Sabor options: texto más legible */
+.sabor-name{font-size:15px;font-weight:700;}
+.sabores-box h3{font-size:18px;font-weight:800;margin-bottom:6px;}
+.sabores-box p{font-size:13px;color:var(--text-muted);margin-bottom:14px;}
+
+/* Nota libre: más alta y legible */
+.nota-input{font-size:14px;padding:12px;}
+
+/* Opciones de hielo y sin-ingredientes: chips más grandes */
+.hielo-opt.adicional-btn,
+.option-pill,
+.termino-btn,
+.adicional-btn{
+  font-size:13px;
+  padding:10px 14px;
+}
+
+@media (min-width:600px){
+  /* En tablet/desktop: modal flotante centrado */
+  .sabores-modal{
+    align-items:center;
+    padding:20px;
+  }
+  .sabores-box{
+    border-radius:var(--radius);
+    max-width:440px;
+    max-height:82vh;
+  }
+  #termino-btns,
+  #acompanamiento-btns{
+    flex-direction:row;
+    flex-wrap:wrap;
+  }
+  #termino-btns .termino-btn,
+  #acompanamiento-btns .termino-btn{
+    width:auto;
+  }
+  /* En tablet/desktop el panel de pago también flota centrado */
+  .pago-comb-overlay{
+    align-items:center;
+    padding:16px;
+  }
+  .pago-comb-box{
+    border-radius:var(--radius);
+    max-width:440px;
+  }
+}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -712,7 +818,7 @@ window.onerror = function(msg, src, line, col, err) {
 </div>
 </div>
 <div class="sabores-modal" id="sabores-modal">
-<div class="sabores-box" style="max-height:90vh;overflow-y:auto;">
+<div class="sabores-box">
 <h3 id="sabores-title">Personaliza tu pedido</h3>
 <p id="sabores-desc" style="margin-bottom:12px;">
 </p>
@@ -734,10 +840,29 @@ window.onerror = function(msg, src, line, col, err) {
 </div>
 <div id="termino-section" style="display:none;margin-top:14px;">
 <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:8px;">🥩 Término de la carne</div>
-<div style="display:flex;gap:8px;flex-wrap:wrap;" id="termino-btns">
-<button class="termino-btn" onclick="selectTermino(this,'Normal')">Normal</button>
-<button class="termino-btn" onclick="selectTermino(this,'3/4')">3/4</button>
-<button class="termino-btn" onclick="selectTermino(this,'Bien cocido')">Bien cocido</button>
+<div id="termino-btns">
+<button class="termino-btn selected" onclick="selectTermino(this,'Medio')">🩷 Medio</button>
+<button class="termino-btn" onclick="selectTermino(this,'3/4')">🧡 3/4</button>
+<button class="termino-btn" onclick="selectTermino(this,'Bien cocida')">❤️ Bien cocida</button>
+</div>
+</div>
+<div id="split-section" style="display:none;margin-top:14px;">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--fb-dark);border:2px solid var(--fb-border);border-radius:10px;cursor:pointer;" onclick="toggleSplit()" id="split-row">
+  <div>
+    <div style="font-size:13px;font-weight:900;color:var(--text);">🔪 Split (Partida por la mitad)</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">La burger se corta a la mitad para servir</div>
+  </div>
+  <div id="split-toggle-ui" style="width:44px;height:26px;border-radius:999px;background:var(--fb-border);position:relative;flex-shrink:0;transition:background .2s;">
+    <div id="split-toggle-dot" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;"></div>
+  </div>
+</div>
+</div>
+<div id="acompanamiento-section" style="margin-top:14px;">
+<div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:8px;">🍟 Acompañamiento</div>
+<div id="acompanamiento-btns">
+<button class="termino-btn selected" onclick="selectAcompanamiento(this,'Papas crocantes')">🍟 Papas crocantes</button>
+<button class="termino-btn" onclick="selectAcompanamiento(this,'Mix de papas (papas + camotes)')">🍠 Mix de papas + camotes</button>
+<button class="termino-btn" onclick="selectAcompanamiento(this,'Solo camotes')">🍠 Solo camotes</button>
 </div>
 </div>
 <div id="sin-section" style="margin-top:14px;">
@@ -753,7 +878,7 @@ window.onerror = function(msg, src, line, col, err) {
 </div>
 <div style="margin-top:14px;">
 <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:8px;">➕ Adicionales</div>
-<div style="display:flex;gap:6px;flex-wrap:wrap;" id="adicionales-btns">
+<div id="adicionales-btns">
 </div>
 </div>
 <div id="hielo-section" style="display:none;margin-top:14px;">
@@ -769,9 +894,9 @@ window.onerror = function(msg, src, line, col, err) {
 <textarea class="nota-input" id="sabor-nota" placeholder="Ej: sin cebolla, extra picante..." rows="2">
 </textarea>
 </div>
-<div style="display:flex;gap:8px;margin-top:14px;position:sticky;bottom:0;background:var(--fb-dark);padding:10px 0 4px;z-index:2;">
-<button class="btn-secondary" onclick="closeSabores()" style="flex:1;padding:12px;border-radius:8px;cursor:pointer;font-family:Arial,sans-serif;font-weight:800;">Cancelar</button>
-<button class="btn-primary" onclick="confirmSabores()" style="flex:2;">✓ Agregar al pedido</button>
+<div style="display:flex;gap:10px;margin-top:16px;position:sticky;bottom:0;background:var(--fb-card);padding:12px 0 6px;z-index:2;border-top:1px solid var(--fb-border);">
+<button class="btn-secondary" onclick="closeSabores()" style="flex:1;padding:14px 10px;border-radius:10px;cursor:pointer;font-family:Arial,sans-serif;font-weight:800;font-size:15px;">Cancelar</button>
+<button class="btn-primary" onclick="confirmSabores()" style="flex:2;padding:14px 10px;border-radius:10px;font-size:15px;font-weight:900;">✓ Agregar al pedido</button>
 </div>
 </div>
 </div>
@@ -810,25 +935,26 @@ foodbiker: {
 { id:'w2', name:'X12 Wings Combo Biker', price:46.90, priceRappi:63.51, sabores:true, minSabores:1, maxSabores:3, opciones:['Smoked BBQ','Búfalo','Lemon Pepper'], ingredientes:['ajonjolí','papas crocantes','salsa blue cheese','onion rings'], desc:'12 alas bañadas (3 sabores), papas crocantes, salsa blue cheese, 2 onion rings' },
 ],
 'Burgers 🍔': [
-{ id:'b1', name:'Combo Golden Bacon', price:25.90, priceRappi:35.07, carne:true, ingredientes:['tocino crocante','cheddar','lechuga','tomate','cebolla blanca','salsa biker','Smoked BBQ'], desc:'Medallón artesanal 100% carne, tocino crocante, cheddar, lechuga, tomate, cebolla blanca, salsa biker, Smoked BBQ + papas crocantes y salsas top' },
-{ id:'b2', name:'Combo Black Cheese', price:27.90, priceRappi:37.78, carne:true, ingredientes:['mermelada de tocino','mozzarella bites','lechuga','tomate','salsa biker'], desc:'Medallón artesanal 100% carne, mermelada de tocino, mozzarella bites, lechuga, tomate, salsa biker + papas crocantes y salsas top' },
-{ id:'b3', name:'Combo Triple Biker', price:33.90, priceRappi:45.90, carne:true, ingredientes:['tocino crocante','cheddar','cebolla caramelizada','lechuga','tomate','Smoked BBQ','salsa biker'], desc:'3 medallones artesanales 100% carne, tocino crocante, cheddar, cebolla caramelizada, lechuga, tomate, Smoked BBQ, salsa biker + papas crocantes y salsas top' },
-{ id:'b4', name:'Combo Meat Biker', price:30.90, priceRappi:41.84, carne:true, ingredientes:['pollo desmenuzado','chorizo artesanal','queso dambo','lechuga','tomate','salsa biker'], desc:'Medallón artesanal 100% carne, pollo desmenuzado, chorizo artesanal, queso dambo, lechuga, tomate, salsa biker + papas crocantes y salsas top' },
-{ id:'b5', name:'Combo Chicken Crunch', price:24.90, priceRappi:33.71, ingredientes:['pollo crujiente','tocino crocante','cheddar','coleslaw','salsa biker'], desc:'Pan negro, pollo crujiente, tocino crocante, cheddar, coleslaw, salsa biker + papas crocantes y salsas top' },
-{ id:'b6', name:'Combo Cheese Burger', price:19.90, priceRappi:26.94, carne:true, ingredientes:['cheddar','lechuga','tomate','cebolla blanca','salsa biker'], desc:'Medallón artesanal 100% carne, cheddar, lechuga, tomate, cebolla blanca, salsa biker + papas crocantes y salsas top' },
+{ id:'b1', name:'Golden Bacon', price:25.90, priceRappi:35.07, carne:true, acompanamiento:true, ingredientes:['tocino crocante','cheddar','lechuga','tomate','cebolla blanca','salsa biker','Smoked BBQ'], desc:'Medallón artesanal 100% carne, tocino crocante, cheddar, lechuga, tomate, cebolla blanca, salsa biker, Smoked BBQ + papas crocantes y salsas top' },
+{ id:'b2', name:'Blackbcheese', price:27.90, priceRappi:37.78, carne:true, acompanamiento:true, ingredientes:['mermelada de tocino','queso dambo','lechuga','tomate','salsa biker'], desc:'Medallón artesanal 100% carne, mermelada de tocino, queso dambo, lechuga, tomate, salsa biker + papas crocantes y salsas top' },
+{ id:'b3', name:'Triple Biker', price:33.90, priceRappi:45.90, carne:true, acompanamiento:true, ingredientes:['tocino crocante','cheddar','cebolla caramelizada','lechuga','tomate','Smoked BBQ','salsa biker'], desc:'3 medallones artesanales 100% carne, tocino crocante, cheddar, cebolla caramelizada, lechuga, tomate, Smoked BBQ, salsa biker + papas crocantes y salsas top' },
+{ id:'b4', name:'Meat Biker', price:30.90, priceRappi:41.84, carne:true, acompanamiento:true, ingredientes:['pollo desmenuzado','chorizo artesanal','queso dambo','lechuga','tomate','salsa biker'], desc:'Medallón artesanal 100% carne, pollo desmenuzado, chorizo artesanal, queso dambo, lechuga, tomate, salsa biker + papas crocantes y salsas top' },
+{ id:'b5', name:'Chicken Crunch', price:24.90, priceRappi:33.71, carne:false, acompanamiento:true, ingredientes:['pollo crujiente','tocino crocante','queso dambo','coleslaw','salsa biker'], desc:'Pan negro, pollo crujiente, tocino crocante, queso dambo, coleslaw, salsa biker + papas crocantes y salsas top' },
+{ id:'b6', name:'Cheese Burger', price:19.90, priceRappi:26.94, carne:true, acompanamiento:true, ingredientes:['cheddar','lechuga','tomate','salsa biker'], desc:'Medallón artesanal 100% carne, cheddar, lechuga, tomate, salsa biker + papas crocantes y salsas top' },
 { id:'b7', name:'Combo Burger Jr.', price:16.90, priceRappi:22.87, carne:true, ingredientes:['lechuga','tomate','salsa biker'], desc:'Medallón jr artesanal 100% carne, lechuga, tomate, salsa biker + papas jr + gaseosa jr + 1 onion ring' },
 { id:'b8', name:'Combo Alitas Jr.', price:16.90, priceRappi:22.87, sabores:true, minSabores:1, maxSabores:1, opciones:['Smoked BBQ','Búfalo','Lemon Pepper'], ingredientes:['ajonjolí','papas jr','gaseosa jr','onion ring'], desc:'2 alitas bañadas (1 sabor) + papas jr + gaseosa jr + 1 onion ring' },
 ],
 'Upgrades 🚨': [
 { id:'u1', name:'+ 3 Wings FoodBiker', price:10.90, priceRappi:14.76, sabores:true, minSabores:1, maxSabores:1, opciones:['Smoked BBQ','Búfalo','Lemon Pepper'], ingredientes:['ajonjolí','salsa blue cheese'], desc:'Upgrade — 1 sabor a elección' },
 { id:'u2', name:'Extra queso cheddar', price:3.00, priceRappi:4.06, desc:'' },
+{ id:'u2b', name:'Extra queso dambo', price:3.00, priceRappi:4.06, desc:'' },
 { id:'u3', name:'Extra tocino crocante', price:4.00, priceRappi:5.42, desc:'' },
 { id:'u4', name:'Extra Onion Rings (10 und)', price:9.90, priceRappi:13.40, desc:'Aros de cebolla dorados, crocantes' },
 ],
 'Al Plato 🍟': [
-{ id:'p1', name:'Pechuga Crunchy', price:22.90, priceRappi:31.01, ingredientes:['pechuga broaster','papas crocantes','coleslaw'], desc:'Generosa pechuga broaster crocante por fuera y jugosa por dentro, papas crocantes y coleslaw' },
-{ id:'p2', name:'Súper Salchi Biker', price:27.90, priceRappi:37.78, ingredientes:['papas crocantes','hot dog ahumado','chorizo artesanal','pollo desmenuzado','coleslaw'], desc:'Papas crocantes cargadas con hot dog ahumado, chorizo artesanal, pollo desmenuzado y coleslaw' },
-{ id:'p3', name:'Mega Salchi Crunchy', price:32.90, priceRappi:44.54, ingredientes:['papas crocantes','hot dog ahumado','chorizo','½ pechuga crocante','cheddar','tocino crocante','coleslaw'], desc:'Papas crocantes con hot dog ahumado, chorizo, ½ pechuga crocante, cheddar, tocino crocante y coleslaw' },
+{ id:'p1', name:'Pechuga Crunchy', price:22.90, priceRappi:31.01, acompanamiento:true, ingredientes:['pechuga broaster','papas crocantes','coleslaw'], desc:'Generosa pechuga broaster crocante por fuera y jugosa por dentro, papas crocantes y coleslaw' },
+{ id:'p2', name:'Súper Salchi Biker', price:27.90, priceRappi:37.78, acompanamiento:true, ingredientes:['papas crocantes','hot dog ahumado','chorizo artesanal','pollo desmenuzado','coleslaw'], desc:'Papas crocantes cargadas con hot dog ahumado, chorizo artesanal, pollo desmenuzado y coleslaw' },
+{ id:'p3', name:'Mega Salchi Crunchy', price:32.90, priceRappi:44.54, acompanamiento:true, ingredientes:['papas crocantes','hot dog ahumado','chorizo','½ pechuga crocante','queso dambo','tocino crocante','coleslaw'], desc:'Papas crocantes con hot dog ahumado, chorizo, ½ pechuga crocante, queso dambo, tocino crocante y coleslaw' },
 ],
 'Para Compartir 🔥': [
 { id:'c1', name:'Piqueo Cheddar', price:19.90, priceRappi:26.94, desc:'Papas bañadas en cheddar, bacon crocante y onion rings' },
@@ -846,6 +972,7 @@ foodbiker: {
 'Refrescantes & Mocktails 🥤': [
 { id:'be1', name:'Sparkling Frutos Rojos', price:7.90, priceRappi:10.70, desc:'Dulce, burbujeante y refrescante', hielo:true },
 { id:'be2', name:'Maracu Sparkling', price:7.90, priceRappi:10.70, desc:'Ácido tropical y vibrante', hielo:true },
+{ id:'be2b', name:'Maracumango Sparkling', price:7.90, priceRappi:10.70, desc:'Mango más maracuyá — tropical y vibrante', hielo:true },
 { id:'be3', name:'Sandía Coconut', price:7.90, priceRappi:10.70, hielo:true, desc:'Suave, fresco con toque tropical' },
 { id:'be4', name:'Piña Coconut', hielo:true, price:7.90, priceRappi:10.70, desc:'Tropical, dulce y refrescante' },
 { id:'be5', name:'Mango Tropical', hielo:true, price:7.90, priceRappi:10.70, desc:'Tropical, dulce y refrescante' },
@@ -853,10 +980,16 @@ foodbiker: {
 { id:'be7', name:'Limonada Frozen Clásica', hielo:true, price:6.00, priceRappi:7.99, desc:'Ácida, fresca y revitalizante' },
 { id:'be10', name:'Pepsi pequeña', price:3.00, priceRappi:4.06, desc:'Gaseosa Pepsi personal' },
 { id:'be11', name:'Gaseosa personal', price:3.00, priceRappi:4.06, desc:'Gaseosa a elección' },
+{ id:'be12', name:'Coca Cola', price:5.90, priceRappi:7.99, desc:'Gaseosa Coca Cola' },
+{ id:'be13', name:'Coca Cola Zero', price:5.90, priceRappi:7.99, desc:'Gaseosa Coca Cola Zero' },
+{ id:'be14', name:'Inca Kola', price:5.90, priceRappi:7.99, desc:'Gaseosa Inca Kola' },
+{ id:'be15', name:'Inca Kola Zero', price:5.90, priceRappi:7.99, desc:'Gaseosa Inca Kola Zero' },
+{ id:'be16', name:'Agua Cielo', price:5.00, priceRappi:6.77, desc:'Agua sin gas Cielo' },
 ],
 'Bubble Tea 🧋': [
 { id:'bt1', name:'Bubble Tea Sparkling Frutos Rojos', price:12.90, priceRappi:16.90, desc:'Frutos rojos con perlas de tapioca' },
 { id:'bt2', name:'Bubble Tea Maracu Sparkling', price:12.90, priceRappi:16.90, desc:'Maracuyá tropical con perlas de tapioca' },
+{ id:'bt2b', name:'Bubble Tea Maracumango Sparkling', price:12.90, priceRappi:16.90, desc:'Mango más maracuyá con perlas de tapioca' },
 { id:'bt3', name:'Bubble Tea Sandía Coconut', price:12.90, priceRappi:16.90, desc:'Sandía y coco con perlas de tapioca' },
 { id:'bt4', name:'Bubble Tea Piña Coconut', price:12.90, priceRappi:16.90, desc:'Piña y coco con perlas de tapioca' },
 { id:'bt5', name:'Bubble Tea Mango Tropical', price:12.90, priceRappi:16.90, desc:'Mango tropical con perlas de tapioca' },
@@ -883,10 +1016,11 @@ currentMenuTab: 'foodbiker',
 saboresCallback: null,
 saboresSelected: [],
 pairSelected: [],
-itemPersonalizacion: { termino:'Normal', sin:[], adicionales:[] },
+itemPersonalizacion: { termino:'1/2 (Término medio)', sin:[], adicionales:[], adicionalCounts:{}, acompanamiento:'Papas crocantes' },
 currentModalItem: null,
 historialPagos: [],
 historialCambios: [],
+promociones: [],
 };
 // ── Device ID único por pestaña/dispositivo (evita reaccionar a writes propios) ──
 const DEVICE_ID = Math.random().toString(36).slice(2);
@@ -985,6 +1119,7 @@ if (saved.pins) { PINS.admin = saved.pins.admin || PINS.admin; PINS.caja = saved
 if (saved.state) {
 state = { ...state, ...saved.state, role:null, saboresCallback:null, currentModalItem:null };
 if (!state.historialCambios) state.historialCambios = [];
+if (!state.promociones) state.promociones = [];
 Object.values(state.mesas || {}).forEach(m => {
 (m.items || []).forEach(i => {
 if (!i.itemModalidad) i.itemModalidad = (m.modalidad === 'llevar' ? 'llevar' : 'salon');
@@ -1007,6 +1142,39 @@ if (!m.info) m.info = {};
 loadState();
 initMesas();
 saveState();
+
+// ============================================================
+// DETECCIÓN AUTOMÁTICA DE DISPOSITIVO (mobile / tablet / pc)
+// Combina ancho de viewport + user agent + táctil para evitar
+// que un celular real (que a veces reporta >600px por zoom,
+// modo "sitio de escritorio" o DPI) se clasifique como tablet.
+// ============================================================
+function detectDeviceType() {
+  let width = window.innerWidth;
+  const ua = navigator.userAgent || '';
+  const isTouchDevice = (navigator.maxTouchPoints > 0) || ('ontouchstart' in window);
+  const isAndroidPhoneUA = /Android/i.test(ua) && /Mobile/i.test(ua);
+  const isIPhoneUA = /iPhone|iPod/i.test(ua);
+  const isTabletUA = /iPad/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua));
+
+  if (isAndroidPhoneUA || isIPhoneUA) {
+    // El user agent confirma que es un teléfono: forzamos 'mobile'
+    // sin importar lo que reporte innerWidth (zoom, escritorio, etc.)
+    state.deviceType = 'mobile';
+  } else if (isTabletUA) {
+    state.deviceType = 'tablet';
+  } else if (isTouchDevice && width <= 480) {
+    state.deviceType = 'mobile';
+  } else {
+    state.deviceType = width < 600 ? 'mobile' : (width <= 1024 ? 'tablet' : 'pc');
+  }
+
+  document.body.classList.remove('is-mobile', 'is-tablet', 'is-pc');
+  document.body.classList.add('is-' + state.deviceType);
+}
+detectDeviceType();
+window.addEventListener('resize', detectDeviceType);
+
 window.addEventListener('beforeunload', saveState);
 // Garantía extra: si por algún motivo las mesas se pierden, reconstruirlas
 setInterval(() => {
@@ -1548,14 +1716,14 @@ if (mesa.estado === 'entregado' || mesa.estado === 'cerrado') {
   saveState();
 }
 if (mesa.estado === 'libre' && !mesa.items.length) {
-mesa.modalidad = '';
-mesa.createdTs = Date.now(); // timestamp de apertura para detectar pedidos nuevos vs fantasmas
+mesa.modalidad = 'salon'; // Cambio 13: salón por defecto
+mesa.createdTs = Date.now();
 if (!mesa.clienteNombre) {
 pedirNombreCliente(`Mesa ${mesa.num}`, 'Nombre del cliente (opcional — presiona Continuar para omitir)', (nombre) => {
 mesa.clienteNombre = nombre || '';
 saveState();
 showPedidoModal(mesa, key);
-}, true); // true = permitir omitir
+}, true);
 return;
 }
 }
@@ -1663,7 +1831,7 @@ renderMenuItems('foodbiker');
 renderPedidoItems();
 }
 function buildPedidoModalHTML(mesa, key) {
-const modalidadPendiente = !mesa.modalidad;
+const modalidadPendiente = false; // Cambio 13: siempre salon por defecto, no se requiere aviso
 const modOptions = [
 {id:'salon',label:'🪑 Salón'},
 {id:'llevar',label:'🥡 Llevar'},
@@ -1777,6 +1945,20 @@ if (!container) return;
 const cats = menuData[brand];
 const esExterno = isExternoMesa(currentPedidoKey);
 let html = '';
+// Cambio 17: Mostrar promociones del día primero si las hay
+const promos = state.promociones || [];
+if (promos.length && !esExterno) {
+  html += `<div class="menu-cat-title" style="color:#FFD700;font-size:12px;">🎉 PROMOCIONES DEL DÍA</div>`;
+  promos.forEach(promo => {
+    html += `<div class="menu-item featured" style="border-color:#FFD700;background:rgba(255,215,0,.07);cursor:pointer;" onclick="addPromoItem(${JSON.stringify(promo).replace(/"/g,'&quot;')})">
+      <div class="menu-item-info">
+        <div class="menu-item-name">${promo.icono||'🎉'} ${promo.nombre} <span class="badge-top">PROMO</span></div>
+        ${promo.descripcion ? `<div class="menu-item-desc">${promo.descripcion}</div>` : ''}
+      </div>
+      <div class="menu-item-price" style="color:#FFD700;">S/${parseFloat(promo.precio||0).toFixed(2)}</div>
+    </div>`;
+  });
+}
 Object.entries(cats).forEach(([cat, items]) => {
 html += `<div class="menu-cat-title">${cat}</div>`;
 items.forEach(item => {
@@ -1827,6 +2009,12 @@ function reactivarItemMenu(brand, el, itemId) {
     renderMenuItems(activeBrand);
   }
 }
+function addPromoItem(promo) {
+  const mesa = state.mesas[currentPedidoKey];
+  if (!mesa) return;
+  if (!mesa.modalidad) mesa.modalidad = 'salon';
+  pushItem({ id: promo.id || ('promo_'+Date.now()), name: (promo.icono||'🎉') + ' ' + promo.nombre, price: parseFloat(promo.precio||0), brand: 'foodbiker', isPromo: true }, [], promo.descripcion||'', { termino:'', sin:[], adicionales:[], pair:[], itemModalidad:(mesa.modalidad==='llevar'?'llevar':'salon') });
+}
 function addItemToPedidoById(id) {
 const item = _menuItemRegistry[id];
 if (!item) { console.warn('Item not found:', id); return; }
@@ -1834,7 +2022,8 @@ addItemToPedido(item);
 }
 function addItemToPedido(item) {
 const mesa = state.mesas[currentPedidoKey];
-if (!mesa.modalidad) { alert('Primero selecciona la modalidad: Salón o Para Llevar.'); return; }
+// Cambio 13: si no tiene modalidad, asignar salon por defecto automáticamente
+if (!mesa.modalidad) { mesa.modalidad = 'salon'; }
 if (item.agotado) { alert('Producto agotado. No se puede agregar.'); return; }
 if (item.sabores || item.ingredientes || item.carne || item.pair) {
 openSabores(item, (sabores, nota, extra) => {
@@ -1859,15 +2048,16 @@ hielo: extra.hielo || '',
 sin: extra.sin || [],
 adicionales: extra.adicionales || [],
 pair: extra.pair || [],
+split: extra.split || false,
 itemModalidad: extra.itemModalidad || (mesa.modalidad === 'llevar' ? 'llevar' : 'salon')
 };
 const basePrice = (isExternoMesa(currentPedidoKey) && item.priceRappi) ? item.priceRappi : item.price;
 const finalPrice = basePrice + extraPrice(detalles.adicionales);
-const key = item.id + '_' + (sabores.join('+')||'solo') + '_' + (detalles.sin.join('+')||'todo') + '_' + (detalles.adicionales.join('+')||'sinextra') + '_' + (detalles.pair.join('+')||'pair0') + '_' + (detalles.termino||'') + '_' + detalles.itemModalidad;
+const key = item.id + '_' + (sabores.join('+')||'solo') + '_' + (detalles.sin.join('+')||'todo') + '_' + (detalles.adicionales.join('+')||'sinextra') + '_' + (detalles.pair.join('+')||'pair0') + '_' + (detalles.termino||'') + '_' + detalles.itemModalidad + '_' + (detalles.split?'split':'');
 const existing = mesa.items.find(i => i.key === key && i.nota === nota);
 if (existing) { existing.qty++; }
 else {
-mesa.items.push({ key, id: item.id, name: item.name, price: finalPrice, basePrice: item.price, priceRappi: item.priceRappi, qty: 1, sabores, nota, brand: item.brand || state.currentMenuTab, promo: item.promo||'', termino:detalles.termino, hielo:detalles.hielo, sin:detalles.sin, adicionales:detalles.adicionales, pair:detalles.pair, itemModalidad:detalles.itemModalidad });
+mesa.items.push({ key, id: item.id, name: item.name, price: finalPrice, basePrice: item.price, priceRappi: item.priceRappi, qty: 1, sabores, nota, brand: item.brand || state.currentMenuTab, promo: item.promo||'', termino:detalles.termino, hielo:detalles.hielo, sin:detalles.sin, adicionales:detalles.adicionales, pair:detalles.pair, split:detalles.split, itemModalidad:detalles.itemModalidad });
 }
 if (mesa.estado === 'libre') mesa.estado = 'ocupada';
 renderPedidoItems();
@@ -1891,6 +2081,7 @@ const details = [
   item.sabores&&item.sabores.length ? `🌶 ${item.sabores.join(', ')}` : '',
   item.pair&&item.pair.length ? `🍹 ${item.pair.join(' + ')}` : '',
   item.termino ? `🥩 ${item.termino}` : '',
+  item.split ? `🔪 Partida por la mitad` : '',
   item.sin&&item.sin.length ? `🚫 Sin: ${item.sin.join(', ')}` : '',
   item.adicionales&&item.adicionales.length ? `➕ ${item.adicionales.join(', ')}` : '',
   item.nota ? `📝 ${item.nota}` : '',
@@ -2014,6 +2205,7 @@ if (i.itemModalidad) parts.push(`Servicio ítem: ${modalidadLabel(i.itemModalida
 if (i.sabores && i.sabores.length) parts.push(`Sabores: ${i.sabores.join(', ')}`);
 if (i.pair && i.pair.length) parts.push(`Bebidas: ${i.pair.join(' + ')}`);
 if (i.termino) parts.push(`Término: ${i.termino}`);
+if (i.split) parts.push(`🔪 Partida por la mitad`);
 if (i.sin && i.sin.length) parts.push(`Sin: ${i.sin.join(', ')}`);
 if (i.adicionales && i.adicionales.length) parts.push(`Adicionales: ${i.adicionales.join(', ')}`);
 if (i.nota) parts.push(`Nota: ${i.nota}`);
@@ -2028,7 +2220,12 @@ if (!currentPedidoKey) return;
 saveDeliveryInfo();
 const mesa = state.mesas[currentPedidoKey];
 if (!mesa.items.length) { alert('No hay items en el pedido'); return; }
-if (!mesa.modalidad) { alert('Primero selecciona la modalidad del pedido.'); return; }
+if (!mesa.modalidad) { mesa.modalidad = 'salon'; }
+// Cambio 14: Delivery requiere prepago
+if (mesa.modalidad === 'delivery' && !mesa.prepagado && !mesa.metodoPago) {
+  alert('⚠️ El pedido Delivery debe estar PREPAGADO antes de enviarse a cocina.\n\nVe a Caja → cobra primero y luego envía a cocina.');
+  return;
+}
 mesa.items.forEach(i => { i.enviadoCocina = true; i.listo = false; });
 if (mesa.estado !== 'en-elaboracion') mesa.estado = 'en-elaboracion';
 if (!mesa.enviadoTs) mesa.enviadoTs = Date.now(); // timestamp para semáforo
@@ -2079,7 +2276,7 @@ function openSabores(item, callback) {
 state.saboresCallback = callback;
 state.saboresSelected = [];
 state.pairSelected = [];
-state.itemPersonalizacion = { termino:'Normal', sin:[], adicionales:[] };
+state.itemPersonalizacion = { termino:'Medio', sin:[], adicionales:[], adicionalCounts:{}, acompanamiento:'Papas crocantes', split: false };
 state.currentModalItem = item;
 const modal = document.getElementById('sabores-modal');
 document.getElementById('sabores-title').textContent = item.name;
@@ -2133,29 +2330,63 @@ if (item.pairOptional) {
 }
 }
 document.getElementById('termino-section').style.display = item.carne ? 'block' : 'none';
-document.querySelectorAll('.termino-btn').forEach((b,i) => b.classList.toggle('selected', i===0));
+// Pre-seleccionar "Medio" por defecto para burgers de carne
+document.querySelectorAll('.termino-btn').forEach(b => {
+  b.classList.toggle('selected', b.textContent.includes('Medio') && !b.textContent.includes('3/4'));
+});
+state.itemPersonalizacion.termino = item.carne ? 'Medio' : '';
+state.itemPersonalizacion.split = false;
+// Cambio 6: Acompañamiento para burgers, alitas y platos
+const acomSection = document.getElementById('acompanamiento-section');
+const needsAcom = item.acompanamiento || item.carne || (item.sabores && item.opciones && item.opciones.includes('Smoked BBQ') && !item.id.endsWith('Jr.'));
+if (acomSection) {
+  acomSection.style.display = needsAcom ? 'block' : 'none';
+  if (needsAcom) {
+    document.querySelectorAll('#acompanamiento-btns .termino-btn').forEach((b,i) => b.classList.toggle('selected', i===0));
+    state.itemPersonalizacion.acompanamiento = 'Papas crocantes';
+  }
+}
 const sinSection = document.getElementById('sin-section');
 const ing = item.ingredientes || [];
 sinSection.style.display = ing.length ? 'block' : 'none';
 document.getElementById('sin-ingredientes-btns').innerHTML = ing.map(x => `<button class="option-pill" onclick="toggleSinIngrediente(this,'${x}')">${x}</button>`).join('');
-document.querySelectorAll('.adicional-btn').forEach(b => b.classList.remove('selected'));
+// Resetear adicionales (ahora son controles +/-)
 state.itemPersonalizacion.adicionales = [];
-// Adicionales según tipo de ítem
+// Adicionales según tipo de ítem — cambio 5,8,11
 const adicionalesBtns = document.getElementById('adicionales-btns');
-const esBurgerOAla = item.carne || (item.sabores && item.opciones && item.opciones.includes('Smoked BBQ'));
-if (item.id === 'pm4' || (!esBurgerOAla && !item.carne)) {
-  adicionalesBtns.innerHTML = item.id === 'pm4' ?
-    `<button class="adicional-btn" onclick="toggleAdicional(this,'Extra huevo +S/3.00')">🥚 Extra huevo +S/3</button>` :
-    `<button class="adicional-btn" onclick="toggleAdicional(this,'Extra salsa')">🫙 Extra salsa</button>
-     <button class="adicional-btn" onclick="toggleAdicional(this,'Extra huevo +S/3.00')">🥚 Extra huevo +S/3</button>`;
+// Burgers con carne, Chicken Crunch (b5), Pechuga/Salchi (acompanamiento)
+const esBurger = item.carne || item.id === 'b5' || item.acompanamiento;
+const esAlasGrandes = item.sabores && item.opciones && item.opciones.includes('Smoked BBQ') && !item.id.endsWith('Jr.') && item.id !== 'u1';
+if (item.id === 'pm4') {
+  _setAdicsConfig([
+    { key:'Extra huevo +S/3.00', label:'🥚 Extra huevo +S/3', precio:3.00 }
+  ]);
+} else if (esBurger || esAlasGrandes) {
+  _setAdicsConfig([
+    { key:'Extra queso cheddar +S/3.00', label:'🧀 Extra queso cheddar +S/3', precio:3.00 },
+    { key:'Extra queso dambo +S/3.00',   label:'🧀 Extra queso dambo +S/3',   precio:3.00 },
+    { key:'Extra tocino crocante +S/4.00', label:'🥓 Extra tocino crocante +S/4', precio:4.00 },
+    { key:'Extra huevo +S/3.00',          label:'🥚 Extra huevo +S/3',         precio:3.00 },
+    { key:'Extra Onion Rings +S/9.90',    label:'🧅 Extra Onion Rings +S/9.90', precio:9.90 },
+    { key:'Extra salsa',                  label:'🫙 Extra salsa',               precio:0    },
+    { key:'3 Alitas extra +S/10.90',      label:'🍗 +3 Alitas extra +S/10.90', precio:10.90}
+  ]);
 } else {
-  adicionalesBtns.innerHTML =
-    `<button class="adicional-btn" onclick="toggleAdicional(this,'Extra queso cheddar +S/3.00')">🧀 Extra queso cheddar +S/3</button>
-     <button class="adicional-btn" onclick="toggleAdicional(this,'Extra tocino crocante +S/4.00')">🥓 Extra tocino +S/4</button>
-     <button class="adicional-btn" onclick="toggleAdicional(this,'Extra huevo +S/3.00')">🥚 Extra huevo +S/3</button>
-     <button class="adicional-btn" onclick="toggleAdicional(this,'Extra Onion Rings +S/9.90')">🧅 Extra Onion Rings +S/9.90</button>
-     <button class="adicional-btn" onclick="toggleAdicional(this,'Extra salsa')">🫙 Extra salsa</button>
-     <button class="adicional-btn" onclick="toggleAdicional(this,'3 Alitas extra +S/10.90')">🍗 +3 Alitas extra +S/10.90</button>`;
+  _setAdicsConfig([
+    { key:'Extra salsa',     label:'🫙 Extra salsa',     precio:0    },
+    { key:'Extra huevo +S/3.00', label:'🥚 Extra huevo +S/3', precio:3.00 }
+  ]);
+}
+// Split (partida por la mitad): solo para burgers con carne
+const splitSection = document.getElementById('split-section');
+if (splitSection) {
+  splitSection.style.display = item.carne ? 'block' : 'none';
+  // Reset toggle UI
+  state.itemPersonalizacion.split = false;
+  const toggleUI  = document.getElementById('split-toggle-ui');
+  const toggleDot = document.getElementById('split-toggle-dot');
+  if (toggleUI)  toggleUI.style.background  = 'var(--fb-border)';
+  if (toggleDot) toggleDot.style.transform  = 'translateX(0)';
 }
 
 // QUESO SWAP: detectar si la burger tiene cheddar o dambo para ofrecer cambio
@@ -2215,6 +2446,89 @@ if (!arr.includes(ingrediente)) arr.push(ingrediente);
 state.itemPersonalizacion.sin = arr.filter(x => x !== ingrediente);
 }
 }
+function selectAcompanamiento(el, valor) {
+document.querySelectorAll('#acompanamiento-btns .termino-btn').forEach(b => b.classList.remove('selected'));
+el.classList.add('selected');
+state.itemPersonalizacion.acompanamiento = valor;
+}
+function toggleSplit() {
+  state.itemPersonalizacion.split = !state.itemPersonalizacion.split;
+  const on = state.itemPersonalizacion.split;
+  const toggleUI  = document.getElementById('split-toggle-ui');
+  const toggleDot = document.getElementById('split-toggle-dot');
+  if (toggleUI)  toggleUI.style.background  = on ? 'var(--fb-orange)' : 'var(--fb-border)';
+  if (toggleDot) toggleDot.style.transform  = on ? 'translateX(18px)' : 'translateX(0)';
+  const row = document.getElementById('split-row');
+  if (row) row.style.borderColor = on ? 'var(--fb-orange)' : 'var(--fb-border)';
+}
+// ── ADICIONALES: renderiza filas [ - ][ n ][ + ] ───────────────────────────
+function renderAdicionalRows() {
+  const container = document.getElementById('adicionales-btns');
+  if (!container) return;
+  const _adics = container._adicsConfig || [];
+  if (!state.itemPersonalizacion.adicionalCounts) state.itemPersonalizacion.adicionalCounts = {};
+  const counts = state.itemPersonalizacion.adicionalCounts;
+  container.innerHTML = _adics.map((a, i) => {
+    const n = counts[a.key] || 0;
+    return `<div class="adic-row ${n > 0 ? 'has-count' : ''}" id="adic-row-${i}">
+      <div class="adic-label">${a.label}</div>
+      <div class="adic-ctrl">
+        <button class="adic-ctrl-btn minus" onclick="changeAdicionalCount(${i},-1)" ${n===0?'style="opacity:.3;cursor:default"':''}>−</button>
+        <span class="adic-qty">${n > 0 ? n : '0'}</span>
+        <button class="adic-ctrl-btn plus" onclick="changeAdicionalCount(${i},+1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function changeAdicionalCount(i, delta) {
+  const container = document.getElementById('adicionales-btns');
+  if (!container || !container._adicsConfig) return;
+  const a = container._adicsConfig[i];
+  if (!state.itemPersonalizacion.adicionalCounts) state.itemPersonalizacion.adicionalCounts = {};
+  const counts = state.itemPersonalizacion.adicionalCounts;
+  const prev = counts[a.key] || 0;
+  const next = Math.max(0, prev + delta);
+  counts[a.key] = next;
+  // Rebuild adicionales array from all counts
+  state.itemPersonalizacion.adicionales = [];
+  container._adicsConfig.forEach(ad => {
+    const c = counts[ad.key] || 0;
+    if (c > 0) {
+      if (ad.precio > 0) {
+        state.itemPersonalizacion.adicionales.push(`${c > 1 ? c + 'x ' : ''}${ad.key}`);
+      } else {
+        // Free adicional: add once regardless of count
+        state.itemPersonalizacion.adicionales.push(ad.key);
+      }
+    }
+  });
+  renderAdicionalRows();
+}
+function _setAdicsConfig(cfg) {
+  const container = document.getElementById('adicionales-btns');
+  if (!container) return;
+  if (!state.itemPersonalizacion.adicionalCounts) state.itemPersonalizacion.adicionalCounts = {};
+  // Reset counts
+  state.itemPersonalizacion.adicionalCounts = {};
+  container._adicsConfig = cfg;
+  renderAdicionalRows();
+}
+function toggleAdicionalCounter(el, adicional, precio) {
+  // Legacy fallback — keep for safety (no longer called from rebuilt markup)
+  if (!state.itemPersonalizacion.adicionalCounts) state.itemPersonalizacion.adicionalCounts = {};
+  const counts = state.itemPersonalizacion.adicionalCounts;
+  counts[adicional] = (counts[adicional] || 0) + 1;
+  const n = counts[adicional];
+  state.itemPersonalizacion.adicionales = state.itemPersonalizacion.adicionales.filter(x => !x.startsWith(adicional.split(' +')[0].replace(/\d+x\s?/,'')));
+  if (precio > 0) {
+    state.itemPersonalizacion.adicionales.push(`${n > 1 ? n + 'x ' : ''}${adicional}`);
+  } else {
+    state.itemPersonalizacion.adicionales.push(adicional);
+  }
+  el.classList.add('selected');
+  const badge = el.querySelector('.adicional-count');
+  if (badge) badge.textContent = n > 1 ? ` ×${n}` : '';
+}
 function toggleAdicional(el, adicional) {
 el.classList.toggle('selected');
 const arr = state.itemPersonalizacion.adicionales;
@@ -2249,7 +2563,11 @@ const adicionalesConQueso = [...state.itemPersonalizacion.adicionales];
 if (state.itemPersonalizacion.quesoSwap) {
 adicionalesConQueso.push('🧀 ' + state.itemPersonalizacion.quesoSwap);
 }
-const extra = { ...state.itemPersonalizacion, adicionales: adicionalesConQueso, pair, itemModalidad:(state.mesas[currentPedidoKey]?.modalidad === 'llevar' ? 'llevar' : 'salon') };
+// Cambio 6: incluir acompañamiento elegido
+if (state.itemPersonalizacion.acompanamiento && state.itemPersonalizacion.acompanamiento !== 'Papas crocantes') {
+adicionalesConQueso.push('🍟 ' + state.itemPersonalizacion.acompanamiento);
+}
+const extra = { ...state.itemPersonalizacion, adicionales: adicionalesConQueso, pair, itemModalidad:(state.mesas[currentPedidoKey]?.modalidad === 'llevar' ? 'llevar' : 'salon'), split: state.itemPersonalizacion.split || false };
 if (state.saboresCallback) state.saboresCallback(state.saboresSelected, nota, extra);
 closeSabores();
 }
@@ -2416,6 +2734,7 @@ ${(mesa.estado === 'pagado' || mesa.estado === 'entregado')
         ? `<button onclick="cerrarMesa('${key}')" style="flex:2;background:#22C55E;color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">🗑️ Cerrar mesa</button>`
         : `<div style="flex:2;background:#1a1a1a;border:1.5px solid #333;border-radius:10px;padding:14px;font-size:12px;font-weight:800;color:#666;text-align:center;">🔒 Cerrar mesa<br><span style="font-size:10px;font-weight:600;">Esperando que el mozo marque "Entregado"</span></div>`
       }
+      ${mesa.modalidad === 'delivery' && mesa.info && mesa.info.telefono ? `<a href="https://wa.me/51${(mesa.info.telefono||'').replace(/\D/g,'').replace(/^0/,'')}?text=${encodeURIComponent('¡Hola, '+(mesa.clienteNombre||mesa.info.nombre||'')+'! 🛵 Tu pedido ya está EN RUTA y llegará pronto.\nPor favor estate atento/a a la llamada del motorizado 📞.\n¡Gracias por tu preferencia! — LaFoodBiker 🍔')}" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;background:#25D366;color:#fff;border:none;border-radius:10px;padding:12px 6px;font-size:11px;font-weight:900;text-decoration:none;text-align:center;line-height:1.3;">📱 En ruta<br>WhatsApp</a>` : ''}
       <button onclick="reimprimirComprobante('${key}')" style="flex:1;background:transparent;color:#22C55E;border:2px solid #22C55E;border-radius:10px;padding:14px;font-size:11px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">🖨️ Reimprimir</button>
       <button onclick="eliminarPedidoCaja('${key}')" style="background:var(--danger);color:#fff;border:none;border-radius:10px;padding:14px 12px;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">🗑️</button>
     </div>
@@ -2783,11 +3102,36 @@ function renderHistEditBox(idx) {
   const items = p.items || [];
   const modOptions = ['salon','llevar','recojo','delivery','externo'];
   const modLabels = {salon:'🪑 Salón',llevar:'🥡 Llevar',recojo:'📦 Recojo',delivery:'🛵 Delivery',externo:'📱 App'};
+  // Cambio 16: mostrar cómo se cobró originalmente
+  const metodoOriginal = p.metodoPago || p.pagadoCon || '';
+  const tandas = p.tandas || [];
+  let pagoDetalleHTML = '';
+  if (tandas.length > 0) {
+    pagoDetalleHTML = `<div style="margin-bottom:12px;background:rgba(34,197,94,.08);border:1px solid #22C55E44;border-radius:10px;padding:12px;">
+      <div style="font-size:11px;font-weight:900;color:#22C55E;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💰 Cobro original — Por tandas</div>
+      ${tandas.map((t,ti) => `<div style="font-size:12px;padding:4px 0;border-bottom:1px solid #22C55E22;">
+        Tanda ${ti+1}: <b>${t.metodo||t.metodosStr||'—'}</b> — S/ ${parseFloat(t.monto||t.total||0).toFixed(2)}
+        ${t.productos ? `<div style="font-size:10px;color:#aaa;margin-top:2px;">${t.productos}</div>` : ''}
+      </div>`).join('')}
+    </div>`;
+  } else if (metodoOriginal) {
+    const grupoPago = p.grupoPago || [];
+    pagoDetalleHTML = `<div style="margin-bottom:12px;background:rgba(34,197,94,.08);border:1px solid #22C55E44;border-radius:10px;padding:12px;">
+      <div style="font-size:11px;font-weight:900;color:#22C55E;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💰 Cobro original</div>
+      <div style="font-size:13px;font-weight:800;">${metodoOriginal} — S/ ${parseFloat(p.total||0).toFixed(2)}</div>
+      ${grupoPago.length > 0 ? `<div style="font-size:11px;color:#aaa;margin-top:4px;">${grupoPago.map(g=>`${g.nombre}: ${g.items||'—'} = S/${g.subtotal||0}`).join('<br>')}</div>` : ''}
+    </div>`;
+  }
   let html = `<h3>✏️ Editar pedido</h3>
   <div class="sub">${p.mesa} · ${p.fecha}</div>
+  ${pagoDetalleHTML}
   <div class="dash-section-title">Modalidad</div>
   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
     ${modOptions.map(m=>`<button class="dash-filter-btn ${p.modalidad===m?'active':''}" onclick="setHistModalidad(${idx},'${m}')">${modLabels[m]}</button>`).join('')}
+  </div>
+  <div class="dash-section-title">Método de pago</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+    ${['Efectivo','Yape','Plin','Visa','Mastercard','PedidosYa','Rappi'].map(m=>`<button class="dash-filter-btn ${(p.metodoPago||p.pagadoCon)===m?'active':''}" onclick="setHistMetodo(${idx},'${m}')">${m}</button>`).join('')}
   </div>
   <div class="dash-section-title">Items</div>`;
   items.forEach((item, i) => {
@@ -2812,6 +3156,11 @@ function renderHistEditBox(idx) {
 
 function setHistModalidad(idx, mod) {
   state.historialPagos[idx].modalidad = mod;
+  renderHistEditBox(idx);
+}
+function setHistMetodo(idx, metodo) {
+  state.historialPagos[idx].metodoPago = metodo;
+  state.historialPagos[idx].pagadoCon = metodo;
   renderHistEditBox(idx);
 }
 function setHistItemQty(idx, i, val) {
@@ -2862,6 +3211,8 @@ const ESTADOS_EXCLUIR = ['libre', 'pagado', 'ya-pagado', 'por-entregar', 'por-en
 const pedidos = Object.entries(state.mesas).filter(([k,m]) => {
   if (!m.items || !m.items.length) return false;
   if (ESTADOS_EXCLUIR.includes(m.estado)) return false;
+  // Cambio 14: Delivery solo aparece en cocina si está prepagado
+  if (m.modalidad === 'delivery' && !m.prepagado && !m.metodoPago) return false;
   const allFbItems = m.items.filter(i => (i.brand === 'foodbiker' || i.brand === 'custom' || !i.brand) && i.enviadoCocina);
   if (!allFbItems.length) return false;
   // Mostrar si hay items pendientes O todos listos pero aún no se avisó (estado en-elaboracion u ocupada)
@@ -2910,6 +3261,7 @@ const parts = [];
 if (item.sabores && item.sabores.length) parts.push(`🌶 ${item.sabores.join(' + ')}`);
 if (item.pair && item.pair.length) parts.push(`🍹 ${item.pair.join(' + ')}`);
 if (item.termino && item.termino !== 'Normal') parts.push(`🥩 ${item.termino}`);
+if (item.split) parts.push(`🔪 PARTIDA POR LA MITAD`);
 if (item.sin && item.sin.length) parts.push(`🚫 SIN: ${item.sin.join(', ')}`);
 if (item.adicionales && item.adicionales.length) parts.push(`➕ ${item.adicionales.join(', ')}`);
 if (item.nota) parts.push(`📝 ${item.nota}`);
@@ -2990,7 +3342,7 @@ html += `<div class="add-item-row">
 <input class="add-item-input" id="new-name-${brand}-${cat.replace(/\s/g,'_')}" placeholder="Nuevo producto...">
 <input class="add-item-input" type="number" id="new-price-${brand}-${cat.replace(/\s/g,'_')}" placeholder="Precio" style="width:72px;flex:none">
 <input class="add-item-input" type="number" id="new-rappi-${brand}-${cat.replace(/\s/g,'_')}" placeholder="P.Rappi" style="width:72px;flex:none;color:#FC4F00;">
-<button class="btn-sm ${color}" onclick="addMenuItem('${brand}','${cat}')">+ Agregar</button>
+<button class="btn-sm" onclick="addMenuItem('${brand}','${cat}')">+ Agregar</button>
 </div>
 </div>`;
 });
@@ -3036,7 +3388,42 @@ renderView('admin-fb');
 }
 function renderAdminMesas(el) {
 const count = Object.keys(state.mesas).filter(k => k.startsWith('M')).length;
+const promos = state.promociones || [];
+// Cards de promociones — layout flex-wrap limpio, sin desbordamiento
+const promosHTML = promos.length
+  ? `<div style="display:flex;flex-wrap:wrap;gap:10px;padding:12px 16px 4px;">
+      ${promos.map((p,i) => `
+        <div style="flex:1 1 calc(50% - 5px);min-width:140px;max-width:100%;background:var(--fb-card);border:1.5px solid var(--fb-border);border-radius:var(--radius);padding:12px 12px 10px;display:flex;flex-direction:column;gap:6px;box-sizing:border-box;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+            <span style="font-size:22px;line-height:1;flex-shrink:0;">${p.icono||'🎉'}</span>
+            <button class="admin-del-btn" onclick="eliminarPromo(${i})" style="flex-shrink:0;padding:2px 6px;font-size:16px;">🗑</button>
+          </div>
+          <div style="font-size:13px;font-weight:800;color:var(--text);line-height:1.2;word-break:break-word;">${p.nombre}</div>
+          ${p.descripcion ? `<div style="font-size:10px;color:var(--text-muted);line-height:1.3;word-break:break-word;">${p.descripcion}</div>` : ''}
+          <div style="font-family:'Arial Black',Impact,sans-serif;font-size:17px;color:var(--fb-yellow);margin-top:2px;">S/${parseFloat(p.precio||0).toFixed(2)}</div>
+        </div>`).join('')}
+    </div>`
+  : `<div style="padding:10px 16px;font-size:12px;color:var(--text-muted);">Ninguna promoción activa</div>`;
 el.innerHTML = `
+<div class="section-divider">🎉 Promociones del Día</div>
+<div class="admin-section">
+<div class="admin-section-header">
+<div class="admin-section-title">Promociones activas</div>
+</div>
+${promosHTML}
+<div style="padding:14px 16px;border-top:1px solid var(--fb-border);">
+  <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px;">➕ Agregar Promoción</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+    <input class="add-item-input" id="promo-icono" placeholder="Icono (ej: 🔥)" style="width:70px;flex:none;">
+    <input class="add-item-input" id="promo-nombre" placeholder="Nombre de la promo..." style="flex:2;min-width:140px;">
+    <input class="add-item-input" type="number" id="promo-precio" placeholder="S/ precio" style="width:80px;flex:none;">
+  </div>
+  <div style="margin-bottom:10px;">
+    <input class="add-item-input" id="promo-desc" placeholder="Descripción breve..." style="width:100%;">
+  </div>
+  <button class="btn-primary" style="width:100%;padding:12px;font-size:13px;font-weight:900;" onclick="agregarPromo()">🎉 Agregar Promoción</button>
+</div>
+</div>
 <div class="section-divider">Configuración de Mesas</div>
 <div class="admin-section">
 <div class="admin-section-header">
@@ -3077,6 +3464,25 @@ el.innerHTML = `
 <button class="btn-sm" style="background:var(--warning)" onclick="changePinCaja()">Guardar</button>
 </div>
 </div>`;
+}
+function agregarPromo() {
+  const icono = document.getElementById('promo-icono')?.value.trim() || '🎉';
+  const nombre = document.getElementById('promo-nombre')?.value.trim();
+  const precio = parseFloat(document.getElementById('promo-precio')?.value);
+  const desc = document.getElementById('promo-desc')?.value.trim() || '';
+  if (!nombre || isNaN(precio)) { alert('Ingresa nombre y precio de la promoción'); return; }
+  if (!state.promociones) state.promociones = [];
+  state.promociones.push({ icono, nombre, precio, descripcion: desc, id: 'promo_' + Date.now() });
+  saveState();
+  renderView('admin-mesas');
+}
+function eliminarPromo(idx) {
+  if (!state.promociones) return;
+  if (confirm(`¿Eliminar promoción "${state.promociones[idx].nombre}"?`)) {
+    state.promociones.splice(idx, 1);
+    saveState();
+    renderView('admin-mesas');
+  }
 }
 function changeMesas(delta) {
 const current = Object.keys(state.mesas).filter(k => k.startsWith('M')).length;
@@ -4284,6 +4690,7 @@ const details = [];
 if (item.sabores && item.sabores.length) details.push(`Sabor: ${item.sabores.join(', ')}`);
 if (item.pair && item.pair.length) details.push(`Bebidas: ${item.pair.join(' + ')}`);
 if (item.termino && item.termino !== 'Normal') details.push(`Término: ${item.termino}`);
+if (item.split) details.push(`🔪 Partida por la mitad`);
 if (item.sin && item.sin.length) details.push(`Sin: ${item.sin.join(', ')}`);
 if (item.adicionales && item.adicionales.length) details.push(`Extra: ${item.adicionales.join(', ')}`);
 details.forEach(d => { html += `<div class="ticket-row-detail" style="${B}">${d}</div>`; });
