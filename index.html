@@ -3652,6 +3652,26 @@ titleEl.innerHTML = `${displayTitle} ${clienteTag}`;
 }
 }, true);
 }
+// ── Espera a que las imágenes (ej. QR) terminen de cargar antes de imprimir ──
+function imprimirCuandoListo() {
+  const area = document.getElementById('ticket-print-area');
+  const imgs = Array.from(area.querySelectorAll('img'));
+  if (!imgs.length) { window.print(); return; }
+  let pendientes = imgs.length;
+  let impreso = false;
+  const lanzar = () => { if (!impreso) { impreso = true; window.print(); } };
+  imgs.forEach(img => {
+    const marcar = () => { pendientes--; if (pendientes <= 0) lanzar(); };
+    if (img.complete && img.naturalWidth > 0) {
+      marcar();
+    } else {
+      img.addEventListener('load', marcar, { once: true });
+      img.addEventListener('error', marcar, { once: true });
+    }
+  });
+  // Respaldo: si por algún motivo no disparan los eventos, imprime de todas formas
+  setTimeout(lanzar, 800);
+}
 function imprimirPrecuenta() {
 if (!currentPedidoKey) return;
 const mesa = state.mesas[currentPedidoKey];
@@ -3702,7 +3722,7 @@ FoodBiker
 </div>
 </div>`;
 document.getElementById('ticket-print-area').innerHTML = html;
-window.print();
+imprimirCuandoListo();
 }
 // ── MODAL DE PAGO CON CHECKBOXES ──────────────────────────────────────────
 let pagoCombKey = null;
@@ -5022,7 +5042,7 @@ if (!pago.registrado) {
   }
   saveState();
 }
-window.print();
+imprimirCuandoListo();
 }
 function mostrarPagos(key) {
 abrirPagoComb(key);
