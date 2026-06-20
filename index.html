@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="version" content="1779158190_v20">
+<meta charset="UTF-8"><meta name="version" content="1779158190_v21">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2806,6 +2806,7 @@ ${(mesa.estado === 'pagado' || mesa.estado === 'entregado')
 : `<div class="caja-actions">
 <button class="btn-primary" onclick="abrirPagoComb('${key}')">💳 Cobrar</button>
 <button class="btn-secondary" onclick="reabrirMesa('${key}')">✏️ Editar</button>
+${mesa.prepagado ? `<button onclick="reimprimirComprobante('${key}')" style="background:transparent;color:#22C55E;border:2px solid #22C55E;border-radius:var(--radius-sm);padding:14px 10px;font-size:11px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">🖨️ Reimpr.</button>` : ''}
 <button onclick="eliminarPedidoCaja('${key}')" style="background:var(--danger);color:#fff;border:none;border-radius:var(--radius-sm);padding:14px 12px;font-size:13px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;">🗑️</button>
 </div>
 <div class="pago-btns" id="pago-${key}">
