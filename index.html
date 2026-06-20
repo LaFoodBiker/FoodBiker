@@ -256,21 +256,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}
 }
+@page{size:58mm auto;margin:0;}
 @media print{body>*:not(#ticket-print-area){display:none !important;}
-#ticket-print-area{display:block !important;}
+#ticket-print-area{display:block !important;width:48mm !important;margin:0 !important;padding:0 !important;}
 }
 #ticket-print-area{display:none;}
-.ticket{font-family:'Courier New',monospace;width:840px;margin:0 auto;font-size:36px;color:#000;background:#fff;padding:36px 24px;font-weight:900;letter-spacing:1.5px;-webkit-text-stroke:0.6px #000;}
-.ticket *{font-weight:900 !important;-webkit-text-stroke:0.6px #000 !important;}
+.ticket{font-family:'Courier New',monospace;width:48mm;margin:0 auto;font-size:9px;color:#000;background:#fff;padding:2mm 1mm;font-weight:900;letter-spacing:0.3px;-webkit-text-stroke:0.2px #000;}
+.ticket *{font-weight:900 !important;-webkit-text-stroke:0.2px #000 !important;}
 .ticket-center{text-align:center;}
-.ticket-logo{font-size:51px;font-weight:900;letter-spacing:1px;}
-.ticket-sub{font-size:30px;margin-bottom:9px;}
-.ticket-divider{border:none;border-top:3px dashed #000;margin:15px 0;}
-.ticket-row{display:flex;justify-content:space-between;margin:6px 0;font-size:36px;}
-.ticket-row-detail{font-size:30px;color:#000;padding-left:30px;margin-bottom:6px;}
-.ticket-total-row{display:flex;justify-content:space-between;font-size:42px;font-weight:900;margin:9px 0;}
-.ticket-footer{font-size:30px;text-align:center;margin-top:24px;line-height:1.6;}
-.ticket-feed-final{font-size:30px;line-height:1.6;white-space:pre;color:#fefefe;-webkit-text-stroke:0px transparent !important;}
+.ticket-logo{font-size:12px;font-weight:900;letter-spacing:0.5px;}
+.ticket-sub{font-size:8px;margin-bottom:2px;}
+.ticket-divider{border:none;border-top:1px dashed #000;margin:3px 0;}
+.ticket-row{display:flex;justify-content:space-between;margin:2px 0;font-size:9px;word-break:break-word;}
+.ticket-row span:first-child{flex:1;padding-right:4px;}
+.ticket-row span:last-child{flex-shrink:0;text-align:right;}
+.ticket-row-detail{font-size:8px;color:#000;padding-left:8px;margin-bottom:1px;}
+.ticket-total-row{display:flex;justify-content:space-between;font-size:11px;font-weight:900;margin:3px 0;}
+.ticket-footer{font-size:8px;text-align:center;margin-top:6px;line-height:1.4;}
+.ticket-feed-final{font-size:8px;line-height:1.4;white-space:pre;color:#fefefe;-webkit-text-stroke:0px transparent !important;}
 .nombre-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:750;align-items:center;justify-content:center;padding:20px;}
 .nombre-overlay.show{display:flex;}
 .nombre-box{background:var(--fb-card);border-radius:var(--radius);width:100%;max-width:360px;padding:24px 20px;}
@@ -3684,9 +3687,9 @@ const ahora = new Date().toLocaleString('es-PE', {dateStyle:'short', timeStyle:'
 const B = 'font-weight:900;';
 let html = `<div class="ticket" style="font-family:'Courier New',monospace;font-weight:900;">
 <div class="ticket-center" style="${B}">
-<div class="ticket-logo" style="${B}font-size:51px;">LA FOODBIKER</div>
-<div class="ticket-sub" style="${B}font-size:30px;">Burgers · Wings · Bar</div>
-<div class="ticket-sub" style="${B}font-size:30px;">RUC: 10757066721 · Local 01</div>
+<div class="ticket-logo" style="${B}">LA FOODBIKER</div>
+<div class="ticket-sub" style="${B}">Burgers · Wings · Bar</div>
+<div class="ticket-sub" style="${B}">RUC: 10757066721 · Local 01</div>
 </div>
 <hr class="ticket-divider">
 <div class="ticket-row" style="${B}"><span style="${B}">${mesaLabel}</span><span style="${B}">${modalidadLabel(mesa.modalidad)}</span></div>`;
@@ -3709,7 +3712,7 @@ details.forEach(d => { html += `<div class="ticket-row-detail" style="${B}">${d}
 html += `<hr class="ticket-divider">
 <div class="ticket-row" style="${B}"><span style="${B}">Subtotal</span><span style="${B}">S/${subtotal.toFixed(2)}</span></div>`;
 if (delivery > 0) html += `<div class="ticket-row" style="${B}"><span style="${B}">Delivery</span><span style="${B}">S/${delivery.toFixed(2)}</span></div>`;
-html += `<div class="ticket-total-row" style="${B}font-size:42px;"><span style="${B}">TOTAL</span><span style="${B}">S/${total.toFixed(2)}</span></div>
+html += `<div class="ticket-total-row" style="${B}"><span style="${B}">TOTAL</span><span style="${B}">S/${total.toFixed(2)}</span></div>
 <hr class="ticket-divider">
 <div class="ticket-feed-final">
 .<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.
@@ -4914,18 +4917,18 @@ const ahora = new Date().toLocaleString('es-PE', {dateStyle:'short', timeStyle:'
 const B = 'font-weight:900;'; // shorthand para negrita inline
 let html = `<div class="ticket" style="font-family:'Courier New',monospace;font-weight:900;">
 <div class="ticket-center" style="${B}">
-<div class="ticket-logo" style="${B}font-size:51px;">LA FOODBIKER</div>
-<div class="ticket-sub" style="${B}font-size:30px;">Burgers · Wings · Bar</div>
-<div class="ticket-sub" style="${B}font-size:30px;">RUC Emisor: 10757066721 · Local 01</div>
+<div class="ticket-logo" style="${B}">LA FOODBIKER</div>
+<div class="ticket-sub" style="${B}">Burgers · Wings · Bar</div>
+<div class="ticket-sub" style="${B}">RUC Emisor: 10757066721 · Local 01</div>
 </div>
 <hr class="ticket-divider">
-<div class="ticket-center" style="${B}font-size:36px;margin:4px 0;">${tipoLabel}</div>`;
+<div class="ticket-center" style="${B}margin:4px 0;">${tipoLabel}</div>`;
 if (tipo === 'electronica' && datos.dni) {
 html += `<div class="ticket-row" style="${B}"><span style="${B}">DNI Cliente:</span><span style="${B}">${datos.dni}</span></div>`;
 }
 if (tipo === 'factura') {
 html += `<div class="ticket-row" style="${B}"><span style="${B}">RUC Cliente:</span><span style="${B}">${datos.ruc}</span></div>
-<div class="ticket-row" style="${B}"><span style="${B}">Razón Social:</span><span style="${B}font-size:28px;">${datos.razon}</span></div>`;
+<div class="ticket-row" style="${B}"><span style="${B}">Razón Social:</span><span style="${B}">${datos.razon}</span></div>`;
 }
 html += `<hr class="ticket-divider">
 <div class="ticket-row" style="${B}">
@@ -4958,7 +4961,7 @@ html += `<hr class="ticket-divider">
 if (pago.delivery > 0) {
 html += `<div class="ticket-row" style="${B}"><span style="${B}">Delivery</span><span style="${B}">S/${pago.delivery.toFixed(2)}</span></div>`;
 }
-html += `<div class="ticket-total-row" style="${B}font-size:42px;"><span style="${B}">TOTAL</span><span style="${B}">S/${totalTicket.toFixed(2)}</span></div>
+html += `<div class="ticket-total-row" style="${B}"><span style="${B}">TOTAL</span><span style="${B}">S/${totalTicket.toFixed(2)}</span></div>
 <hr class="ticket-divider">`;
 
 const det = pago.pagoDetalle;
@@ -4997,14 +5000,14 @@ if (det && det.tandas && det.tandas.length) {
   }
   html += `<hr class="ticket-divider">`;
 } else {
-  html += `<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}font-size:28px;text-align:right;max-width:160px;">${pago.metodoPago}</span></div>
+  html += `<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}text-align:right;">${pago.metodoPago}</span></div>
   <hr class="ticket-divider">`;
 }
 if (tipo !== 'simple' && datos.tel) {
 html += `<div class="ticket-footer" style="${B}">
 El numero de tu comprobante te<br>
 llegara por WhatsApp al:<br>
-<span style="${B}font-size:36px;">${datos.tel}</span><br><br>
+<span style="${B}">${datos.tel}</span><br><br>
 </div>`;
 }
 html += `<div class="ticket-feed-final">
@@ -5017,7 +5020,7 @@ FoodBiker<br>
 📲 Pedidos: 994200245
 </div>
 <div class="ticket-center" style="margin-top:18px;">
-<img src="${QR_RESENA_GOOGLE}" width="760" height="760" style="width:760px;height:760px;max-width:90%;display:inline-block;image-rendering:pixelated;" alt="QR reseña Google">
+<img src="${QR_RESENA_GOOGLE}" width="120" height="120" style="width:38mm;height:38mm;max-width:100%;display:inline-block;image-rendering:pixelated;" alt="QR reseña Google">
 </div>
 <div class="ticket-footer" style="${B}margin-top:10px;">
 ¡Déjanos 5 estrellas ⭐⭐⭐⭐⭐ junto con tu reseña y llévate GRATIS unos bastones de camote con su salsita biker! 🤤🍟✨ ¡Súper ricos! 🚴‍♂️🔥
