@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="version" content="1779158190_v19">
+<meta charset="UTF-8"><meta name="version" content="1779158190_v20">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3636,7 +3636,9 @@ const delivery = parseFloat(document.getElementById('d-costo')?.value || mesa.in
 const subtotal = calcTotal(mesa.items);
 const total = subtotal + delivery;
 const mesaLabel = mesa.label || `Mesa ${mesa.num}`;
-const ahora = new Date().toLocaleString('es-PE', {dateStyle:'short', timeStyle:'short'});
+const _ahoraObj = new Date();
+const ahoraFecha = _ahoraObj.toLocaleDateString('es-PE', {day:'2-digit',month:'2-digit',year:'numeric'});
+const ahoraHora = _ahoraObj.toLocaleTimeString('es-PE', {hour:'2-digit',minute:'2-digit',hour12:true});
 const B = 'font-weight:900;';
 let html = `<div class="ticket" style="font-family:'Courier New',monospace;font-weight:900;">
 <div class="ticket-center" style="${B}">
@@ -3649,7 +3651,8 @@ let html = `<div class="ticket" style="font-family:'Courier New',monospace;font-
 if (mesa.clienteNombre) {
 html += `<div class="ticket-row-stack" style="${B}"><span class="ticket-stack-label" style="${B}">Cliente:</span><span class="ticket-stack-valor" style="${B}">${mesa.clienteNombre}</span></div>`;
 }
-html += `<div class="ticket-row-fecha" style="${B}"><span class="ticket-fecha-label" style="${B}">Fecha:</span><span class="ticket-fecha-valor" style="${B}">${ahora}</span></div>
+html += `<div class="ticket-row-fecha" style="${B}"><span class="ticket-fecha-label" style="${B}">Fecha:</span><span class="ticket-fecha-valor" style="${B}">${ahoraFecha}</span></div>
+<div class="ticket-row-fecha" style="${B}"><span class="ticket-fecha-label" style="${B}">Hora:</span><span class="ticket-fecha-valor" style="${B}">${ahoraHora}</span></div>
 <hr class="ticket-divider">`;
 mesa.items.forEach(item => {
 html += `<div class="ticket-row" style="${B}"><span style="${B}">${item.qty}x ${item.name}</span><span style="${B}">S/${(item.price*item.qty).toFixed(2)}</span></div>`;
@@ -4887,7 +4890,9 @@ imprimirComprobante(pago, compTipoSel, { tel, ruc, razon, dni });
 }
 function imprimirComprobante(pago, tipo, datos) {
 const tipoLabel = tipo === 'simple' ? 'BOLETA SIMPLE' : tipo === 'electronica' ? 'BOLETA ELECTRÓNICA' : 'FACTURA';
-const ahora = new Date().toLocaleString('es-PE', {dateStyle:'short', timeStyle:'short'});
+const _ahoraComp = new Date();
+const ahoraFecha = _ahoraComp.toLocaleDateString('es-PE', {day:'2-digit',month:'2-digit',year:'numeric'});
+const ahoraHora = _ahoraComp.toLocaleTimeString('es-PE', {hour:'2-digit',minute:'2-digit',hour12:true});
 const B = 'font-weight:900;'; // shorthand para negrita inline
 let html = `<div class="ticket" style="font-family:'Courier New',monospace;font-weight:900;">
 <div class="ticket-center" style="${B}">
@@ -4912,7 +4917,8 @@ html += `<hr class="ticket-divider">
 if (pago.clienteNombre) {
 html += `<div class="ticket-row-stack" style="${B}"><span class="ticket-stack-label" style="${B}">Cliente:</span><span class="ticket-stack-valor" style="${B}">${pago.clienteNombre}</span></div>`;
 }
-html += `<div class="ticket-row-fecha" style="${B}"><span class="ticket-fecha-label" style="${B}">Fecha:</span><span class="ticket-fecha-valor" style="${B}">${ahora}</span></div>
+html += `<div class="ticket-row-fecha" style="${B}"><span class="ticket-fecha-label" style="${B}">Fecha:</span><span class="ticket-fecha-valor" style="${B}">${ahoraFecha}</span></div>
+<div class="ticket-row-fecha" style="${B}"><span class="ticket-fecha-label" style="${B}">Hora:</span><span class="ticket-fecha-valor" style="${B}">${ahoraHora}</span></div>
 <hr class="ticket-divider">`;
 pago.items.forEach(item => {
 const esCortesia = item.cortesia === true;
@@ -4994,7 +5000,7 @@ FoodBiker<br>
 <img src="${QR_RESENA_GOOGLE}" width="120" height="120" style="width:38mm;height:38mm;max-width:100%;display:inline-block;image-rendering:pixelated;" alt="QR reseña Google">
 </div>
 <div class="ticket-footer" style="${B}margin-top:10px;">
-¡Escanea el QR, déjanos 5 estrellas ⭐⭐⭐⭐⭐ en Google y en tu próxima visita muestra tu reseña + esta boleta en caja para reclamar tus bastones de camote gratis! 🤤🍟✨
+¡Escanea el QR, déjanos 5 estrellas ⭐⭐⭐⭐⭐ en Google junto con tu reseña y, en tu próxima visita, muestra tu reseña + esta boleta en caja para llevarte GRATIS unos bastones de camote con su salsita biker! 🤤🍟✨ ¡Súper ricos! 🚴‍♂️
 </div>
 </div>`;
 document.getElementById('ticket-print-area').innerHTML = html;
