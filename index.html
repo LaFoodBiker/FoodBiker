@@ -261,19 +261,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 #ticket-print-area{display:block !important;width:48mm !important;margin:0 !important;padding:0 !important;}
 }
 #ticket-print-area{display:none;}
-.ticket{font-family:'Courier New',monospace;width:48mm;margin:0 auto;font-size:17px;color:#000;background:#fff;padding:2mm 1mm;font-weight:900;letter-spacing:0px;-webkit-text-stroke:0.7px #000;}
+.ticket{font-family:'Courier New',monospace;width:48mm;margin:0 auto;font-size:20px;color:#000;background:#fff;padding:2mm 1mm;font-weight:900;letter-spacing:0px;-webkit-text-stroke:0.7px #000;}
 .ticket *{font-weight:900 !important;-webkit-text-stroke:0.7px #000 !important;color:#000 !important;}
 .ticket-center{text-align:center;}
-.ticket-logo{font-size:21px;font-weight:900;letter-spacing:0.5px;}
-.ticket-sub{font-size:14px;margin-bottom:3px;}
+.ticket-logo{font-size:24px;font-weight:900;letter-spacing:0.5px;}
+.ticket-sub{font-size:16px;margin-bottom:3px;}
 .ticket-divider{border:none;border-top:2px dashed #000;margin:5px 0;}
-.ticket-row{display:flex;justify-content:space-between;margin:4px 0;font-size:17px;word-break:break-word;line-height:1.3;}
+.ticket-row{display:flex;justify-content:space-between;margin:4px 0;font-size:20px;word-break:break-word;line-height:1.3;}
 .ticket-row span:first-child{flex:1;padding-right:4px;}
 .ticket-row span:last-child{flex-shrink:0;text-align:right;}
-.ticket-row-detail{font-size:14px;color:#000;padding-left:8px;margin-bottom:2px;}
-.ticket-total-row{display:flex;justify-content:space-between;font-size:21px;font-weight:900;margin:5px 0;}
-.ticket-footer{font-size:14px;text-align:center;margin-top:6px;line-height:1.5;}
-.ticket-feed-final{font-size:14px;line-height:1.5;white-space:pre;color:#fefefe;-webkit-text-stroke:0px transparent !important;}
+.ticket-row-detail{font-size:16px;color:#000;padding-left:8px;margin-bottom:2px;}
+.ticket-total-row{display:flex;justify-content:space-between;font-size:24px;font-weight:900;margin:5px 0;}
+.ticket-footer{font-size:16px;text-align:center;margin-top:6px;line-height:1.5;}
+.ticket-feed-final{font-size:16px;line-height:1.5;white-space:pre;color:#fefefe;-webkit-text-stroke:0px transparent !important;}
 .nombre-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:750;align-items:center;justify-content:center;padding:20px;}
 .nombre-overlay.show{display:flex;}
 .nombre-box{background:var(--fb-card);border-radius:var(--radius);width:100%;max-width:360px;padding:24px 20px;}
@@ -1089,8 +1089,12 @@ function pushToFirebase(safeState) {
   setSyncDot('#FF6B00');
 
   // Nodo 1: mesas (cambia con cada pedido — pequeño)
+  // Excluir RCB_ (re-cobros locales) — son temporales del dispositivo de caja y no deben sincronizarse
+  const mesasSinRCB = Object.fromEntries(
+    Object.entries(safeState.mesas || {}).filter(([k]) => !k.startsWith('RCB_'))
+  );
   window._fbSet('pos/mesas', {
-    mesas:          safeState.mesas          || {},
+    mesas:           mesasSinRCB,
     cajaRapidaCount: safeState.cajaRapidaCount || 0,
     writer: DEVICE_ID,
     ts: _lastSentTs
@@ -1239,6 +1243,8 @@ document.getElementById('pin-display').textContent = dots;
 }
 function enterApp(role) {
 state.role = role;
+// Limpiar RCB_ huérfanas del localStorage (re-cobros que no se completaron)
+Object.keys(state.mesas || {}).forEach(k => { if (k.startsWith('RCB_')) delete state.mesas[k]; });
 document.getElementById('login-screen').style.display = 'none';
 document.getElementById('app').style.display = 'flex';
 const labels = { mesero:'Mesero', caja:'Caja', cocina:'Cocina 🍔', admin:'👑 Administrador' };
@@ -4986,7 +4992,7 @@ if (det && det.tandas && det.tandas.length) {
 } else if (det && det.efectivo) {
   // Métodos o Por Producto con efectivo/yape/plin (cualquier método que pueda generar vuelto)
   const _vueltoLabel = { efectivo: 'Efectivo', yape: 'Yape', plin: 'Plin' };
-  html += `<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}font-size:28px;text-align:right;max-width:160px;">${pago.metodoPago}</span></div>
+  html += `<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}text-align:right;">${pago.metodoPago}</span></div>
   <hr class="ticket-divider">
   <div class="ticket-row" style="${B}"><span style="${B}">Total recibido</span><span style="${B}">S/${det.efectivo.monto.toFixed(2)}</span></div>`;
   if (det.efectivo.recibido) {
@@ -5675,6 +5681,8 @@ function applyRemoteMesas(data) {
 
   // Merge: combinar mesas remotas con las locales, no reemplazar ciegamente
   const remoteMesas = data.mesas || {};
+  // Eliminar RCB_ que pudieran haber llegado del remoto (no deberían existir, pero por si acaso)
+  Object.keys(remoteMesas).forEach(k => { if (k.startsWith('RCB_')) delete remoteMesas[k]; });
   // Partir de las mesas actuales para no perder M1-M6
   const merged = { ...state.mesas };
   // Aplicar cambios remotos encima
@@ -5802,6 +5810,9 @@ function initFirebaseSync() {
 
   // Marcar verde inmediatamente al conectar
   setSyncDot('#22C55E');
+
+  // Limpiar RCB_ huérfanas del estado local antes de sincronizar
+  Object.keys(state.mesas || {}).forEach(k => { if (k.startsWith('RCB_')) delete state.mesas[k]; });
 
   // Listener 1: mesas / pedidos (alta frecuencia)
   window._fbListen('pos/mesas', function(val) {
