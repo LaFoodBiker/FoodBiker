@@ -261,22 +261,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 #ticket-print-area{display:block !important;width:48mm !important;margin:0 !important;padding:0 !important;}
 }
 #ticket-print-area{display:none;}
-.ticket{font-family:'Courier New',monospace;width:48mm;margin:0 auto;font-size:14px;color:#000;background:#fff;padding:2mm 1mm;font-weight:900;letter-spacing:0px;}
+.ticket{font-family:'Courier New',monospace;width:48mm;margin:0 auto;font-size:12.5px;color:#000;background:#fff;padding:2mm 1mm;font-weight:900;letter-spacing:0px;}
 .ticket *{font-weight:900 !important;color:#000 !important;}
 .ticket-center{text-align:center;}
-.ticket-logo{font-size:20.5px;font-weight:900;letter-spacing:0.5px;}
-.ticket-sub{font-size:12.5px;margin-bottom:3px;}
+.ticket-logo{font-size:19px;font-weight:900;letter-spacing:0.5px;}
+.ticket-sub{font-size:11px;margin-bottom:3px;}
 .ticket-divider{border:none;border-top:2px dashed #000;margin:5px 0;}
-.ticket-row{display:grid;grid-template-columns:1fr auto;gap:4px;margin:3px 0;font-size:14px;line-height:1.3;overflow-wrap:break-word;}
+.ticket-row{display:grid;grid-template-columns:1fr auto;gap:4px;margin:3px 0;font-size:12.5px;line-height:1.3;overflow-wrap:break-word;}
 .ticket-row span:first-child{min-width:0;white-space:normal;word-break:normal;overflow-wrap:break-word;}
 .ticket-row span:last-child{text-align:right;white-space:nowrap;}
-.ticket-row-fecha,.ticket-row-stack{display:flex;flex-direction:column;margin:3px 0;font-size:14px;line-height:1.3;width:100%;max-width:100%;}
+.ticket-row-fecha,.ticket-row-stack{display:flex;flex-direction:column;margin:3px 0;font-size:12.5px;line-height:1.3;width:100%;max-width:100%;}
 .ticket-row-fecha .ticket-fecha-label,.ticket-row-stack .ticket-stack-label{font-weight:900;}
 .ticket-row-fecha .ticket-fecha-valor{white-space:nowrap;}
 .ticket-row-stack .ticket-stack-valor{white-space:normal;word-break:normal;overflow-wrap:break-word;max-width:100%;}
-.ticket-row-detail{font-size:12.5px;color:#000;padding-left:8px;margin-bottom:2px;}
-.ticket-total-row{display:grid;grid-template-columns:1fr auto;gap:4px;font-size:19px;font-weight:900;margin:5px 0;}
-.ticket-footer{font-size:12.5px;text-align:center;margin-top:6px;line-height:1.5;}
+.ticket-row-detail{font-size:11px;color:#000;padding-left:8px;margin-bottom:2px;}
+.ticket-total-row{display:grid;grid-template-columns:1fr auto;gap:4px;font-size:17.5px;font-weight:900;margin:5px 0;}
+.ticket-footer{font-size:11px;text-align:center;margin-top:6px;line-height:1.5;}
 .nombre-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:750;align-items:center;justify-content:center;padding:20px;}
 .nombre-overlay.show{display:flex;}
 .nombre-box{background:var(--fb-card);border-radius:var(--radius);width:100%;max-width:360px;padding:24px 20px;}
@@ -2122,7 +2122,11 @@ pushItem(item, [], '', { termino:'', sin:[], adicionales:[], pair:[], itemModali
 function extraPrice(adicionales) {
 return (adicionales||[]).reduce((sum, txt) => {
 const m = String(txt).match(/\+S\/?\s*([0-9]+(?:\.[0-9]+)?)/i);
-return sum + (m ? parseFloat(m[1]) : 0);
+if (!m) return sum;
+const precio = parseFloat(m[1]);
+const qtyM = String(txt).match(/^([0-9]+)x\s/i);
+const qty = qtyM ? parseInt(qtyM[1], 10) : 1;
+return sum + precio * qty;
 }, 0);
 }
 function pushItem(item, sabores, nota, extra={}) {
@@ -2593,7 +2597,10 @@ function changeAdicionalCount(i, delta) {
     const c = counts[ad.key] || 0;
     if (c > 0) {
       if (ad.precio > 0) {
-        state.itemPersonalizacion.adicionales.push(`${c > 1 ? c + 'x ' : ''}${ad.key}`);
+        // Incluir precio en el texto para que extraPrice() lo detecte con regex /+S\/precio/
+        const precioStr = '+S/' + ad.precio.toFixed(2);
+        const keyConPrecio = ad.key.includes('+S/') ? ad.key : ad.key + ' ' + precioStr;
+        state.itemPersonalizacion.adicionales.push(`${c > 1 ? c + 'x ' : ''}${keyConPrecio}`);
       } else {
         // Free adicional: add once regardless of count
         state.itemPersonalizacion.adicionales.push(ad.key);
