@@ -261,19 +261,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 #ticket-print-area{display:block !important;width:48mm !important;margin:0 !important;padding:0 !important;}
 }
 #ticket-print-area{display:none;}
-.ticket{font-family:'Courier New',monospace;width:48mm;margin:0 auto;font-size:17px;color:#000;background:#fff;padding:2mm 1mm;font-weight:900;letter-spacing:0px;-webkit-text-stroke:0.7px #000;}
-.ticket *{font-weight:900 !important;-webkit-text-stroke:0.7px #000 !important;color:#000 !important;}
+.ticket{font-family:'Courier New',monospace;width:48mm;margin:0 auto;font-size:17px;color:#000;background:#fff;padding:2mm 1mm;font-weight:900;letter-spacing:0px;}
+.ticket *{font-weight:900 !important;color:#000 !important;}
 .ticket-center{text-align:center;}
 .ticket-logo{font-size:22px;font-weight:900;letter-spacing:0.5px;}
 .ticket-sub{font-size:14px;margin-bottom:3px;}
 .ticket-divider{border:none;border-top:2px dashed #000;margin:5px 0;}
-.ticket-row{display:grid;grid-template-columns:1fr auto;gap:4px;margin:3px 0;font-size:17px;line-height:1.3;word-break:break-word;}
-.ticket-row span:first-child{min-width:0;}
+.ticket-row{display:grid;grid-template-columns:1fr auto;gap:4px;margin:3px 0;font-size:17px;line-height:1.3;overflow-wrap:break-word;}
+.ticket-row span:first-child{min-width:0;white-space:normal;word-break:normal;overflow-wrap:break-word;}
 .ticket-row span:last-child{text-align:right;white-space:nowrap;}
+.ticket-row-fecha{display:flex;flex-direction:column;margin:3px 0;font-size:17px;line-height:1.3;}
+.ticket-row-fecha .ticket-fecha-label{font-weight:900;}
+.ticket-row-fecha .ticket-fecha-valor{white-space:nowrap;}
 .ticket-row-detail{font-size:14px;color:#000;padding-left:8px;margin-bottom:2px;}
 .ticket-total-row{display:grid;grid-template-columns:1fr auto;gap:4px;font-size:22px;font-weight:900;margin:5px 0;}
 .ticket-footer{font-size:14px;text-align:center;margin-top:6px;line-height:1.5;}
-.ticket-feed-final{font-size:14px;line-height:1.5;white-space:pre;color:#fefefe;-webkit-text-stroke:0px transparent !important;}
 .nombre-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:750;align-items:center;justify-content:center;padding:20px;}
 .nombre-overlay.show{display:flex;}
 .nombre-box{background:var(--fb-card);border-radius:var(--radius);width:100%;max-width:360px;padding:24px 20px;}
@@ -1112,13 +1114,19 @@ function pushToFirebase(safeState) {
 
   // Nodo 2: historial separado (puede ser grande)
   // Solo guardar los últimos 200 para no superar límites
-  const histSlice = (safeState.historialPagos || []).slice(-200);
-  window._fbSet('pos/historial', {
-    pagos: histSlice,
-    cambios: safeState.historialCambios || [],
-    writer: DEVICE_ID,
-    ts: _lastSentTs
-  }).catch(e => console.warn('FB historial write error:', e));
+  // ⚠️ Guard crítico: nunca escribir este nodo hasta haber recibido al menos
+  // una vez el historial real desde Firebase. Sin esto, un dispositivo que
+  // arranca con historialPagos vacío/desactualizado podría sobreescribir
+  // (borrar) el historial completo de todos los demás dispositivos.
+  if (_historialSincronizado) {
+    const histSlice = (safeState.historialPagos || []).slice(-200);
+    window._fbSet('pos/historial', {
+      pagos: histSlice,
+      cambios: safeState.historialCambios || [],
+      writer: DEVICE_ID,
+      ts: _lastSentTs
+    }).catch(e => console.warn('FB historial write error:', e));
+  }
 }
 
 function pushMenuToFirebase() {
@@ -1755,6 +1763,11 @@ let currentPedidoKey = null;
 let _histEditPinOk = false;
 let _histEditIdx = null;
 let _histEditSnapshot = null;
+// Se vuelve true recién después de recibir el primer snapshot real de Firebase
+// para el nodo pos/historial. Mientras sea false, NUNCA se escribe ese nodo,
+// para evitar que un dispositivo con historial local incompleto (recién abierto,
+// localStorage viejo, etc.) sobreescriba el historial completo de todos.
+let _historialSincronizado = false;
 function openMesa(key) {
 currentPedidoKey = key;
 const mesa = state.mesas[key];
@@ -3635,7 +3648,7 @@ let html = `<div class="ticket" style="font-family:'Courier New',monospace;font-
 if (mesa.clienteNombre) {
 html += `<div class="ticket-row" style="${B}"><span style="${B}">Cliente:</span><span style="${B}">${mesa.clienteNombre}</span></div>`;
 }
-html += `<div class="ticket-row" style="${B}"><span style="${B}">Fecha:</span><span style="${B}">${ahora}</span></div>
+html += `<div class="ticket-row-fecha" style="${B}"><span class="ticket-fecha-label" style="${B}">Fecha:</span><span class="ticket-fecha-valor" style="${B}">${ahora}</span></div>
 <hr class="ticket-divider">`;
 mesa.items.forEach(item => {
 html += `<div class="ticket-row" style="${B}"><span style="${B}">${item.qty}x ${item.name}</span><span style="${B}">S/${(item.price*item.qty).toFixed(2)}</span></div>`;
@@ -3653,9 +3666,6 @@ html += `<hr class="ticket-divider">
 if (delivery > 0) html += `<div class="ticket-row" style="${B}"><span style="${B}">Delivery</span><span style="${B}">S/${delivery.toFixed(2)}</span></div>`;
 html += `<div class="ticket-total-row" style="${B}"><span style="${B}">TOTAL</span><span style="${B}">S/${total.toFixed(2)}</span></div>
 <hr class="ticket-divider">
-<div class="ticket-feed-final">
-.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.
-</div>
 <div class="ticket-footer" style="${B}">
 *** PRE-CUENTA ***<br>
 No es comprobante de pago.<br>
@@ -3810,7 +3820,7 @@ function pcRenderState() {
     document.getElementById('pc-single-name').textContent = m ? m.label : pcMetodosSeleccionados[0];
     document.getElementById('pc-single-total').textContent = `S/ ${total.toFixed(2)}`;
     confirmBtn.style.display = 'block';
-    // Vuelto: si el único método es efectivo, yape o plin
+    // Vuelto: solo si el único método es Efectivo
     const efTotal = METODOS_CON_VUELTO.includes(pcMetodosSeleccionados[0]) ? total : 0;
     pcRenderVueltoBox('pc-vuelto-box', 'pc-billetes', efTotal);
     if (efTotal <= 0) { const el = document.getElementById('pc-vuelto-box'); if(el) el.style.display='none'; }
@@ -3978,14 +3988,15 @@ function pcRenderResumenProductos() {
 }
 
 // ── VUELTO (helper compartido por los 3 tabs) ──────────────────────────────
-// Métodos que pueden generar vuelto: Efectivo, Yape y Plin (todos pueden recibirse
-// "de más" — efectivo físico, o un Yape/Plin redondeado — y requerir devolución).
+// Solo el EFECTIVO genera vuelto. Yape y Plin son pagos digitales exactos
+// (no hay "billete físico" que sobre), así que nunca deben mostrar la caja
+// de vuelto ni pedir cuánto pagó el cliente.
 const BILLETES_PERU = [10, 20, 50, 100, 200];
-const METODOS_CON_VUELTO = ['efectivo', 'yape', 'plin'];
-const METODOS_CON_VUELTO_LABELS = ['Efectivo', 'Yape', 'Plin'];
+const METODOS_CON_VUELTO = ['efectivo'];
+const METODOS_CON_VUELTO_LABELS = ['Efectivo'];
 
 function pcGetTotalEfectivoMetodos() {
-  // Suma todos los slots de efectivo/yape/plin en el tab Métodos
+  // Suma todos los slots de Efectivo en el tab Métodos (único método con vuelto)
   const n = pcMetodosSeleccionados.length;
   const total = pcGetTotal();
   if (n === 0) return 0;
@@ -4008,7 +4019,7 @@ function pcGetTotalEfectivoProductos() {
 }
 
 function pcGetTotalEfectivoTandas() {
-  // Solo el efectivo/yape/plin de la tanda ACTUAL en progreso (cada tanda es un cliente independiente)
+  // Solo el Efectivo de la tanda ACTUAL en progreso (único método con vuelto; cada tanda es un cliente independiente)
   let suma = 0;
   ptMetodosActuales.forEach((sl, i) => {
     if (METODOS_CON_VUELTO.includes(sl.id)) {
@@ -4900,7 +4911,7 @@ html += `<hr class="ticket-divider">
 if (pago.clienteNombre) {
 html += `<div class="ticket-row" style="${B}"><span style="${B}">Cliente:</span><span style="${B}">${pago.clienteNombre}</span></div>`;
 }
-html += `<div class="ticket-row" style="${B}"><span style="${B}">Fecha:</span><span style="${B}">${ahora}</span></div>
+html += `<div class="ticket-row-fecha" style="${B}"><span class="ticket-fecha-label" style="${B}">Fecha:</span><span class="ticket-fecha-valor" style="${B}">${ahora}</span></div>
 <hr class="ticket-divider">`;
 pago.items.forEach(item => {
 const esCortesia = item.cortesia === true;
@@ -4946,7 +4957,7 @@ if (det && det.tandas && det.tandas.length) {
   });
   html += `<hr class="ticket-divider">`;
 } else if (det && det.efectivo) {
-  // Métodos o Por Producto con efectivo/yape/plin (cualquier método que pueda generar vuelto)
+  // Métodos o Por Producto con Efectivo (único método que puede generar vuelto)
   const _vueltoLabel = { efectivo: 'Efectivo', yape: 'Yape', plin: 'Plin' };
   html += `<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}text-align:right;">${pago.metodoPago}</span></div>
   <hr class="ticket-divider">
@@ -4972,10 +4983,7 @@ llegara por WhatsApp al:<br>
 <span style="${B}">${datos.tel}</span><br><br>
 </div>`;
 }
-html += `<div class="ticket-feed-final">
-.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.<br>.
-</div>
-<div class="ticket-footer" style="${B}">
+html += `<div class="ticket-footer" style="${B}">
 Gracias por tu visita!<br>
 FoodBiker<br>
 @lafoodbiker.pe<br>
@@ -5781,6 +5789,10 @@ function initFirebaseSync() {
   // Listener 3: historial de pagos (nodo separado para no superar límite 1MB)
   window._fbListen('pos/historial', function(val) {
     setSyncDot('#22C55E');
+    // Marcar como sincronizado en el PRIMER snapshot recibido, sea cual sea su
+    // contenido (incluso vacío) — recién entonces es seguro volver a escribir
+    // este nodo sin riesgo de borrar historial real con datos locales viejos.
+    _historialSincronizado = true;
     if (!val) return;
     if (val.writer === DEVICE_ID && (Date.now() - (_lastSentTs||0)) < 2000) return;
     const remotePagos = val.pagos || [];
