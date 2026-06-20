@@ -261,21 +261,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 #ticket-print-area{display:block !important;width:48mm !important;margin:0 !important;padding:0 !important;}
 }
 #ticket-print-area{display:none;}
-.ticket{font-family:'Courier New',monospace;width:48mm;margin:0 auto;font-size:15.5px;color:#000;background:#fff;padding:2mm 1mm;font-weight:900;letter-spacing:0px;}
+.ticket{font-family:'Courier New',monospace;width:48mm;margin:0 auto;font-size:14px;color:#000;background:#fff;padding:2mm 1mm;font-weight:900;letter-spacing:0px;}
 .ticket *{font-weight:900 !important;color:#000 !important;}
 .ticket-center{text-align:center;}
 .ticket-logo{font-size:20.5px;font-weight:900;letter-spacing:0.5px;}
 .ticket-sub{font-size:12.5px;margin-bottom:3px;}
 .ticket-divider{border:none;border-top:2px dashed #000;margin:5px 0;}
-.ticket-row{display:grid;grid-template-columns:1fr auto;gap:4px;margin:3px 0;font-size:15.5px;line-height:1.3;overflow-wrap:break-word;}
+.ticket-row{display:grid;grid-template-columns:1fr auto;gap:4px;margin:3px 0;font-size:14px;line-height:1.3;overflow-wrap:break-word;}
 .ticket-row span:first-child{min-width:0;white-space:normal;word-break:normal;overflow-wrap:break-word;}
 .ticket-row span:last-child{text-align:right;white-space:nowrap;}
-.ticket-row-fecha,.ticket-row-stack{display:flex;flex-direction:column;margin:3px 0;font-size:15.5px;line-height:1.3;width:100%;max-width:100%;}
+.ticket-row-fecha,.ticket-row-stack{display:flex;flex-direction:column;margin:3px 0;font-size:14px;line-height:1.3;width:100%;max-width:100%;}
 .ticket-row-fecha .ticket-fecha-label,.ticket-row-stack .ticket-stack-label{font-weight:900;}
 .ticket-row-fecha .ticket-fecha-valor{white-space:nowrap;}
 .ticket-row-stack .ticket-stack-valor{white-space:normal;word-break:normal;overflow-wrap:break-word;max-width:100%;}
 .ticket-row-detail{font-size:12.5px;color:#000;padding-left:8px;margin-bottom:2px;}
-.ticket-total-row{display:grid;grid-template-columns:1fr auto;gap:4px;font-size:20.5px;font-weight:900;margin:5px 0;}
+.ticket-total-row{display:grid;grid-template-columns:1fr auto;gap:4px;font-size:19px;font-weight:900;margin:5px 0;}
 .ticket-footer{font-size:12.5px;text-align:center;margin-top:6px;line-height:1.5;}
 .nombre-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:750;align-items:center;justify-content:center;padding:20px;}
 .nombre-overlay.show{display:flex;}
@@ -1086,6 +1086,21 @@ function cerrarYaPagado(key) {
 function saveState() {
   try {
     const safeState = { ...state, role:null, saboresCallback:null, currentModalItem:null };
+    // Defensa en profundidad: _editPagos/_showAbonos viven solo en la copia de
+    // trabajo de la edición de historial (_histEditWorking) y nunca deberían
+    // llegar a state.historialPagos. Esta limpieza es un respaldo adicional
+    // por si algún flujo futuro los escribiera por error — no es necesaria
+    // para el funcionamiento normal de la edición, que ya nunca los mezcla
+    // con el registro real antes del commit.
+    if (safeState.historialPagos && safeState.historialPagos.length) {
+      safeState.historialPagos = safeState.historialPagos.map(p => {
+        if (!p._editPagos && !p._showAbonos) return p;
+        const clean = { ...p };
+        delete clean._editPagos;
+        delete clean._showAbonos;
+        return clean;
+      });
+    }
     const payload = JSON.stringify({ state: safeState, menuData, pins: PINS });
     localStorage.setItem(STORAGE_KEY, payload);
     pushToFirebase(safeState);
@@ -1225,7 +1240,13 @@ function detectDeviceType() {
 detectDeviceType();
 window.addEventListener('resize', detectDeviceType);
 
-window.addEventListener('beforeunload', saveState);
+window.addEventListener('beforeunload', () => {
+  // Si hay una edición de historial activa, su copia de trabajo nunca tocó
+  // state.historialPagos — no hay nada que revertir. Solo se libera el lock
+  // por prolijidad (la pestaña va a destruirse igual).
+  if (_histEditWorking) { _histEditWorking = null; _histEditLockUid = null; }
+  saveState();
+});
 // Garantía extra: si por algún motivo las mesas se pierden, reconstruirlas
 setInterval(() => {
   const count = Object.keys(state.mesas).filter(k => k.startsWith('M')).length;
@@ -1390,6 +1411,11 @@ viewEl.appendChild(view);
 renderCurrentViews(role);
 }
 function switchTab(tabId) {
+// Si hay una edición de historial activa, cambiar de pestaña la cancela:
+// el modal flota fuera del flujo de tabs y no debe quedar editando en segundo
+// plano. La copia de trabajo nunca tocó state.historialPagos, así que no hay
+// nada que persistir ni revertir — solo se descarta.
+if (_histEditWorking) cerrarHistEdit();
 document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
 document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
 document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
@@ -1762,8 +1788,6 @@ refreshCurrentView();
 }
 let currentPedidoKey = null;
 let _histEditPinOk = false;
-let _histEditIdx = null;
-let _histEditSnapshot = null;
 // Se vuelve true recién después de recibir el primer snapshot real de Firebase
 // para el nodo pos/historial. Mientras sea false, NUNCA se escribe ese nodo,
 // para evitar que un dispositivo con historial local incompleto (recién abierto,
@@ -2419,7 +2443,17 @@ const adicionalesBtns = document.getElementById('adicionales-btns');
 // Burgers con carne, Chicken Crunch (b5), Pechuga/Salchi (acompanamiento)
 const esBurger = item.carne || item.id === 'b5' || item.acompanamiento;
 const esAlasGrandes = item.sabores && item.opciones && item.opciones.includes('Smoked BBQ') && !item.id.endsWith('Jr.') && item.id !== 'u1';
-if (item.id === 'pm4') {
+// Exclusión de adicionales para bebidas/postres/cocktails/cervezas/bubble (case-insensitive)
+const _itemCat = (() => {
+  let cat = '';
+  Object.values(menuData).forEach(cats => Object.entries(cats).forEach(([c, items]) => { if (items.some(it => it.id === item.id)) cat = c; }));
+  return cat.toLowerCase();
+})();
+const _itemNameL = (item.name || '').toLowerCase();
+const _excluirAdics = /bebida|bubble|gaseosa|postre|cocktails|cervezas/.test(_itemNameL) || /bebida|bubble|gaseosa|postre|cocktails|cervezas/.test(_itemCat);
+if (_excluirAdics) {
+  _setAdicsConfig([]);
+} else if (item.id === 'pm4') {
   _setAdicsConfig([
     { key:'Extra huevo +S/3.00', label:'🥚 Extra huevo +S/3', precio:3.00 }
   ]);
@@ -2430,12 +2464,14 @@ if (item.id === 'pm4') {
     { key:'Extra tocino crocante +S/4.00', label:'🥓 Extra tocino crocante +S/4', precio:4.00 },
     { key:'Extra huevo +S/3.00',          label:'🥚 Extra huevo +S/3',         precio:3.00 },
     { key:'Extra Onion Rings +S/9.90',    label:'🧅 Extra Onion Rings +S/9.90', precio:9.90 },
-    { key:'Extra salsa',                  label:'🫙 Extra salsa',               precio:0    },
+    { key:'Medallón de carne (hamburguesa) adicional', label:'🥩 Medallón de carne adicional +S/6.90', precio:6.90 },
+    { key:'Chorizo',                      label:'🌭 Chorizo +S/6.90',           precio:6.90 },
+    { key:'Pollo deshilachado',           label:'🍗 Pollo deshilachado +S/6.90', precio:6.90 },
+    { key:'Pechuga crunchy adicional (1/2 pechuga)', label:'🍗 Pechuga crunchy adicional (1/2) +S/6.90', precio:6.90 },
     { key:'3 Alitas extra +S/10.90',      label:'🍗 +3 Alitas extra +S/10.90', precio:10.90}
   ]);
 } else {
   _setAdicsConfig([
-    { key:'Extra salsa',     label:'🫙 Extra salsa',     precio:0    },
     { key:'Extra huevo +S/3.00', label:'🥚 Extra huevo +S/3', precio:3.00 }
   ]);
 }
@@ -3037,6 +3073,7 @@ function solicitarEliminarHistorial(idx) {
   if (pin !== '1234') { alert('❌ Clave incorrecta'); return; }
   const p = state.historialPagos[idx];
   if (!p) return;
+  if (isHistRecordLocked(_histUid(p))) { alert('⏳ Este pedido se está editando en este dispositivo. Cierra esa edición antes de eliminarlo.'); return; }
   const subtotal = (p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0);
   if (!confirm(`¿Eliminar pedido "${p.mesa}" por S/${subtotal.toFixed(2)}?\n\nEsta acción quedará registrada en el historial de cambios.`)) return;
   // Registrar en historial de cambios
@@ -3060,6 +3097,7 @@ function solicitarEdicionHistorial(idx2) {
 function recargarPedidoEnCaja(idx2) {
   const p = state.historialPagos[idx2];
   if (!p) return;
+  if (isHistRecordLocked(_histUid(p))) { alert('⏳ Este pedido se está editando en este dispositivo. Cierra esa edición antes de re-cobrarlo.'); return; }
 
   const subtotalOriginal = ((p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0)+(p.costoDelivery||0)).toFixed(2);
   if (!confirm(
@@ -3112,7 +3150,38 @@ function recargarPedidoEnCaja(idx2) {
   setTimeout(() => { abrirPagoComb(tempKey); }, 120);
 }
 
+// ── Identidad estable de un registro de historial ──────────────────────────
+// Misma regla de identidad que ya usan el listener de Firebase y la dedup de
+// renderHistorialView: _uid si existe, o key+fecha como fallback para
+// registros legacy que nunca lo tuvieron. Nunca se usa la posición del array.
+function _histUid(p) {
+  if (!p) return null;
+  return p._uid || (p.key + '_' + (p.fechaISO || p.fecha));
+}
+function _histFindIdxByUid(uid) {
+  if (uid == null) return -1;
+  return state.historialPagos.findIndex(p => _histUid(p) === uid);
+}
+
+// ── Edición de historial como transacción ──────────────────────────────────
+// state.historialPagos NUNCA se toca mientras el modal está abierto. Toda la
+// edición vive en _histEditWorking (copia aislada, deep-copy). El registro
+// global solo cambia en un único commit dentro de guardarHistEdit().
+// _histEditLockUid bloquea, mientras dure la edición, que el mismo registro
+// sea re-cobrado, eliminado o abierto en otra edición, y evita que el
+// listener de Firebase lo sobreescriba con datos remotos.
+let _histEditWorking = null;     // { uid, data } — copia de trabajo, nunca referencia al original
+let _histEditLockUid = null;     // uid del registro bloqueado mientras hay edición activa
+
+function isHistRecordLocked(uid) {
+  return _histEditLockUid != null && uid === _histEditLockUid;
+}
+
 function abrirEdicionHistorial(idx) {
+  const original = state.historialPagos[idx];
+  if (!original) return;
+  const uid = _histUid(original);
+  if (isHistRecordLocked(uid)) { alert('⏳ Este pedido ya se está editando en este dispositivo. Cierra esa edición antes de abrir otra.'); return; }
   if (!_histEditPinOk) {
     // Pedir PIN
     const pin = prompt('🔐 Ingresa la clave para editar pedidos:');
@@ -3120,19 +3189,19 @@ function abrirEdicionHistorial(idx) {
     _histEditPinOk = true;
     setTimeout(() => { _histEditPinOk = false; }, 5 * 60 * 1000); // expira en 5 min
   }
-  _histEditIdx = idx;
-  _histEditSnapshot = JSON.parse(JSON.stringify(state.historialPagos[idx]));
-  renderHistEditBox(idx);
+  // Copia de trabajo aislada: ninguna mutación posterior toca el original.
+  _histEditLockUid = uid;
+  _histEditWorking = { uid, data: JSON.parse(JSON.stringify(original)) };
+  renderHistEditBox();
   document.getElementById('hist-edit-overlay').classList.add('show');
 }
 
-function renderHistEditBox(idx) {
-  const p = state.historialPagos[idx];
+function renderHistEditBox() {
+  const p = _histEditWorking && _histEditWorking.data;
   if (!p) return;
   const items = p.items || [];
   const modOptions = ['salon','llevar','recojo','delivery','externo'];
   const modLabels = {salon:'🪑 Salón',llevar:'🥡 Llevar',recojo:'📦 Recojo',delivery:'🛵 Delivery',externo:'📱 App'};
-  // Cambio 16: mostrar cómo se cobró originalmente
   const metodoOriginal = p.metodoPago || p.pagadoCon || '';
   const tandas = p.tandas || [];
   let pagoDetalleHTML = '';
@@ -3152,115 +3221,374 @@ function renderHistEditBox(idx) {
       ${grupoPago.length > 0 ? `<div style="font-size:11px;color:#aaa;margin-top:4px;">${grupoPago.map(g=>`${g.nombre}: ${g.items||'—'} = S/${g.subtotal||0}`).join('<br>')}</div>` : ''}
     </div>`;
   }
+  // Cálculo de totales
+  const nuevoSubtotal = items.reduce((s,i)=>(i.cortesia?s:s+(i.price||0)*(i.qty||1)),0) + (p.costoDelivery||0);
+  // Métodos de pago múltiples
+  if (!p._editPagos) {
+    // Inicializar estructura editable de pagos a partir del método actual
+    const parts = (p.metodoPago||'').split('+').map(s=>s.trim()).filter(Boolean);
+    p._editPagos = parts.length > 0 ? parts.map(part => {
+      const mm = part.match(/^(.+?)\s+S\/?([\d.]+)$/i);
+      return mm ? { metodo: mm[1].trim(), monto: parseFloat(mm[2]) } : { metodo: part, monto: 0 };
+    }) : [{ metodo: 'Efectivo', monto: 0 }];
+  }
+  const pagos = p._editPagos;
+  const totalPagos = pagos.reduce((s,x)=>s+x.monto,0);
+  const diff = Math.abs(totalPagos - nuevoSubtotal);
+  const pagoOk = diff < 0.05;
+  const METODOS_DISP = ['Efectivo','Yape','Plin','Visa','Mastercard','PedidosYa','Rappi'];
+  let pagosHTML = `<div style="margin-bottom:10px;">
+    ${pagos.map((pg,pi)=>`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;background:var(--fb-darker);border-radius:8px;padding:8px 10px;">
+        <select style="flex:1;background:var(--fb-dark);border:1px solid var(--fb-border);color:var(--text);border-radius:6px;padding:6px 8px;font-size:13px;" onchange="histEditSetPagoMetodo(${pi},this.value)">
+          ${METODOS_DISP.map(m=>`<option value="${m}" ${pg.metodo===m?'selected':''}>${m}</option>`).join('')}
+        </select>
+        <input type="number" step="0.10" min="0" value="${pg.monto||''}" placeholder="S/ 0.00"
+          style="width:100px;background:var(--fb-dark);border:1px solid var(--fb-border);color:var(--fb-yellow);border-radius:6px;padding:6px 8px;font-size:14px;font-weight:900;text-align:right;"
+          oninput="histEditSetPagoMonto(${pi},this.value)">
+        <button onclick="histEditDelPago(${pi})" style="background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer;">🗑</button>
+      </div>`).join('')}
+    <button onclick="histEditAddPago()" style="width:100%;background:rgba(255,107,0,.15);border:2px dashed var(--fb-orange);color:var(--fb-orange);border-radius:8px;padding:8px;font-size:12px;font-weight:800;cursor:pointer;">+ Agregar método</button>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:8px;background:${pagoOk?'rgba(34,197,94,.12)':'rgba(239,68,68,.1)'};border:1.5px solid ${pagoOk?'#22C55E44':'rgba(239,68,68,.3)'};margin-bottom:10px;" id="hist-pago-status">
+    <span style="font-size:12px;font-weight:800;color:${pagoOk?'var(--success)':'var(--danger)'};">${pagoOk?'✅ Pago cuadrado':'⚠️ '+(totalPagos<nuevoSubtotal?'Falta':'Excede')+' S/'+(diff.toFixed(2))}</span>
+    <span style="font-size:13px;font-weight:900;color:var(--fb-yellow);">S/${totalPagos.toFixed(2)} / S/${nuevoSubtotal.toFixed(2)}</span>
+  </div>`;
+  // Abonos (pagos parciales)
+  const abonos = p.abonos || [];
+  const totalAbonado = abonos.reduce((s,a)=>s+a.monto,0);
+  const saldo = nuevoSubtotal - totalAbonado;
+  let abonosHTML = '';
+  if (abonos.length > 0 || p._showAbonos) {
+    abonosHTML = `<div style="margin-bottom:10px;background:rgba(129,140,248,.08);border:1px solid #818CF855;border-radius:10px;padding:10px 12px;">
+      <div style="font-size:11px;font-weight:900;color:#818CF8;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">💳 Abonos / Pagos parciales</div>
+      ${abonos.map((ab,ai)=>`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <select style="flex:1;background:var(--fb-dark);border:1px solid var(--fb-border);color:var(--text);border-radius:6px;padding:5px 8px;font-size:12px;" onchange="histEditSetAbonoMetodo(${ai},this.value)">
+            ${METODOS_DISP.map(m=>`<option value="${m}" ${ab.metodo===m?'selected':''}>${m}</option>`).join('')}
+          </select>
+          <input type="number" step="0.10" min="0" value="${ab.monto||''}" placeholder="S/ 0.00"
+            style="width:90px;background:var(--fb-dark);border:1px solid var(--fb-border);color:var(--fb-yellow);border-radius:6px;padding:5px 8px;font-size:13px;font-weight:800;text-align:right;"
+            oninput="histEditSetAbonoMonto(${ai},this.value)">
+          <button onclick="histEditDelAbono(${ai})" style="background:none;border:none;color:var(--danger);font-size:14px;cursor:pointer;">🗑</button>
+        </div>`).join('')}
+      <button onclick="histEditAddAbono()" style="width:100%;background:rgba(129,140,248,.15);border:2px dashed #818CF8;color:#818CF8;border-radius:8px;padding:6px;font-size:12px;font-weight:800;cursor:pointer;">+ Agregar abono</button>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;border-top:1px solid #818CF822;">
+        <span style="font-size:12px;font-weight:800;color:${Math.abs(saldo)<0.05?'var(--success)':saldo>0?'var(--warning)':'var(--danger)'};">Saldo: S/${saldo.toFixed(2)}</span>
+        <span style="font-size:12px;font-weight:800;color:#818CF8;">Total abonado: S/${totalAbonado.toFixed(2)}</span>
+      </div>
+    </div>`;
+  }
+  // Añadir ítem desde menú disponible
   let html = `<h3>✏️ Editar pedido</h3>
   <div class="sub">${p.mesa} · ${p.fecha}</div>
   ${pagoDetalleHTML}
   <div class="dash-section-title">Modalidad</div>
   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-    ${modOptions.map(m=>`<button class="dash-filter-btn ${p.modalidad===m?'active':''}" onclick="setHistModalidad(${idx},'${m}')">${modLabels[m]}</button>`).join('')}
+    ${modOptions.map(m=>`<button class="dash-filter-btn ${p.modalidad===m?'active':''}" onclick="setHistModalidad('${m}')">${modLabels[m]}</button>`).join('')}
   </div>
-  <div class="dash-section-title">Método de pago</div>
-  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
-    ${['Efectivo','Yape','Plin','Visa','Mastercard','PedidosYa','Rappi'].map(m=>`<button class="dash-filter-btn ${(p.metodoPago||p.pagadoCon)===m?'active':''}" onclick="setHistMetodo(${idx},'${m}')">${m}</button>`).join('')}
-  </div>
+  <div class="dash-section-title">Método(s) de pago</div>
+  ${pagosHTML}
+  ${abonosHTML}
+  ${!abonos.length && !p._showAbonos ? `<button onclick="histEditShowAbonos()" style="width:100%;background:rgba(129,140,248,.1);border:1px solid #818CF855;color:#818CF8;border-radius:8px;padding:7px;font-size:12px;font-weight:800;cursor:pointer;margin-bottom:12px;">💳 Gestionar abonos parciales</button>` : ''}
   <div class="dash-section-title">Items</div>`;
   items.forEach((item, i) => {
     html += `<div class="hist-item-edit">
-      <div class="hist-item-name">${item.name}</div>
-      <input class="hist-qty-inp" type="number" min="0" value="${item.qty||1}" onchange="setHistItemQty(${idx},${i},this.value)" title="Cantidad">
-      <input class="hist-price-inp" type="number" min="0" step="0.1" value="${item.price||0}" onchange="setHistItemPrice(${idx},${i},this.value)" title="Precio">
-      <button class="hist-del-item" onclick="delHistItem(${idx},${i})">🗑</button>
+      <div class="hist-item-name">${item.name}${item.cortesia?' 🎁':''}</div>
+      <input class="hist-qty-inp" type="number" min="0" value="${item.qty||1}" onchange="setHistItemQty(${i},this.value)" title="Cantidad">
+      <input class="hist-price-inp" type="number" min="0" step="0.1" value="${item.price||0}" onchange="setHistItemPrice(${i},this.value)" title="Precio unitario">
+      <button class="hist-del-item" onclick="delHistItem(${i})">🗑</button>
     </div>`;
   });
-  const nuevoTotal = items.reduce((s,i)=>(i.cortesia?s:s+(i.price||0)*(i.qty||1)),0);
-  html += `<div style="display:flex;justify-content:space-between;padding:12px 0;border-top:2px solid var(--fb-border);margin-top:8px">
+  // Añadir ítem libre
+  html += `<div style="display:flex;gap:6px;padding:8px 0;border-top:1px dashed var(--fb-border);margin-top:4px;">
+    <input id="hadd-name" class="add-item-input" placeholder="Nombre producto..." style="flex:2;">
+    <input id="hadd-price" class="add-item-input" type="number" step="0.1" min="0" placeholder="Precio" style="flex:1;width:80px;">
+    <input id="hadd-qty" class="add-item-input" type="number" min="1" value="1" style="flex:0 0 50px;width:50px;">
+    <button onclick="histEditAddItem()" style="background:var(--fb-orange);color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:800;cursor:pointer;">+</button>
+  </div>
+  <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:2px solid var(--fb-border);margin-top:8px">
     <span style="font-weight:800">Total recalculado</span>
-    <span id="hist-edit-total" style="font-family:'Arial Black',Impact,sans-serif;font-size:20px;color:var(--fb-yellow)">S/${nuevoTotal.toFixed(2)}</span>
+    <span id="hist-edit-total" style="font-family:'Arial Black',Impact,sans-serif;font-size:20px;color:var(--fb-yellow)">S/${nuevoSubtotal.toFixed(2)}</span>
   </div>
   <div style="display:flex;gap:8px;margin-top:8px">
     <button class="btn-secondary" onclick="cerrarHistEdit()" style="flex:1;padding:12px;border-radius:8px;cursor:pointer;font-weight:800;">Cancelar</button>
-    <button class="btn-primary" onclick="guardarHistEdit(${idx})" style="flex:2;padding:12px;border-radius:8px;cursor:pointer;font-weight:900;background:var(--success);color:#fff;border:none;">✅ Guardar cambios</button>
+    <button class="btn-primary" onclick="guardarHistEdit()" style="flex:2;padding:12px;border-radius:8px;cursor:pointer;font-weight:900;background:var(--success);color:#fff;border:none;">✅ Guardar cambios</button>
   </div>`;
   document.getElementById('hist-edit-box').innerHTML = html;
 }
 
-function setHistModalidad(idx, mod) {
-  state.historialPagos[idx].modalidad = mod;
-  renderHistEditBox(idx);
+function setHistModalidad(mod) {
+  if (!_histEditWorking) return;
+  _histEditWorking.data.modalidad = mod;
+  renderHistEditBox();
 }
-function setHistMetodo(idx, metodo) {
-  state.historialPagos[idx].metodoPago = metodo;
-  state.historialPagos[idx].pagadoCon = metodo;
-  renderHistEditBox(idx);
+function setHistMetodo(metodo) {
+  // Legacy — delegate to _editPagos (transient UI state, vive solo en la copia de trabajo)
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  const total = p.total || (p.items||[]).reduce((s,i)=>(i.cortesia?s:s+(i.price||0)*(i.qty||1)),0) + (p.costoDelivery||0);
+  p._editPagos = [{ metodo, monto: total }];
+  // NOT writing to p.metodoPago here — that only happens on guardarHistEdit
+  renderHistEditBox();
 }
-function setHistItemQty(idx, i, val) {
-  const qty = Math.max(0, parseInt(val)||0);
-  state.historialPagos[idx].items[i].qty = qty;
-  recalcHistEditTotal(idx);
+// ── Multi-pago helpers (Historial Edit) — todos operan sobre _histEditWorking.data ──
+function histEditSetPagoMetodo(pi, val) {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  if (!p._editPagos || !p._editPagos[pi]) return;
+  p._editPagos[pi].metodo = val;
+  _histEditRecalc();
 }
-function setHistItemPrice(idx, i, val) {
-  state.historialPagos[idx].items[i].price = parseFloat(val)||0;
-  recalcHistEditTotal(idx);
+function histEditSetPagoMonto(pi, val) {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  if (!p._editPagos || !p._editPagos[pi]) return;
+  p._editPagos[pi].monto = parseFloat(val) || 0;
+  _histEditRecalc();
 }
-function delHistItem(idx, i) {
-  state.historialPagos[idx].items.splice(i, 1);
-  renderHistEditBox(idx);
+function histEditAddPago() {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  if (!p._editPagos) p._editPagos = [];
+  p._editPagos.push({ metodo: 'Efectivo', monto: 0 });
+  renderHistEditBox();
 }
-function recalcHistEditTotal(idx) {
-  const items = state.historialPagos[idx].items || [];
-  const t = items.reduce((s,i)=>(i.cortesia?s:s+(i.price||0)*(i.qty||1)),0);
+function histEditDelPago(pi) {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  if (!p._editPagos) return;
+  if (p._editPagos.length <= 1) { alert('Debe haber al menos un método de pago.'); return; }
+  p._editPagos.splice(pi, 1);
+  renderHistEditBox();
+}
+// ── Abonos helpers ────────────────────────────────────────────────────────
+function histEditShowAbonos() {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  p._showAbonos = true;
+  if (!p.abonos) p.abonos = [];
+  renderHistEditBox();
+}
+function histEditAddAbono() {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  if (!p.abonos) p.abonos = [];
+  p.abonos.push({ metodo: 'Efectivo', monto: 0 });
+  renderHistEditBox();
+}
+function histEditDelAbono(ai) {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  if (!p.abonos) return;
+  p.abonos.splice(ai, 1);
+  renderHistEditBox();
+}
+function histEditSetAbonoMetodo(ai, val) {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  if (!p.abonos || !p.abonos[ai]) return;
+  p.abonos[ai].metodo = val;
+  _histEditRecalc();
+}
+function histEditSetAbonoMonto(ai, val) {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  if (!p.abonos || !p.abonos[ai]) return;
+  p.abonos[ai].monto = parseFloat(val) || 0;
+  _histEditRecalc();
+}
+// ── Add ítem libre en edición ─────────────────────────────────────────────
+function histEditAddItem() {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  const nameEl = document.getElementById('hadd-name');
+  const priceEl = document.getElementById('hadd-price');
+  const qtyEl = document.getElementById('hadd-qty');
+  const name = nameEl ? nameEl.value.trim() : '';
+  const price = parseFloat(priceEl ? priceEl.value : 0) || 0;
+  const qty = parseInt(qtyEl ? qtyEl.value : 1) || 1;
+  if (!name || price <= 0) { alert('Ingresa nombre y precio válido'); return; }
+  if (!p.items) p.items = [];
+  p.items.push({ id: 'edit_' + Date.now(), name, price, qty, brand: 'foodbiker', cortesia: false });
+  renderHistEditBox();
+}
+// ── Recalc total inline (sin re-render) ───────────────────────────────────
+function _histEditRecalc() {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  const nuevoSubtotal = (p.items||[]).reduce((s,i)=>(i.cortesia?s:s+(i.price||0)*(i.qty||1)),0) + (p.costoDelivery||0);
+  const el = document.getElementById('hist-edit-total');
+  if (el) el.textContent = `S/${nuevoSubtotal.toFixed(2)}`;
+  // update pago status indicator
+  const pagos = p._editPagos || [];
+  const totalPagos = pagos.reduce((s,x)=>s+x.monto,0);
+  const diff = Math.abs(totalPagos - nuevoSubtotal);
+  const pagoOk = diff < 0.05;
+  const stEl = document.getElementById('hist-pago-status');
+  if (stEl) {
+    stEl.style.background = pagoOk ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.1)';
+    stEl.style.borderColor = pagoOk ? '#22C55E44' : 'rgba(239,68,68,.3)';
+    stEl.innerHTML = `<span style="font-size:12px;font-weight:800;color:${pagoOk?'var(--success)':'var(--danger)'};">${pagoOk?'✅ Pago cuadrado':'⚠️ '+(totalPagos<nuevoSubtotal?'Falta':'Excede')+' S/'+(diff.toFixed(2))}</span><span style="font-size:13px;font-weight:900;color:var(--fb-yellow);">S/${totalPagos.toFixed(2)} / S/${nuevoSubtotal.toFixed(2)}</span>`;
+  }
+}
+function setHistItemQty(i, val) {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  if (!p.items || !p.items[i]) return;
+  p.items[i].qty = Math.max(0, parseInt(val)||0);
+  recalcHistEditTotal();
+}
+function setHistItemPrice(i, val) {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  if (!p.items || !p.items[i]) return;
+  const price = parseFloat(val);
+  p.items[i].price = (isNaN(price) || price < 0) ? 0 : price;
+  recalcHistEditTotal();
+}
+function delHistItem(i) {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  if ((p.items||[]).length <= 1) { alert('No puedes eliminar el último ítem.'); return; }
+  p.items.splice(i, 1);
+  renderHistEditBox();
+}
+function recalcHistEditTotal() {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  const items = p.items || [];
+  const t = items.reduce((s,i)=>(i.cortesia?s:s+(i.price||0)*(i.qty||1)),0) + (p.costoDelivery||0);
   const el = document.getElementById('hist-edit-total');
   if (el) el.textContent = `S/${t.toFixed(2)}`;
+  _histEditRecalc();
 }
-function guardarHistEdit(idx) {
-  const p = state.historialPagos[idx];
-  if (!p) return;
-  const nuevoTotal = (p.items||[]).reduce((s,i)=>(i.cortesia?s:s+(i.price||0)*(i.qty||1)),0);
-  const totalAnterior = p.total || 0;
-  const metodoAnterior = p.metodoPago || p.pagadoCon || '';
 
-  // Si es la primera vez que se edita este pedido, guardar snapshot del original
-  // (en ediciones posteriores se conserva el original real, no el último estado editado)
-  if (!p.editado) {
-    p._original = {
-      total: totalAnterior,
-      metodoPago: metodoAnterior,
-      modalidad: p.modalidad,
-      items: JSON.parse(JSON.stringify(p.items||[]))
-    };
+function guardarHistEdit() {
+  // ── Validar y construir el registro final a partir de la copia de trabajo ──
+  // state.historialPagos NO se ha tocado en ningún momento hasta este punto.
+  if (!_histEditWorking) return;
+  const working = _histEditWorking.data;
+  const editPagos  = working._editPagos || [];
+  const editAbonos = working.abonos      || [];
+
+  // ── Validar items ─────────────────────────────────────────────────────────
+  const items = working.items || [];
+  if (!Array.isArray(items) || items.length === 0) {
+    alert('Error: no hay productos en el pedido.');
+    return;
+  }
+  // Precios y cantidades no negativos
+  for (const it of items) {
+    if ((it.price || 0) < 0) { alert(`Precio negativo en "${it.name}". Corrígelo antes de guardar.`); return; }
+    if ((it.qty || 0) < 0)   { alert(`Cantidad negativa en "${it.name}". Corrígela antes de guardar.`); return; }
+  }
+  const nuevoSubtotal = items.reduce((s,i)=>(i.cortesia?s:s+(i.price||0)*(i.qty||1)),0) + (working.costoDelivery||0);
+  if (nuevoSubtotal < 0) { alert('El total no puede ser negativo.'); return; }
+
+  // ── Validar multi-pago ────────────────────────────────────────────────────
+  if (editPagos.length === 0) { alert('Debes asignar al menos un método de pago.'); return; }
+  for (const pg of editPagos) {
+    if (!pg.metodo || !pg.metodo.trim()) { alert('Hay un método de pago vacío. Corrígelo.'); return; }
+    if (isNaN(pg.monto) || pg.monto < 0) { alert(`Monto inválido en método "${pg.metodo}".`); return; }
+  }
+  const totalPagos = editPagos.reduce((s,x)=>s+x.monto, 0);
+  const diff = Math.abs(totalPagos - nuevoSubtotal);
+  if (diff > 0.05) {
+    alert(`⚠️ La suma de los pagos (S/${totalPagos.toFixed(2)}) no coincide con el total (S/${nuevoSubtotal.toFixed(2)}).\nDiferencia: S/${diff.toFixed(2)}`);
+    return;
   }
 
-  p.total = nuevoTotal;
-  p.editado = true;
+  // ── Validar abonos ────────────────────────────────────────────────────────
+  for (const ab of editAbonos) {
+    if (isNaN(ab.monto) || ab.monto < 0) { alert(`Monto de abono inválido.`); return; }
+  }
+  const totalAbonado = editAbonos.reduce((s,a)=>s+a.monto, 0);
 
-  // Metadata de auditoría usada por el badge de la card del historial
-  p.historialCambios = {
-    fecha: new Date().toLocaleString('es-PE'),
-    metodoPagoOriginal: p._original.metodoPago,
-    totalOriginal: p._original.total
+  // ── Resolver la posición ACTUAL del registro por _uid, no por índice guardado ──
+  // El array puede haberse reordenado (sync remoto, inserciones) desde que se
+  // abrió la edición. Buscar por identidad estable es obligatorio aquí.
+  const idx = _histFindIdxByUid(_histEditWorking.uid);
+  if (idx === -1) {
+    alert('⚠️ Este pedido ya no existe en el historial (fue eliminado o resincronizado). La edición no se pudo guardar.');
+    cerrarHistEdit();
+    renderView('historial');
+    return;
+  }
+  const original = state.historialPagos[idx];
+
+  // ── Construir registro final ────────────────────────────────────────────────
+  const totalAnterior  = original.total || 0;
+  const metodoAnterior = original.metodoPago || original.pagadoCon || '';
+  const metodoPagoStr  = editPagos.length === 1
+    ? editPagos[0].metodo
+    : editPagos.map(pg => `${pg.metodo} S/${pg.monto.toFixed(2)}`).join(' + ');
+
+  // Snapshot del PRIMER estado original (preservar entre ediciones sucesivas).
+  // Se lee de "original" (el registro real vigente), no de la copia de trabajo,
+  // para no perder el ancla si el registro fue tocado por otro flujo mientras
+  // se editaba (re-cobro queda bloqueado por el lock, así que esto solo cubre
+  // el caso de que "original" siga siendo exactamente el mismo registro).
+  const originalGuardado = original.editado
+    ? original._original
+    : { total: totalAnterior, metodoPago: metodoAnterior, modalidad: original.modalidad, items: JSON.parse(JSON.stringify(original.items || [])) };
+
+  const registroFinal = {
+    ...JSON.parse(JSON.stringify(original)), // base = registro real vigente, no la copia de trabajo
+    items: JSON.parse(JSON.stringify(items)),
+    modalidad: working.modalidad,
+    total: nuevoSubtotal,
+    metodoPago: metodoPagoStr,
+    pagadoCon: metodoPagoStr,
+    editado: true,
+    _original: originalGuardado,
+    historialCambios: {
+      fecha: new Date().toLocaleString('es-PE'),
+      metodoPagoOriginal: originalGuardado.metodoPago,
+      totalOriginal: originalGuardado.total
+    }
   };
+  // _uid, key, fecha, fechaISO viajan intactos en el spread de "original" — nunca se sobreescriben aquí.
 
-  // Registrar en el log global de cambios
+  // Abonos: solo persistir si hay alguno con monto > 0
+  const abonosValidos = editAbonos.filter(a => a.monto > 0);
+  if (abonosValidos.length > 0) {
+    registroFinal.abonos = abonosValidos;
+    const saldo = nuevoSubtotal - totalAbonado;
+    registroFinal.estadoPago = Math.abs(saldo) < 0.05 ? 'Pagado' : 'Pendiente';
+  } else {
+    delete registroFinal.abonos;
+    delete registroFinal.estadoPago;
+  }
+  // Campos de UI temporal: nunca existieron en "original" (vivían solo en la
+  // copia de trabajo), así que no hace falta borrarlos — pero por seguridad
+  // ante futuras ediciones del código, se eliminan explícitamente.
+  delete registroFinal._editPagos;
+  delete registroFinal._showAbonos;
+
+  // ── Commit atómico: una sola escritura, todo o nada ────────────────────────
+  state.historialPagos[idx] = registroFinal;
+
   if (!state.historialCambios) state.historialCambios = [];
   state.historialCambios.push({
     fecha: new Date().toLocaleString('es-PE'),
-    descripcion: `Pedido ${p.mesa} editado · Total: S/${totalAnterior.toFixed(2)} → S/${nuevoTotal.toFixed(2)} · Pago: ${metodoAnterior} → ${p.metodoPago||p.pagadoCon||''} · Modalidad: ${p.modalidad}`,
+    descripcion: `Pedido ${original.mesa} editado · Total: S/${totalAnterior.toFixed(2)} → S/${nuevoSubtotal.toFixed(2)} · Pago: ${metodoAnterior} → ${metodoPagoStr} · Modalidad: ${original.modalidad}`,
   });
 
   saveState();
-  _histEditSnapshot = null;
-  cerrarHistEdit();
+  _histEditWorking = null;
+  _histEditLockUid = null;
+  document.getElementById('hist-edit-overlay').classList.remove('show');
   renderView('historial');
   alert('✅ Pedido actualizado. El reporte se recalculará automáticamente.');
 }
+
 function cerrarHistEdit() {
-  // Revertir cualquier cambio en memoria que no se haya guardado explícitamente
-  if (_histEditIdx != null && _histEditSnapshot) {
-    state.historialPagos[_histEditIdx] = _histEditSnapshot;
-  }
+  // El estado original nunca fue modificado: cancelar es solo descartar
+  // la copia de trabajo y liberar el lock. No hay nada que restaurar.
+  _histEditWorking = null;
+  _histEditLockUid = null;
   document.getElementById('hist-edit-overlay').classList.remove('show');
-  _histEditIdx = null;
-  _histEditSnapshot = null;
 }
 function modalidadLabel(mod) {
 const labels = { salon:'SALÓN', llevar:'PARA LLEVAR', recojo:'RECOJO', delivery:'DELIVERY', externo:'EXTERNO' };
@@ -5070,13 +5398,11 @@ let _customHasta = '';  // 'YYYY-MM-DD'
 
 function filtrarPagosPorRango(pagos, filtro) {
   const ahora = new Date();
-  // ⚠️ IMPORTANTE: usar fecha LOCAL del dispositivo para "hoy"
-  // (no UTC — Peru es UTC-5 y fechaISO se guardaría en UTC causando desfase)
-  const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+  // Inicio del día local (00:00:00.000) — ancla fija, sin desfase UTC
+  const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 0, 0, 0, 0);
 
   function parsePagoFecha(p) {
-    // PRIORIDAD 1: campo 'fecha' en formato local peruano (DD/MM/YYYY HH:MM:SS)
-    // Este campo siempre refleja la hora local del dispositivo — es la fuente correcta para filtrar por día
+    // PRIORIDAD 1: campo 'fecha' en formato local peruano (DD/MM/YYYY HH:MM[:SS] [AM|PM])
     try {
       const s = (p.fecha || '').trim();
       const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
@@ -5086,17 +5412,16 @@ function filtrarPagosPorRango(pagos, filtro) {
         const h = hm ? parseInt(hm[1]) : 0;
         const mi = hm ? parseInt(hm[2]) : 0;
         const isPM = /p\.?\s?m/i.test(s);
-        const hora = (isPM && h < 12) ? h + 12 : h;
-        const d = new Date(yr, mon, day, hora, mi, 0);
+        const hora = (isPM && h < 12) ? h + 12 : (!isPM && /a\.?\s?m/i.test(s) && h === 12) ? 0 : h;
+        const d = new Date(yr, mon, day, hora, mi, 0, 0);
         if (!isNaN(d.getTime())) return d;
       }
     } catch(e) {}
-    // PRIORIDAD 2: fechaISO solo como último recurso (está en UTC, puede tener desfase de día)
-    // Convertir a fecha LOCAL para comparar correctamente
+    // PRIORIDAD 2: fechaISO — ya viene en UTC, convertir a local mediante getters
     if (p.fechaISO) {
       try {
         const d = new Date(p.fechaISO);
-        if (!isNaN(d.getTime())) return d; // JS convierte a local automáticamente en métodos locales
+        if (!isNaN(d.getTime())) return d;
       } catch(e) {}
     }
     // Fallback nativo
@@ -5109,21 +5434,26 @@ function filtrarPagosPorRango(pagos, filtro) {
 
   return pagos.filter(p => {
     const fecha = parsePagoFecha(p);
-    const diaP = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
-    // Rango personalizado
+    // Inicio del día LOCAL del pago
+    const diaP = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate(), 0, 0, 0, 0);
+    const diaTs = diaP.getTime();
+    const hoyTs = hoy.getTime();
+
     if (filtro === 'custom') {
       if (!_customDesde && !_customHasta) return true;
       const desde = _customDesde ? new Date(_customDesde + 'T00:00:00') : new Date(0);
-      const hasta = _customHasta ? new Date(_customHasta + 'T23:59:59') : new Date(9999,0,1);
-      return diaP >= desde && diaP <= hasta;
+      const hasta = _customHasta ? new Date(_customHasta + 'T23:59:59.999') : new Date(9999,0,1);
+      return fecha >= desde && fecha <= hasta;
     }
-    const diffDias = Math.floor((hoy - diaP) / 86400000);
+    // diff en días enteros sin riesgo de DST
+    const diffMs = hoyTs - diaTs;
+    const diffDias = Math.round(diffMs / 86400000); // round para evitar errores de 1ms por DST
     if (filtro === 'hoy')    return diffDias === 0;
-    if (filtro === 'ayer')   return diffDias === 1;       // solo ayer
-    if (filtro === '2dias')  return diffDias <= 1;        // hoy + ayer
-    if (filtro === '3dias')  return diffDias <= 2;        // hoy + 2 días antes
-    if (filtro === 'semana') return diffDias <= 6;
-    if (filtro === 'mes')    return diffDias <= 29;
+    if (filtro === 'ayer')   return diffDias === 1;
+    if (filtro === '2dias')  return diffDias >= 0 && diffDias <= 1;
+    if (filtro === '3dias')  return diffDias >= 0 && diffDias <= 2;
+    if (filtro === 'semana') return diffDias >= 0 && diffDias <= 6;
+    if (filtro === 'mes')    return diffDias >= 0 && diffDias <= 29;
     return true; // 'todo'
   });
 }
@@ -5820,7 +6150,22 @@ function initFirebaseSync() {
       return !remotePagosSet.has(id);
     });
     // El remoto es la fuente de verdad, pero añadimos los locales nuevos al final
-    state.historialPagos = [...remotePagos, ...localNuevos];
+    let merged = [...remotePagos, ...localNuevos];
+    // Protección de edición activa: si hay un registro bloqueado por
+    // _histEditLockUid (modal de edición abierto en este dispositivo), su
+    // versión remota se descarta y se conserva la versión local vigente
+    // (la que el usuario está editando sigue intacta — no se toca aquí, solo
+    // se preserva el registro real de state.historialPagos). El resto del
+    // historial sí se sincroniza con normalidad; al guardar o cancelar la
+    // edición, la siguiente sincronización ya no encontrará el lock activo.
+    if (_histEditLockUid != null) {
+      const localVersion = state.historialPagos.find(p => _histUid(p) === _histEditLockUid);
+      if (localVersion) {
+        merged = merged.filter(p => _histUid(p) !== _histEditLockUid);
+        merged.push(localVersion);
+      }
+    }
+    state.historialPagos = merged;
     state.historialCambios = remoteCambios;
     try {
       const safeState = { ...state, role:null, saboresCallback:null, currentModalItem:null };
@@ -5830,6 +6175,7 @@ function initFirebaseSync() {
     if (state.role === 'caja') refreshCurrentView();
     else if (state.role === 'admin') refreshCurrentView();
   });
+
 
   // Listener 2: menú / precios / stock (baja frecuencia, solo admin)
   window._fbListen('pos/menu', function(val) {
