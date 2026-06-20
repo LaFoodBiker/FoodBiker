@@ -270,9 +270,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .ticket-row{display:grid;grid-template-columns:1fr auto;gap:4px;margin:3px 0;font-size:17px;line-height:1.3;overflow-wrap:break-word;}
 .ticket-row span:first-child{min-width:0;white-space:normal;word-break:normal;overflow-wrap:break-word;}
 .ticket-row span:last-child{text-align:right;white-space:nowrap;}
-.ticket-row-fecha{display:flex;flex-direction:column;margin:3px 0;font-size:17px;line-height:1.3;}
-.ticket-row-fecha .ticket-fecha-label{font-weight:900;}
+.ticket-row-fecha,.ticket-row-stack{display:flex;flex-direction:column;margin:3px 0;font-size:17px;line-height:1.3;width:100%;max-width:100%;}
+.ticket-row-fecha .ticket-fecha-label,.ticket-row-stack .ticket-stack-label{font-weight:900;}
 .ticket-row-fecha .ticket-fecha-valor{white-space:nowrap;}
+.ticket-row-stack .ticket-stack-valor{white-space:normal;word-break:normal;overflow-wrap:break-word;max-width:100%;}
 .ticket-row-detail{font-size:14px;color:#000;padding-left:8px;margin-bottom:2px;}
 .ticket-total-row{display:grid;grid-template-columns:1fr auto;gap:4px;font-size:22px;font-weight:900;margin:5px 0;}
 .ticket-footer{font-size:14px;text-align:center;margin-top:6px;line-height:1.5;}
@@ -3646,7 +3647,7 @@ let html = `<div class="ticket" style="font-family:'Courier New',monospace;font-
 <hr class="ticket-divider">
 <div class="ticket-row" style="${B}"><span style="${B}">${mesaLabel}</span><span style="${B}">${modalidadLabel(mesa.modalidad)}</span></div>`;
 if (mesa.clienteNombre) {
-html += `<div class="ticket-row" style="${B}"><span style="${B}">Cliente:</span><span style="${B}">${mesa.clienteNombre}</span></div>`;
+html += `<div class="ticket-row-stack" style="${B}"><span class="ticket-stack-label" style="${B}">Cliente:</span><span class="ticket-stack-valor" style="${B}">${mesa.clienteNombre}</span></div>`;
 }
 html += `<div class="ticket-row-fecha" style="${B}"><span class="ticket-fecha-label" style="${B}">Fecha:</span><span class="ticket-fecha-valor" style="${B}">${ahora}</span></div>
 <hr class="ticket-divider">`;
@@ -4909,7 +4910,7 @@ html += `<hr class="ticket-divider">
 <span style="${B}">${modalidadLabel(pago.modalidad)}</span>
 </div>`;
 if (pago.clienteNombre) {
-html += `<div class="ticket-row" style="${B}"><span style="${B}">Cliente:</span><span style="${B}">${pago.clienteNombre}</span></div>`;
+html += `<div class="ticket-row-stack" style="${B}"><span class="ticket-stack-label" style="${B}">Cliente:</span><span class="ticket-stack-valor" style="${B}">${pago.clienteNombre}</span></div>`;
 }
 html += `<div class="ticket-row-fecha" style="${B}"><span class="ticket-fecha-label" style="${B}">Fecha:</span><span class="ticket-fecha-valor" style="${B}">${ahora}</span></div>
 <hr class="ticket-divider">`;
@@ -4959,7 +4960,7 @@ if (det && det.tandas && det.tandas.length) {
 } else if (det && det.efectivo) {
   // Métodos o Por Producto con Efectivo (único método que puede generar vuelto)
   const _vueltoLabel = { efectivo: 'Efectivo', yape: 'Yape', plin: 'Plin' };
-  html += `<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}text-align:right;">${pago.metodoPago}</span></div>
+  html += `<div class="ticket-row-stack" style="${B}"><span class="ticket-stack-label" style="${B}">Pago:</span><span class="ticket-stack-valor" style="${B}">${pago.metodoPago}</span></div>
   <hr class="ticket-divider">
   <div class="ticket-row" style="${B}"><span style="${B}">Total recibido</span><span style="${B}">S/${det.efectivo.monto.toFixed(2)}</span></div>`;
   if (det.efectivo.recibido) {
@@ -4973,7 +4974,7 @@ if (det && det.tandas && det.tandas.length) {
   }
   html += `<hr class="ticket-divider">`;
 } else {
-  html += `<div class="ticket-row" style="${B}"><span style="${B}">Pago:</span><span style="${B}text-align:right;">${pago.metodoPago}</span></div>
+  html += `<div class="ticket-row-stack" style="${B}"><span class="ticket-stack-label" style="${B}">Pago:</span><span class="ticket-stack-valor" style="${B}">${pago.metodoPago}</span></div>
   <hr class="ticket-divider">`;
 }
 if (tipo !== 'simple' && datos.tel) {
@@ -4993,7 +4994,7 @@ FoodBiker<br>
 <img src="${QR_RESENA_GOOGLE}" width="120" height="120" style="width:38mm;height:38mm;max-width:100%;display:inline-block;image-rendering:pixelated;" alt="QR reseña Google">
 </div>
 <div class="ticket-footer" style="${B}margin-top:10px;">
-¡Déjanos 5 estrellas ⭐⭐⭐⭐⭐ junto con tu reseña y llévate GRATIS unos bastones de camote con su salsita biker! 🤤🍟✨ ¡Súper ricos! 🚴‍♂️🔥
+¡Escanea el QR, déjanos 5 estrellas ⭐⭐⭐⭐⭐ en Google y en tu próxima visita muestra tu reseña + esta boleta en caja para reclamar tus bastones de camote gratis! 🤤🍟✨
 </div>
 </div>`;
 document.getElementById('ticket-print-area').innerHTML = html;
