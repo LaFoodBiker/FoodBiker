@@ -3300,12 +3300,43 @@ function renderHistEditBox() {
       <button class="hist-del-item" onclick="delHistItem(${i})">🗑</button>
     </div>`;
   });
-  // Añadir ítem libre
-  html += `<div style="display:flex;gap:6px;padding:8px 0;border-top:1px dashed var(--fb-border);margin-top:4px;">
-    <input id="hadd-name" class="add-item-input" placeholder="Nombre producto..." style="flex:2;">
-    <input id="hadd-price" class="add-item-input" type="number" step="0.1" min="0" placeholder="Precio" style="flex:1;width:80px;">
-    <input id="hadd-qty" class="add-item-input" type="number" min="1" value="1" style="flex:0 0 50px;width:50px;">
-    <button onclick="histEditAddItem()" style="background:var(--fb-orange);color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:800;cursor:pointer;">+</button>
+  // ── Catálogo del menú para agregar platos ──────────────────────────────────
+  const allBrands = Object.keys(menuData);
+  let menuCatalogHTML = '';
+  allBrands.forEach(brand => {
+    const cats = menuData[brand];
+    if (!cats) return;
+    Object.entries(cats).forEach(([catName, catItems]) => {
+      const disponibles = catItems.filter(it => !it.agotado);
+      if (!disponibles.length) return;
+      menuCatalogHTML += `<div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin:10px 0 6px;">${catName}</div>`;
+      disponibles.forEach(it => {
+        menuCatalogHTML += `<div onclick="histEditAddMenuItemDirect('${it.id}','${brand}')" style="display:flex;align-items:center;gap:10px;background:var(--fb-darker);border:1px solid var(--fb-border);border-radius:8px;padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:border-color .15s;active:border-color:var(--fb-orange);">
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;">${it.name}</div>
+            ${it.desc ? `<div style="font-size:10px;color:var(--text-muted);margin-top:1px;">${it.desc}</div>` : ''}
+          </div>
+          <div style="font-family:'Arial Black',Impact,sans-serif;font-size:16px;color:var(--fb-yellow);flex-shrink:0;">S/${it.price.toFixed(2)}</div>
+          <div style="background:var(--fb-orange);color:#fff;border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0;">+</div>
+        </div>`;
+      });
+    });
+  });
+
+  html += `<div style="border-top:2px dashed var(--fb-border);margin-top:8px;padding-top:10px;">
+    <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--fb-orange);margin-bottom:8px;">🍔 Agregar del menú</div>
+    <div style="max-height:260px;overflow-y:auto;padding-right:2px;">
+      ${menuCatalogHTML}
+    </div>
+    <div style="margin-top:10px;border-top:1px dashed var(--fb-border);padding-top:8px;">
+      <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px;">✏️ Ítem personalizado</div>
+      <div style="display:flex;gap:6px;">
+        <input id="hadd-name" class="add-item-input" placeholder="Nombre producto..." style="flex:2;">
+        <input id="hadd-price" class="add-item-input" type="number" step="0.1" min="0" placeholder="Precio" style="flex:1;width:80px;">
+        <input id="hadd-qty" class="add-item-input" type="number" min="1" value="1" style="flex:0 0 50px;width:50px;">
+        <button onclick="histEditAddItem()" style="background:var(--fb-orange);color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:800;cursor:pointer;">+</button>
+      </div>
+    </div>
   </div>
   <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:2px solid var(--fb-border);margin-top:8px">
     <span style="font-weight:800">Total recalculado</span>
@@ -3411,6 +3442,34 @@ function histEditAddItem() {
   if (!name || price <= 0) { alert('Ingresa nombre y precio válido'); return; }
   if (!p.items) p.items = [];
   p.items.push({ id: 'edit_' + Date.now(), name, price, qty, brand: 'foodbiker', cortesia: false });
+  renderHistEditBox();
+}
+// ── Agrega un ítem directo del catálogo al pedido en edición ─────────────
+function histEditAddMenuItemDirect(itemId, brand) {
+  if (!_histEditWorking) return;
+  const p = _histEditWorking.data;
+  if (!menuData[brand]) return;
+  let found = null;
+  Object.values(menuData[brand]).forEach(catItems => {
+    const it = catItems.find(x => x.id === itemId);
+    if (it) found = it;
+  });
+  if (!found) return;
+  if (!p.items) p.items = [];
+  // Si ya existe el ítem, incrementar qty
+  const existing = p.items.find(x => x.id === itemId);
+  if (existing) {
+    existing.qty = (existing.qty || 1) + 1;
+  } else {
+    p.items.push({
+      id: found.id,
+      name: found.name,
+      price: found.price,
+      qty: 1,
+      brand: brand,
+      cortesia: false
+    });
+  }
   renderHistEditBox();
 }
 // ── Recalc total inline (sin re-render) ───────────────────────────────────
