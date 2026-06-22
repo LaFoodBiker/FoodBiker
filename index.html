@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="version" content="1779158190_v22">
+<meta charset="UTF-8"><meta name="version" content="1782102479_v23">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5470,10 +5470,20 @@ let _reporteFiltro = 'hoy';
 let _customDesde = '';  // 'YYYY-MM-DD'
 let _customHasta = '';  // 'YYYY-MM-DD'
 
+// ── TURNO: 2 AM a 2 AM ─────────────────────────────────────────────────────
+// Devuelve el timestamp de inicio del turno (2:00 AM) al que pertenece una fecha.
+// Si la hora es < 2 AM, el turno empezó a las 2 AM del día ANTERIOR.
+function _inicioTurno(fecha) {
+  const h = fecha.getHours();
+  const base = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate(), 2, 0, 0, 0);
+  if (h < 2) base.setDate(base.getDate() - 1); // madrugada: pertenece al turno anterior
+  return base;
+}
+// Inicio del turno actual (2 AM de hoy, o 2 AM de ayer si ahora < 2 AM)
+function _turnoHoyInicio() { return _inicioTurno(new Date()); }
+
 function filtrarPagosPorRango(pagos, filtro) {
-  const ahora = new Date();
-  // Inicio del día local (00:00:00.000) — ancla fija, sin desfase UTC
-  const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 0, 0, 0, 0);
+  const turnoHoy = _turnoHoyInicio(); // 2:00 AM del turno vigente
 
   function parsePagoFecha(p) {
     // PRIORIDAD 1: campo 'fecha' en formato local peruano (DD/MM/YYYY HH:MM[:SS] [AM|PM])
@@ -5508,26 +5518,30 @@ function filtrarPagosPorRango(pagos, filtro) {
 
   return pagos.filter(p => {
     const fecha = parsePagoFecha(p);
-    // Inicio del día LOCAL del pago
-    const diaP = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate(), 0, 0, 0, 0);
-    const diaTs = diaP.getTime();
-    const hoyTs = hoy.getTime();
 
     if (filtro === 'custom') {
       if (!_customDesde && !_customHasta) return true;
-      const desde = _customDesde ? new Date(_customDesde + 'T00:00:00') : new Date(0);
-      const hasta = _customHasta ? new Date(_customHasta + 'T23:59:59.999') : new Date(9999,0,1);
-      return fecha >= desde && fecha <= hasta;
+      // custom usa días completos de 2AM a 2AM
+      const desde = _customDesde ? new Date(new Date(_customDesde + 'T02:00:00').getTime()) : new Date(0);
+      const hasta = _customHasta ? new Date(new Date(_customHasta + 'T02:00:00').getTime() + 86400000) : new Date(9999,0,1);
+      return fecha >= desde && fecha < hasta;
     }
-    // diff en días enteros sin riesgo de DST
-    const diffMs = hoyTs - diaTs;
-    const diffDias = Math.round(diffMs / 86400000); // round para evitar errores de 1ms por DST
-    if (filtro === 'hoy')    return diffDias === 0;
-    if (filtro === 'ayer')   return diffDias === 1;
-    if (filtro === '2dias')  return diffDias >= 0 && diffDias <= 1;
-    if (filtro === '3dias')  return diffDias >= 0 && diffDias <= 2;
-    if (filtro === 'semana') return diffDias >= 0 && diffDias <= 6;
-    if (filtro === 'mes')    return diffDias >= 0 && diffDias <= 29;
+
+    // Inicio del turno al que pertenece este pago
+    const turnoP = _inicioTurno(fecha);
+    const turnoHoyTs = turnoHoy.getTime();
+    const turnoPTs  = turnoP.getTime();
+
+    // diff en cantidad de turnos (cada turno = 24h exactas)
+    const diffMs   = turnoHoyTs - turnoPTs;
+    const diffTurnos = Math.round(diffMs / 86400000);
+
+    if (filtro === 'hoy')    return diffTurnos === 0;
+    if (filtro === 'ayer')   return diffTurnos === 1;
+    if (filtro === '2dias')  return diffTurnos >= 0 && diffTurnos <= 1;
+    if (filtro === '3dias')  return diffTurnos >= 0 && diffTurnos <= 2;
+    if (filtro === 'semana') return diffTurnos >= 0 && diffTurnos <= 6;
+    if (filtro === 'mes')    return diffTurnos >= 0 && diffTurnos <= 29;
     return true; // 'todo'
   });
 }
@@ -5960,8 +5974,9 @@ function renderReportePersonalizado(el) {
   </div>`;
 
   if (desde && hasta) {
-    const d1 = new Date(desde + 'T00:00:00');
-    const d2 = new Date(hasta + 'T23:59:59');
+    // Turno 2AM → 2AM: desde las 2:00 AM del día inicial hasta las 1:59:59 AM del día posterior al final
+    const d1 = new Date(desde + 'T02:00:00');
+    const d2 = new Date(new Date(hasta + 'T02:00:00').getTime() + 86400000 - 1);
     function fechaISO2(p){
       if(p.fechaISO){const d=new Date(p.fechaISO);if(!isNaN(d))return d;}
       try{const s=(p.fecha||'').replace(',','');const pts=s.trim().split(/[\s\/]/);if(pts.length>=3){const d=new Date(parseInt(pts[2]),parseInt(pts[1])-1,parseInt(pts[0]),parseInt((pts[3]||'0:0').split(':')[0]),parseInt((pts[3]||'0:0').split(':')[1]||0));if(!isNaN(d))return d;}}catch(e){}return new Date();
