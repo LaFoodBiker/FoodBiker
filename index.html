@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="version" content="1782105383_v27">
+<meta charset="UTF-8"><meta name="version" content="1782105383_v29">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3018,9 +3018,7 @@ function renderHistorialView(el) {
     const _turnoP = _inicioTurno(_fhPago);
     const _turnoH = _turnoHoyInicio();
     const _esTurnoActual = Math.round((_turnoH.getTime()-_turnoP.getTime())/86400000) === 0;
-    // Solo marcar ventas de madrugada (0:00-1:59 AM) que pertenecen al turno del día anterior
-    const _esMadrugada = _fhPago.getHours() < 2;
-    const _esColada = _esMadrugada && !_esTurnoActual; // venta de madrugada que NO es del turno actual
+    const _esColada = !_esTurnoActual; // cualquier venta que no sea del turno vigente
     // Badge turno anterior
     const badgeTurnoAnterior = !_esTurnoActual
       ? `<div style="margin:4px 0 6px;background:rgba(99,102,241,.15);border:2px solid #6366F1;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:900;color:#818CF8;">🌙 Turno anterior — no cuenta en el reporte de hoy</div>`
@@ -5578,6 +5576,77 @@ function filtrarPagosPorRango(pagos, filtro) {
 function renderReporteCaja(el) {
   const _tab = window._reporteSubTab || 'resumen';
 
+  // ── Resumen rápido 3 turnos ───────────────────────────────────────────────
+  const _seenQ = new Set();
+  const _todosQ = (state.historialPagos||[]).filter(p=>{
+    const uid=p._uid||(p.key+'_'+(p.fechaISO||p.fecha));
+    if(_seenQ.has(uid))return false; _seenQ.add(uid); return true;
+  });
+
+  function _parseFechaQ(p) {
+    try {
+      const s=(p.fecha||'').trim(), m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if(m){
+        const hm=s.match(/(\d{1,2}):(\d{2})/), h=hm?+hm[1]:0, mi=hm?+hm[2]:0;
+        const isPM=/p\.?\s?m/i.test(s);
+        const hora=(isPM&&h<12)?h+12:(!isPM&&/a\.?\s?m/i.test(s)&&h===12)?0:h;
+        const d=new Date(+m[3],+m[2]-1,+m[1],hora,mi,0);
+        if(!isNaN(d.getTime()))return d;
+      }
+    } catch(e){}
+    try{ if(p.fechaISO){const d=new Date(p.fechaISO);if(!isNaN(d.getTime()))return d;}}catch(e){}
+    return new Date();
+  }
+
+  // Generar inicio de los 3 turnos: hoy, ayer, anteayer
+  function _turnoN(n) {
+    // turno de hace N días: inicio = 2AM del día (hoy - n)
+    const base = _turnoHoyInicio();
+    return new Date(base.getTime() - n * 86400000);
+  }
+
+  function _calcTurno(inicio, fin) {
+    return _todosQ.filter(p => {
+      const f = _parseFechaQ(p);
+      return f >= inicio && f < fin;
+    });
+  }
+
+  function _totalPagos(list) {
+    return list.reduce((s,p)=>s+(p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0),0);
+  }
+
+  function _labelTurno(n) {
+    const d = new Date(_turnoN(n).getTime() + 12*3600000); // mediodía del turno para tomar la fecha
+    const dia = String(d.getDate()).padStart(2,'0');
+    const mes = String(d.getMonth()+1).padStart(2,'0');
+    const anio = d.getFullYear();
+    const etiq = n===0?'Hoy':n===1?'Ayer':'Antes de ayer';
+    return `${etiq} ${dia}/${mes}/${anio}`;
+  }
+
+  const turnos = [0,1,2].map(n => {
+    const ini = _turnoN(n);
+    const fin = _turnoN(n-1); // fin = inicio del turno siguiente
+    const lista = _calcTurno(ini, fin);
+    const total = _totalPagos(lista);
+    return { label: _labelTurno(n), total, pedidos: lista.length, n };
+  });
+
+  const colores = ['var(--fb-orange)','#6366F1','#64748B'];
+  let quickHtml = `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">`;
+  turnos.forEach((t,i) => {
+    quickHtml += `
+      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--fb-card);border:2px solid ${i===0?'var(--fb-orange)':i===1?'#6366F1':'var(--fb-border)'};border-radius:12px;padding:10px 14px;">
+        <div>
+          <div style="font-size:11px;font-weight:800;color:${colores[i]};letter-spacing:.5px;">${t.label}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${t.pedidos} pedido${t.pedidos!==1?'s':''}</div>
+        </div>
+        <div style="font-size:22px;font-weight:900;color:${colores[i]};">S/${t.total.toFixed(2)}</div>
+      </div>`;
+  });
+  quickHtml += `</div>`;
+
   // ── Sub-tabs ──────────────────────────────────────────────────────────────
   const subTabs = [
     {k:'resumen', l:'📊 Resumen'},
@@ -5585,7 +5654,7 @@ function renderReporteCaja(el) {
     {k:'productos', l:'🍔 Productos'},
     {k:'personalizado', l:'📅 Rango'},
   ];
-  let html = `<div style="display:flex;gap:4px;margin-bottom:12px;background:var(--fb-border);padding:4px;border-radius:12px;">
+  let html = quickHtml + `<div style="display:flex;gap:4px;margin-bottom:12px;background:var(--fb-border);padding:4px;border-radius:12px;">
     ${subTabs.map(t=>`<button onclick="setReporteSubTab('${t.k}')" style="flex:1;padding:7px 2px;border:none;border-radius:9px;font-size:10px;font-weight:800;cursor:pointer;background:${_tab===t.k?'var(--fb-orange)':'transparent'};color:${_tab===t.k?'#fff':'var(--text-muted)'};transition:all .2s;">${t.l}</button>`).join('')}
   </div>`;
 
