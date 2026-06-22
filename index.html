@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="version" content="1782105383_v29">
+<meta charset="UTF-8"><meta name="version" content="1779158190_v22">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -225,7 +225,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
   body.rol-cocina .menu-cat-title{color:#FF9999!important;}
   /* ── CAJA: texto oscuro sobre fondo blanco ── */
   body.rol-caja .caja-card{background:#fff!important;border-color:#E0E0E0!important;box-shadow:0 2px 10px rgba(0,0,0,.08);}
-  body.rol-caja .caja-card.turno-anterior{background:#C7C2F0!important;border-color:#4338CA!important;box-shadow:0 2px 10px rgba(99,102,241,.35);}
   body.rol-caja .caja-card-header{background:#F5F5F5!important;border-bottom-color:#E0E0E0!important;}
   body.rol-caja .caja-card-title{color:#111!important;}
   body.rol-caja .caja-card-total{color:#E85D00!important;}
@@ -2998,31 +2997,6 @@ function renderHistorialView(el) {
     const idx2 = state.historialPagos.length - 1 - ri;
     const subtotal = (p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0)+(p.costoDelivery||0);
     const modLabel = {salon:'🪑 Salón',llevar:'🥡 Llevar',recojo:'📦 Recojo',delivery:'🛵 Delivery',externo:'📱 App'}[p.modalidad] || p.modalidad || '';
-    // ── Detectar si pertenece al turno actual (2AM→2AM) ──────────────────────
-    const _fhPago = (()=>{
-      try {
-        const s=(p.fecha||'').trim();
-        const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-        if(m){
-          const hm=s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
-          const h=hm?parseInt(hm[1]):0, mi=hm?parseInt(hm[2]):0;
-          const isPM=/p\.?\s?m/i.test(s);
-          const hora=(isPM&&h<12)?h+12:(!isPM&&/a\.?\s?m/i.test(s)&&h===12)?0:h;
-          const d=new Date(parseInt(m[3]),parseInt(m[2])-1,parseInt(m[1]),hora,mi,0,0);
-          if(!isNaN(d.getTime())) return d;
-        }
-      } catch(e){}
-      if(p.fechaISO){try{const d=new Date(p.fechaISO);if(!isNaN(d.getTime()))return d;}catch(e){}}
-      return new Date();
-    })();
-    const _turnoP = _inicioTurno(_fhPago);
-    const _turnoH = _turnoHoyInicio();
-    const _esTurnoActual = Math.round((_turnoH.getTime()-_turnoP.getTime())/86400000) === 0;
-    const _esColada = !_esTurnoActual; // cualquier venta que no sea del turno vigente
-    // Badge turno anterior
-    const badgeTurnoAnterior = !_esTurnoActual
-      ? `<div style="margin:4px 0 6px;background:rgba(99,102,241,.15);border:2px solid #6366F1;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:900;color:#818CF8;">🌙 Turno anterior — no cuenta en el reporte de hoy</div>`
-      : '';
     // Badge de auditoría para pedidos re-liquidados
     const badgeAudit = p.editado
       ? `<div style="margin:4px 0 6px;background:rgba(245,158,11,.15);border:2px solid var(--warning);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:900;color:var(--warning);">
@@ -3031,10 +3005,9 @@ function renderHistorialView(el) {
          </div>
          ${p.historialCambios?`<div style="font-size:10px;color:var(--text-muted);padding:0 2px 4px;">Original: ${p.historialCambios.metodoPagoOriginal||''} · S/${(p.historialCambios.totalOriginal||0).toFixed(2)}</div>`:''}`
       : '';
-    html += `<div class="caja-card${_esColada?' turno-anterior':''}" style="margin-bottom:8px${p.editado?';border-color:var(--warning);border-width:2px;':''}" >
+    html += `<div class="caja-card" style="margin-bottom:8px${p.editado?';border-color:var(--warning);border-width:2px;':''}" >
       <div class="caja-card-header">
         <div style="flex:1">
-          ${_esColada?`<div style="font-size:10px;font-weight:900;color:#4338CA;letter-spacing:1px;margin-bottom:4px;">🌙 TURNO ANTERIOR — no cuenta en el reporte de hoy</div>`:''}
           <div class="caja-card-title">${p.mesa||''}</div>
           <div style="font-size:11px;color:var(--text-muted)">${modLabel} · ${p.fecha||''}</div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${p.metodoPago||''}</div>
@@ -5497,20 +5470,10 @@ let _reporteFiltro = 'hoy';
 let _customDesde = '';  // 'YYYY-MM-DD'
 let _customHasta = '';  // 'YYYY-MM-DD'
 
-// ── TURNO: 2 AM a 2 AM ─────────────────────────────────────────────────────
-// Devuelve el timestamp de inicio del turno (2:00 AM) al que pertenece una fecha.
-// Si la hora es < 2 AM, el turno empezó a las 2 AM del día ANTERIOR.
-function _inicioTurno(fecha) {
-  const h = fecha.getHours();
-  const base = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate(), 2, 0, 0, 0);
-  if (h < 2) base.setDate(base.getDate() - 1); // madrugada: pertenece al turno anterior
-  return base;
-}
-// Inicio del turno actual (2 AM de hoy, o 2 AM de ayer si ahora < 2 AM)
-function _turnoHoyInicio() { return _inicioTurno(new Date()); }
-
 function filtrarPagosPorRango(pagos, filtro) {
-  const turnoHoy = _turnoHoyInicio(); // 2:00 AM del turno vigente
+  const ahora = new Date();
+  // Inicio del día local (00:00:00.000) — ancla fija, sin desfase UTC
+  const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 0, 0, 0, 0);
 
   function parsePagoFecha(p) {
     // PRIORIDAD 1: campo 'fecha' en formato local peruano (DD/MM/YYYY HH:MM[:SS] [AM|PM])
@@ -5545,107 +5508,32 @@ function filtrarPagosPorRango(pagos, filtro) {
 
   return pagos.filter(p => {
     const fecha = parsePagoFecha(p);
+    // Inicio del día LOCAL del pago
+    const diaP = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate(), 0, 0, 0, 0);
+    const diaTs = diaP.getTime();
+    const hoyTs = hoy.getTime();
 
     if (filtro === 'custom') {
       if (!_customDesde && !_customHasta) return true;
-      // custom usa días completos de 2AM a 2AM
-      const desde = _customDesde ? new Date(new Date(_customDesde + 'T02:00:00').getTime()) : new Date(0);
-      const hasta = _customHasta ? new Date(new Date(_customHasta + 'T02:00:00').getTime() + 86400000) : new Date(9999,0,1);
-      return fecha >= desde && fecha < hasta;
+      const desde = _customDesde ? new Date(_customDesde + 'T00:00:00') : new Date(0);
+      const hasta = _customHasta ? new Date(_customHasta + 'T23:59:59.999') : new Date(9999,0,1);
+      return fecha >= desde && fecha <= hasta;
     }
-
-    // Inicio del turno al que pertenece este pago
-    const turnoP = _inicioTurno(fecha);
-    const turnoHoyTs = turnoHoy.getTime();
-    const turnoPTs  = turnoP.getTime();
-
-    // diff en cantidad de turnos (cada turno = 24h exactas)
-    const diffMs   = turnoHoyTs - turnoPTs;
-    const diffTurnos = Math.round(diffMs / 86400000);
-
-    if (filtro === 'hoy')    return diffTurnos === 0;
-    if (filtro === 'ayer')   return diffTurnos === 1;
-    if (filtro === '2dias')  return diffTurnos >= 0 && diffTurnos <= 1;
-    if (filtro === '3dias')  return diffTurnos >= 0 && diffTurnos <= 2;
-    if (filtro === 'semana') return diffTurnos >= 0 && diffTurnos <= 6;
-    if (filtro === 'mes')    return diffTurnos >= 0 && diffTurnos <= 29;
+    // diff en días enteros sin riesgo de DST
+    const diffMs = hoyTs - diaTs;
+    const diffDias = Math.round(diffMs / 86400000); // round para evitar errores de 1ms por DST
+    if (filtro === 'hoy')    return diffDias === 0;
+    if (filtro === 'ayer')   return diffDias === 1;
+    if (filtro === '2dias')  return diffDias >= 0 && diffDias <= 1;
+    if (filtro === '3dias')  return diffDias >= 0 && diffDias <= 2;
+    if (filtro === 'semana') return diffDias >= 0 && diffDias <= 6;
+    if (filtro === 'mes')    return diffDias >= 0 && diffDias <= 29;
     return true; // 'todo'
   });
 }
 
 function renderReporteCaja(el) {
   const _tab = window._reporteSubTab || 'resumen';
-
-  // ── Resumen rápido 3 turnos ───────────────────────────────────────────────
-  const _seenQ = new Set();
-  const _todosQ = (state.historialPagos||[]).filter(p=>{
-    const uid=p._uid||(p.key+'_'+(p.fechaISO||p.fecha));
-    if(_seenQ.has(uid))return false; _seenQ.add(uid); return true;
-  });
-
-  function _parseFechaQ(p) {
-    try {
-      const s=(p.fecha||'').trim(), m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      if(m){
-        const hm=s.match(/(\d{1,2}):(\d{2})/), h=hm?+hm[1]:0, mi=hm?+hm[2]:0;
-        const isPM=/p\.?\s?m/i.test(s);
-        const hora=(isPM&&h<12)?h+12:(!isPM&&/a\.?\s?m/i.test(s)&&h===12)?0:h;
-        const d=new Date(+m[3],+m[2]-1,+m[1],hora,mi,0);
-        if(!isNaN(d.getTime()))return d;
-      }
-    } catch(e){}
-    try{ if(p.fechaISO){const d=new Date(p.fechaISO);if(!isNaN(d.getTime()))return d;}}catch(e){}
-    return new Date();
-  }
-
-  // Generar inicio de los 3 turnos: hoy, ayer, anteayer
-  function _turnoN(n) {
-    // turno de hace N días: inicio = 2AM del día (hoy - n)
-    const base = _turnoHoyInicio();
-    return new Date(base.getTime() - n * 86400000);
-  }
-
-  function _calcTurno(inicio, fin) {
-    return _todosQ.filter(p => {
-      const f = _parseFechaQ(p);
-      return f >= inicio && f < fin;
-    });
-  }
-
-  function _totalPagos(list) {
-    return list.reduce((s,p)=>s+(p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0),0);
-  }
-
-  function _labelTurno(n) {
-    const d = new Date(_turnoN(n).getTime() + 12*3600000); // mediodía del turno para tomar la fecha
-    const dia = String(d.getDate()).padStart(2,'0');
-    const mes = String(d.getMonth()+1).padStart(2,'0');
-    const anio = d.getFullYear();
-    const etiq = n===0?'Hoy':n===1?'Ayer':'Antes de ayer';
-    return `${etiq} ${dia}/${mes}/${anio}`;
-  }
-
-  const turnos = [0,1,2].map(n => {
-    const ini = _turnoN(n);
-    const fin = _turnoN(n-1); // fin = inicio del turno siguiente
-    const lista = _calcTurno(ini, fin);
-    const total = _totalPagos(lista);
-    return { label: _labelTurno(n), total, pedidos: lista.length, n };
-  });
-
-  const colores = ['var(--fb-orange)','#6366F1','#64748B'];
-  let quickHtml = `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">`;
-  turnos.forEach((t,i) => {
-    quickHtml += `
-      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--fb-card);border:2px solid ${i===0?'var(--fb-orange)':i===1?'#6366F1':'var(--fb-border)'};border-radius:12px;padding:10px 14px;">
-        <div>
-          <div style="font-size:11px;font-weight:800;color:${colores[i]};letter-spacing:.5px;">${t.label}</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${t.pedidos} pedido${t.pedidos!==1?'s':''}</div>
-        </div>
-        <div style="font-size:22px;font-weight:900;color:${colores[i]};">S/${t.total.toFixed(2)}</div>
-      </div>`;
-  });
-  quickHtml += `</div>`;
 
   // ── Sub-tabs ──────────────────────────────────────────────────────────────
   const subTabs = [
@@ -5654,7 +5542,7 @@ function renderReporteCaja(el) {
     {k:'productos', l:'🍔 Productos'},
     {k:'personalizado', l:'📅 Rango'},
   ];
-  let html = quickHtml + `<div style="display:flex;gap:4px;margin-bottom:12px;background:var(--fb-border);padding:4px;border-radius:12px;">
+  let html = `<div style="display:flex;gap:4px;margin-bottom:12px;background:var(--fb-border);padding:4px;border-radius:12px;">
     ${subTabs.map(t=>`<button onclick="setReporteSubTab('${t.k}')" style="flex:1;padding:7px 2px;border:none;border-radius:9px;font-size:10px;font-weight:800;cursor:pointer;background:${_tab===t.k?'var(--fb-orange)':'transparent'};color:${_tab===t.k?'#fff':'var(--text-muted)'};transition:all .2s;">${t.l}</button>`).join('')}
   </div>`;
 
@@ -6072,9 +5960,8 @@ function renderReportePersonalizado(el) {
   </div>`;
 
   if (desde && hasta) {
-    // Turno 2AM → 2AM: desde las 2:00 AM del día inicial hasta las 1:59:59 AM del día posterior al final
-    const d1 = new Date(desde + 'T02:00:00');
-    const d2 = new Date(new Date(hasta + 'T02:00:00').getTime() + 86400000 - 1);
+    const d1 = new Date(desde + 'T00:00:00');
+    const d2 = new Date(hasta + 'T23:59:59');
     function fechaISO2(p){
       if(p.fechaISO){const d=new Date(p.fechaISO);if(!isNaN(d))return d;}
       try{const s=(p.fecha||'').replace(',','');const pts=s.trim().split(/[\s\/]/);if(pts.length>=3){const d=new Date(parseInt(pts[2]),parseInt(pts[1])-1,parseInt(pts[0]),parseInt((pts[3]||'0:0').split(':')[0]),parseInt((pts[3]||'0:0').split(':')[1]||0));if(!isNaN(d))return d;}}catch(e){}return new Date();
