@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="version" content="1782102479_v23">
+<meta charset="UTF-8"><meta name="version" content="1782103699_v24">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2997,6 +2997,30 @@ function renderHistorialView(el) {
     const idx2 = state.historialPagos.length - 1 - ri;
     const subtotal = (p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0)+(p.costoDelivery||0);
     const modLabel = {salon:'🪑 Salón',llevar:'🥡 Llevar',recojo:'📦 Recojo',delivery:'🛵 Delivery',externo:'📱 App'}[p.modalidad] || p.modalidad || '';
+    // ── Detectar si pertenece al turno actual (2AM→2AM) ──────────────────────
+    const _fhPago = (()=>{
+      try {
+        const s=(p.fecha||'').trim();
+        const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if(m){
+          const hm=s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+          const h=hm?parseInt(hm[1]):0, mi=hm?parseInt(hm[2]):0;
+          const isPM=/p\.?\s?m/i.test(s);
+          const hora=(isPM&&h<12)?h+12:(!isPM&&/a\.?\s?m/i.test(s)&&h===12)?0:h;
+          const d=new Date(parseInt(m[3]),parseInt(m[2])-1,parseInt(m[1]),hora,mi,0,0);
+          if(!isNaN(d.getTime())) return d;
+        }
+      } catch(e){}
+      if(p.fechaISO){try{const d=new Date(p.fechaISO);if(!isNaN(d.getTime()))return d;}catch(e){}}
+      return new Date();
+    })();
+    const _turnoP = _inicioTurno(_fhPago);
+    const _turnoH = _turnoHoyInicio();
+    const _esTurnoActual = Math.round((_turnoH.getTime()-_turnoP.getTime())/86400000) === 0;
+    // Badge turno anterior
+    const badgeTurnoAnterior = !_esTurnoActual
+      ? `<div style="margin:4px 0 6px;background:rgba(99,102,241,.15);border:2px solid #6366F1;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:900;color:#818CF8;">🌙 Turno anterior — no cuenta en el reporte de hoy</div>`
+      : '';
     // Badge de auditoría para pedidos re-liquidados
     const badgeAudit = p.editado
       ? `<div style="margin:4px 0 6px;background:rgba(245,158,11,.15);border:2px solid var(--warning);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:900;color:var(--warning);">
@@ -3005,13 +3029,14 @@ function renderHistorialView(el) {
          </div>
          ${p.historialCambios?`<div style="font-size:10px;color:var(--text-muted);padding:0 2px 4px;">Original: ${p.historialCambios.metodoPagoOriginal||''} · S/${(p.historialCambios.totalOriginal||0).toFixed(2)}</div>`:''}`
       : '';
-    html += `<div class="caja-card" style="margin-bottom:8px${p.editado?';border-color:var(--warning);border-width:2px;':''}" >
+    html += `<div class="caja-card" style="margin-bottom:8px${p.editado?';border-color:var(--warning);border-width:2px;':''}${!_esTurnoActual?';border-color:#6366F1;border-width:2px;opacity:0.75;':''}" >
       <div class="caja-card-header">
         <div style="flex:1">
           <div class="caja-card-title">${p.mesa||''}</div>
           <div style="font-size:11px;color:var(--text-muted)">${modLabel} · ${p.fecha||''}</div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${p.metodoPago||''}</div>
           ${p.clienteNombre?`<div style="font-size:11px;color:var(--fb-yellow);margin-top:2px">👤 ${p.clienteNombre}</div>`:''}
+          ${badgeTurnoAnterior}
           ${badgeAudit}
         </div>
         <div style="text-align:right">
