@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="version" content="1782103699_v24">
+<meta charset="UTF-8"><meta name="version" content="1782105008_v25">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3029,14 +3029,14 @@ function renderHistorialView(el) {
          </div>
          ${p.historialCambios?`<div style="font-size:10px;color:var(--text-muted);padding:0 2px 4px;">Original: ${p.historialCambios.metodoPagoOriginal||''} · S/${(p.historialCambios.totalOriginal||0).toFixed(2)}</div>`:''}`
       : '';
-    html += `<div class="caja-card" style="margin-bottom:8px${p.editado?';border-color:var(--warning);border-width:2px;':''}${!_esTurnoActual?';border-color:#6366F1;border-width:2px;opacity:0.75;':''}" >
+    html += `<div class="caja-card" style="margin-bottom:8px${p.editado?';border-color:var(--warning);border-width:2px;':''}${!_esTurnoActual?';background:#2A2D3E;border-color:#6366F1;border-width:2px;':''}" >
       <div class="caja-card-header">
         <div style="flex:1">
+          ${!_esTurnoActual?`<div style="font-size:10px;font-weight:900;color:#818CF8;letter-spacing:1px;margin-bottom:4px;">🌙 TURNO ANTERIOR — no cuenta en el reporte de hoy</div>`:''}
           <div class="caja-card-title">${p.mesa||''}</div>
           <div style="font-size:11px;color:var(--text-muted)">${modLabel} · ${p.fecha||''}</div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${p.metodoPago||''}</div>
           ${p.clienteNombre?`<div style="font-size:11px;color:var(--fb-yellow);margin-top:2px">👤 ${p.clienteNombre}</div>`:''}
-          ${badgeTurnoAnterior}
           ${badgeAudit}
         </div>
         <div style="text-align:right">
