@@ -5471,9 +5471,10 @@ let _customDesde = '';  // 'YYYY-MM-DD'
 let _customHasta = '';  // 'YYYY-MM-DD'
 
 function filtrarPagosPorRango(pagos, filtro) {
-  const ahora = new Date();
-  // Inicio del día local (00:00:00.000) — ancla fija, sin desfase UTC
-  const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 0, 0, 0, 0);
+  // ── Turno FoodBiker: 02:00 AM → 01:59 AM (cruza medianoche) ──
+  // "Día lógico del turno" = fecha calendario - 2h
+  // Si son las 00:30 del 22, pertenecen al turno del 21.
+  const SHIFT_HOUR = 2; // corte a las 2:00 AM
 
   function parsePagoFecha(p) {
     // PRIORIDAD 1: campo 'fecha' en formato local peruano (DD/MM/YYYY HH:MM[:SS] [AM|PM])
@@ -5506,22 +5507,30 @@ function filtrarPagosPorRango(pagos, filtro) {
     return new Date();
   }
 
+  // Retorna el "día lógico del turno" como número YYYYMMDD
+  // Pagos entre 00:00 y 01:59 se asignan al día anterior del turno
+  function shiftDay(fecha) {
+    const shifted = new Date(fecha.getTime() - SHIFT_HOUR * 3600000);
+    return shifted.getFullYear() * 10000 + (shifted.getMonth()+1) * 100 + shifted.getDate();
+  }
+
+  const ahora = new Date();
+  const hoyShift = shiftDay(ahora); // día lógico de hoy según el turno
+
   return pagos.filter(p => {
     const fecha = parsePagoFecha(p);
-    // Inicio del día LOCAL del pago
-    const diaP = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate(), 0, 0, 0, 0);
-    const diaTs = diaP.getTime();
-    const hoyTs = hoy.getTime();
+    const diaP = shiftDay(fecha);
 
     if (filtro === 'custom') {
       if (!_customDesde && !_customHasta) return true;
-      const desde = _customDesde ? new Date(_customDesde + 'T00:00:00') : new Date(0);
-      const hasta = _customHasta ? new Date(_customHasta + 'T23:59:59.999') : new Date(9999,0,1);
+      const desde = _customDesde ? new Date(_customDesde + 'T02:00:00') : new Date(0);
+      const _hastaBase = _customHasta ? new Date(_customHasta + 'T01:59:59.999') : new Date(9999,0,1);
+      if (_customHasta) _hastaBase.setDate(_hastaBase.getDate() + 1); // fin del turno = 01:59 del día siguiente
+      const hasta = _hastaBase;
       return fecha >= desde && fecha <= hasta;
     }
-    // diff en días enteros sin riesgo de DST
-    const diffMs = hoyTs - diaTs;
-    const diffDias = Math.round(diffMs / 86400000); // round para evitar errores de 1ms por DST
+
+    const diffDias = hoyShift - diaP; // diferencia en días lógicos de turno
     if (filtro === 'hoy')    return diffDias === 0;
     if (filtro === 'ayer')   return diffDias === 1;
     if (filtro === '2dias')  return diffDias >= 0 && diffDias <= 1;
@@ -5792,7 +5801,52 @@ function renderReporteResumen(el) {
   ];
   const pagos = filtrarPagosPorRango(todosPagos, filtro);
 
-  let html = btnBorrar;
+  // ── Tarjetas resumen Hoy / Ayer / Antes de ayer (turno 02:00 AM) ──
+  const SHIFT_H = 2; // corte a las 2:00 AM
+  function shiftDayNum(fecha) {
+    const s = new Date(fecha.getTime() - SHIFT_H * 3600000);
+    return s.getFullYear() * 10000 + (s.getMonth()+1) * 100 + s.getDate();
+  }
+  const hoyShiftNum = shiftDayNum(new Date());
+  function calcDia(diffDias) {
+    return todosPagos.filter(p => {
+      try {
+        const f = parseFecha(p);
+        return (hoyShiftNum - shiftDayNum(f)) === diffDias;
+      } catch(e) { return false; }
+    });
+  }
+  const pagosHoy   = calcDia(0);
+  const pagosAyer  = calcDia(1);
+  const pagosAda   = calcDia(2);
+  const totalHoy   = pagosHoy.reduce((s,p)=>(p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),s),0);
+  const totalAyer  = pagosAyer.reduce((s,p)=>(p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),s),0);
+  const totalAda   = pagosAda.reduce((s,p)=>(p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),s),0);
+  // Fechas lógicas del turno para mostrar en las tarjetas
+  function shiftDateObj(diffDias) {
+    const base = new Date(new Date().getTime() - SHIFT_H * 3600000);
+    base.setDate(base.getDate() - diffDias);
+    return base;
+  }
+  const hoyFmt  = shiftDateObj(0);
+  const ayerFmt = shiftDateObj(1);
+  const adaFmt  = shiftDateObj(2);
+  function fmtFechaCard(d) { return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); }
+  let html = `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+    <div style="border:2px solid var(--fb-orange);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+      <div><div style="font-size:13px;font-weight:900;color:var(--fb-orange);">Hoy ${fmtFechaCard(hoyFmt)}</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${pagosHoy.length} pedidos</div></div>
+      <div style="font-family:'Arial Black',sans-serif;font-size:22px;font-weight:900;color:var(--fb-orange);">S/${totalHoy.toFixed(2)}</div>
+    </div>
+    <div style="border:2px solid #7c6fe0;border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+      <div><div style="font-size:13px;font-weight:900;color:#7c6fe0;">Ayer ${fmtFechaCard(ayerFmt)}</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${pagosAyer.length} pedidos</div></div>
+      <div style="font-family:'Arial Black',sans-serif;font-size:22px;font-weight:900;color:#7c6fe0;">S/${totalAyer.toFixed(2)}</div>
+    </div>
+    <div style="border:2px solid var(--fb-border);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+      <div><div style="font-size:13px;font-weight:900;color:var(--text-muted);">Antes de ayer ${fmtFechaCard(adaFmt)}</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${pagosAda.length} pedidos</div></div>
+      <div style="font-family:'Arial Black',sans-serif;font-size:22px;font-weight:900;color:var(--text);">S/${totalAda.toFixed(2)}</div>
+    </div>
+  </div>`;
+  html += btnBorrar;
   html += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
     ${filtros.map(f=>`<button onclick="cambiarFiltroReporte('${f.k}')" style="padding:6px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:${filtro===f.k?'var(--fb-orange)':'var(--fb-border)'};color:${filtro===f.k?'#fff':'var(--text)'};">${f.l}</button>`).join('')}
     <button onclick="cambiarFiltroReporte('custom')" style="padding:6px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:${filtro==='custom'?'var(--fb-orange)':'var(--fb-border)'};color:${filtro==='custom'?'#fff':'var(--text)'};">📅 Personalizado</button>
