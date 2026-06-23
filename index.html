@@ -5801,30 +5801,22 @@ function renderReporteResumen(el) {
   ];
   const pagos = filtrarPagosPorRango(todosPagos, filtro);
 
-  // ── Tarjetas resumen Hoy / Ayer / Antes de ayer (turno 02:00 AM) ──
-  const SHIFT_H = 2; // corte a las 2:00 AM
-  function shiftDayNum(fecha) {
-    const s = new Date(fecha.getTime() - SHIFT_H * 3600000);
-    return s.getFullYear() * 10000 + (s.getMonth()+1) * 100 + s.getDate();
+  // ── Tarjetas resumen Hoy / Ayer / Antes de ayer ──
+  // Usa filtrarPagosPorRango como única fuente de verdad (mismo parser, misma lógica de turno)
+  const pagosHoy  = filtrarPagosPorRango(todosPagos, 'hoy');
+  const pagosAyer = filtrarPagosPorRango(todosPagos, 'ayer');
+  const pagosAda  = filtrarPagosPorRango(todosPagos, '3dias').filter(
+    p => !pagosHoy.includes(p) && !pagosAyer.includes(p)
+  );
+  function calcTotalItems(lista) {
+    return lista.reduce((s,p)=>(p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),s),0);
   }
-  const hoyShiftNum = shiftDayNum(new Date());
-  function calcDia(diffDias) {
-    return todosPagos.filter(p => {
-      try {
-        const f = parseFecha(p);
-        return (hoyShiftNum - shiftDayNum(f)) === diffDias;
-      } catch(e) { return false; }
-    });
-  }
-  const pagosHoy   = calcDia(0);
-  const pagosAyer  = calcDia(1);
-  const pagosAda   = calcDia(2);
-  const totalHoy   = pagosHoy.reduce((s,p)=>(p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),s),0);
-  const totalAyer  = pagosAyer.reduce((s,p)=>(p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),s),0);
-  const totalAda   = pagosAda.reduce((s,p)=>(p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),s),0);
-  // Fechas lógicas del turno para mostrar en las tarjetas
+  const totalHoy  = calcTotalItems(pagosHoy);
+  const totalAyer = calcTotalItems(pagosAyer);
+  const totalAda  = calcTotalItems(pagosAda);
+  // Fechas a mostrar: usando el mismo desplazamiento de turno que filtrarPagosPorRango (2h)
   function shiftDateObj(diffDias) {
-    const base = new Date(new Date().getTime() - SHIFT_H * 3600000);
+    const base = new Date(new Date().getTime() - 2 * 3600000);
     base.setDate(base.getDate() - diffDias);
     return base;
   }
