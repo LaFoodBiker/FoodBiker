@@ -1115,6 +1115,18 @@ function pushToFirebase(safeState) {
   setSyncDot('#FF6B00');
 
   // Nodo 1: mesas (cambia con cada pedido — pequeño)
+  // ⚠️ Guard crítico: nunca escribir pos/mesas hasta haber recibido al menos un
+  // snapshot de Firebase (sea null o con datos). Sin este guard, el dispositivo
+  // que se conecta con localStorage vacío/viejo ejecuta initMesas() → saveState()
+  // → pushToFirebase() ANTES de que el listener onValue dispare, pisando las mesas
+  // activas de todos los demás con un objeto vacío (race condition destructiva).
+  // _mesasSincronizadas se activa en el primer callback de pos/mesas, cualquiera
+  // sea su contenido, garantizando que toda escritura solo ocurra post-lectura.
+  if (!_mesasSincronizadas) {
+    console.warn('⏳ pos/mesas write BLOQUEADO — esperando snapshot inicial de Firebase');
+    setSyncDot('#FF6B00');
+    return;
+  }
   // Excluir RCB_ (re-cobros locales) — son temporales del dispositivo de caja y no deben sincronizarse
   const mesasSinRCB = Object.fromEntries(
     Object.entries(safeState.mesas || {}).filter(([k]) => !k.startsWith('RCB_'))
@@ -1793,6 +1805,13 @@ let _histEditPinOk = false;
 // para evitar que un dispositivo con historial local incompleto (recién abierto,
 // localStorage viejo, etc.) sobreescriba el historial completo de todos.
 let _historialSincronizado = false;
+
+// Se vuelve true recién después de recibir el primer snapshot de Firebase para
+// pos/mesas (incluso si es null). Mientras sea false, pushToFirebase() NO escribe
+// ese nodo, evitando la race condition donde un 3er dispositivo que arranca con
+// localStorage vacío/viejo pisa las mesas activas de los dispositivos ya sincronizados.
+// Ningún dispositivo puede escribir pos/mesas sin haber leído primero el estado real.
+let _mesasSincronizadas = false;
 function openMesa(key) {
 currentPedidoKey = key;
 const mesa = state.mesas[key];
@@ -6097,9 +6116,17 @@ function setSyncDot(color) {
 }
 
 function applyRemoteMesas(data) {
-  // Si Firebase devuelve null (base de datos vacía), solo garantizar mesas locales
+  // Si Firebase devuelve null (base de datos vacía):
+  // _mesasSincronizadas ya fue activada por el listener antes de llamar aquí,
+  // así que ahora sí es seguro publicar las mesas locales (si las hay con datos).
   if (!data) {
     initMesas();
+    // Publicar estado local a Firebase ahora que el flag ya está activo
+    // (si la BD estaba vacía, somos el primero — publicar es correcto)
+    setTimeout(() => {
+      const snap = { ...state, role:null, saboresCallback:null, currentModalItem:null };
+      pushToFirebase(snap);
+    }, 100);
     if (state.role) refreshCurrentView();
     return;
   }
@@ -6248,6 +6275,13 @@ function initFirebaseSync() {
   // Listener 1: mesas / pedidos (alta frecuencia)
   window._fbListen('pos/mesas', function(val) {
     setSyncDot('#22C55E');
+    // Activar la bandera en el PRIMER snapshot, sea cual sea su contenido
+    // (incluso null = base vacía). Recién entonces es seguro que este
+    // dispositivo escriba pos/mesas sin riesgo de pisar datos activos.
+    if (!_mesasSincronizadas) {
+      _mesasSincronizadas = true;
+      console.log('✅ pos/mesas sincronizado — escrituras desbloqueadas para device:', DEVICE_ID);
+    }
     applyRemoteMesas(val);
   });
 
