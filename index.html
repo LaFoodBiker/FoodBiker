@@ -3784,7 +3784,14 @@ ${extraInfo}
 </div>
 <div class="cocina-items">
 ${(() => {
-  const esBebidaItem = (item) => item.brand === 'drinks' || (item.pair && item.pair.length > 0) || (item.hielo && item.hielo !== '');
+  const CATS_BEBIDAS_COCINA = ['Refrescantes','Bubble Tea','Cocktails','Cervezas'];
+  const _idToCatCocina = {};
+  Object.values(menuData).forEach(cats => Object.entries(cats).forEach(([cat, items]) => items.forEach(it => { _idToCatCocina[it.id] = cat; })));
+  const esBebidaItem = (item) => {
+    if (item.brand === 'drinks') return true;
+    const cat = _idToCatCocina[item.id] || '';
+    return CATS_BEBIDAS_COCINA.some(c => cat.startsWith(c));
+  };
   const platosItems = fbItems.filter(item => !esBebidaItem(item));
   const bebidasItems = fbItems.filter(item => esBebidaItem(item));
   const renderCocinaItem = (item) => {
