@@ -908,6 +908,11 @@ window.onerror = function(msg, src, line, col, err) {
 <div style="display:flex;gap:6px;flex-wrap:wrap;" id="sin-ingredientes-btns">
 </div>
 </div>
+<div id="salsas-section" style="margin-top:14px;">
+<div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:8px;">🧂 Salsas / Cremas</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;" id="salsas-btns">
+</div>
+</div>
 
 <!-- CAMBIO DE QUESO -->
 <div id="queso-swap-section" style="display:none;margin-top:14px;">
@@ -958,6 +963,7 @@ window.onerror = function(msg, src, line, col, err) {
 </div>
 <script>const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzyeLPnc0datPI0nCHyklomiyHHqTK-Xi4vPLRLXKqoj5obT_DilmAnPXodLKyAgwKVkw/exec';
 const PINS = { admin: '1234', caja: '5678' };
+const SALSAS_OPCIONES = ['mayonesa de la casa','ketchup hellmanns','ají ahumado','salsa biker','mostaza americana','huacatay ahumado','smoke bbq','tártara de la casa'];
 let menuData = {
 foodbiker: {
 '🐟 Promo Fin de Semana': [
@@ -1014,8 +1020,9 @@ foodbiker: {
 { id:'be3', name:'Sandía Coconut', price:7.90, priceRappi:10.70, hielo:true, desc:'Suave, fresco con toque tropical' },
 { id:'be4', name:'Piña Coconut', hielo:true, price:7.90, priceRappi:10.70, desc:'Tropical, dulce y refrescante' },
 { id:'be5', name:'Mango Tropical', hielo:true, price:7.90, priceRappi:10.70, desc:'Tropical, dulce y refrescante' },
-{ id:'be6', name:'Limonada Frozen Fresa', hielo:true, price:6.00, priceRappi:7.99, desc:'Dulce, helada y refrescante' },
-{ id:'be7', name:'Limonada Frozen Clásica', hielo:true, price:6.00, priceRappi:7.99, desc:'Ácida, fresca y revitalizante' },
+{ id:'be6', name:'Limonada Frozen Fresa', hielo:true, price:6.90, priceRappi:7.99, desc:'Dulce, helada y refrescante' },
+{ id:'be7', name:'Limonada Frozen Clásica', hielo:true, price:6.90, priceRappi:7.99, desc:'Ácida, fresca y revitalizante' },
+{ id:'be7b', name:'Limonada Clásica', price:6.90, priceRappi:7.99, desc:'Ácida, fresca y revitalizante' },
 { id:'be10', name:'Pepsi pequeña', price:3.00, priceRappi:4.06, desc:'Gaseosa Pepsi personal' },
 { id:'be11', name:'Gaseosa personal', price:3.00, priceRappi:4.06, desc:'Gaseosa a elección' },
 { id:'be12', name:'Coca Cola', price:5.90, priceRappi:7.99, desc:'Gaseosa Coca Cola' },
@@ -2001,6 +2008,7 @@ ${modalidadPendiente ? '<div class="modalidad-required">🏷️ Selecciona modal
 </div>
 <div class="custom-item-box">
 <input id="custom-name" class="add-item-input" placeholder="Item personalizado...">
+<input id="custom-qty" class="field-input" type="number" placeholder="Cant." value="1" min="1" style="width:60px">
 <input id="custom-price" class="field-input" type="number" placeholder="S/" style="width:70px">
 <button class="btn-sm" onclick="addCustomItem()">+ Agregar</button>
 </div>
@@ -2166,7 +2174,7 @@ const key = item.id + '_' + (sabores.join('+')||'solo') + '_' + (detalles.sin.jo
 const existing = mesa.items.find(i => i.key === key && i.nota === nota);
 if (existing) { existing.qty++; }
 else {
-mesa.items.push({ key, id: item.id, name: item.name, price: finalPrice, basePrice: item.price, priceRappi: item.priceRappi, qty: 1, sabores, nota, brand: item.brand || state.currentMenuTab, promo: item.promo||'', termino:detalles.termino, hielo:detalles.hielo, sin:detalles.sin, adicionales:detalles.adicionales, pair:detalles.pair, split:detalles.split, itemModalidad:detalles.itemModalidad });
+mesa.items.push({ key, id: item.id, name: item.name, price: finalPrice, basePrice: item.price, priceRappi: item.priceRappi, qty: 1, sabores, nota, brand: item.brand || state.currentMenuTab, promo: item.promo||'', termino:detalles.termino, hielo:detalles.hielo, sin:detalles.sin, adicionales:detalles.adicionales, pair:detalles.pair, split:detalles.split, itemModalidad:detalles.itemModalidad, enviadoCocina: item.enviadoCocina || false, listo:false });
 }
 if (mesa.estado === 'libre') mesa.estado = 'ocupada';
 renderPedidoItems();
@@ -2273,10 +2281,39 @@ const mesa = state.mesas[currentPedidoKey];
 if (!mesa.modalidad) { alert('Primero selecciona la modalidad: Salón o Para Llevar.'); return; }
 const name = document.getElementById('custom-name').value.trim();
 const price = parseFloat(document.getElementById('custom-price').value);
+const qty = Math.max(1, parseInt(document.getElementById('custom-qty')?.value, 10) || 1);
 if (!name || isNaN(price) || price <= 0) { alert('Ingresa nombre y precio válido'); return; }
-pushItem({ id: 'custom_' + Date.now(), name, price, brand: 'foodbiker', isCustom: true }, [], '', { termino:'', sin:[], adicionales:[], pair:[], itemModalidad:(mesa.modalidad === 'llevar' ? 'llevar' : 'salon') });
+const customId = 'custom_' + Date.now();
+mesa.items.push({
+  key: customId,
+  id: customId,
+  name,
+  price,
+  basePrice: price,
+  priceRappi: price,
+  qty,
+  sabores: [],
+  nota: '',
+  brand: 'custom',
+  isCustom: true,
+  promo: '',
+  termino: '',
+  hielo: '',
+  sin: [],
+  adicionales: [],
+  pair: [],
+  split: false,
+  itemModalidad: (mesa.modalidad === 'llevar' ? 'llevar' : 'salon'),
+  enviadoCocina: false,
+  listo: false
+});
+if (mesa.estado === 'libre') mesa.estado = 'ocupada';
+renderPedidoItems();
+updateModalTotal();
+saveState();
 document.getElementById('custom-name').value = '';
 document.getElementById('custom-price').value = '';
+if (document.getElementById('custom-qty')) document.getElementById('custom-qty').value = '1';
 }
 function actualizarDeliveryCortesia() {
   const chk = document.getElementById('d-cortesia');
@@ -2459,6 +2496,12 @@ const sinSection = document.getElementById('sin-section');
 const ing = item.ingredientes || [];
 sinSection.style.display = ing.length ? 'block' : 'none';
 document.getElementById('sin-ingredientes-btns').innerHTML = ing.map(x => `<button class="option-pill" onclick="toggleSinIngrediente(this,'${x}')">${x}</button>`).join('');
+// Salsas / cremas
+state.itemPersonalizacion.salsas = [];
+const salsasBtns = document.getElementById('salsas-btns');
+if (salsasBtns) {
+  salsasBtns.innerHTML = SALSAS_OPCIONES.map(s => `<button class="option-pill" onclick="toggleSalsa(this,'${s}')">${s}</button>`).join('');
+}
 // Resetear adicionales (ahora son controles +/-)
 state.itemPersonalizacion.adicionales = [];
 // Adicionales según tipo de ítem — cambio 5,8,11
@@ -2566,6 +2609,16 @@ if (!arr.includes(ingrediente)) arr.push(ingrediente);
 } else {
 state.itemPersonalizacion.sin = arr.filter(x => x !== ingrediente);
 }
+}
+function toggleSalsa(el, salsa) {
+  el.classList.toggle('selected');
+  if (!state.itemPersonalizacion.salsas) state.itemPersonalizacion.salsas = [];
+  const arr = state.itemPersonalizacion.salsas;
+  if (el.classList.contains('selected')) {
+    if (!arr.includes(salsa)) arr.push(salsa);
+  } else {
+    state.itemPersonalizacion.salsas = arr.filter(x => x !== salsa);
+  }
 }
 function selectAcompanamiento(el, valor) {
 document.querySelectorAll('#acompanamiento-btns .termino-btn').forEach(b => b.classList.remove('selected'));
@@ -2690,6 +2743,9 @@ adicionalesConQueso.push('🧀 ' + state.itemPersonalizacion.quesoSwap);
 // Cambio 6: incluir acompañamiento elegido
 if (state.itemPersonalizacion.acompanamiento && state.itemPersonalizacion.acompanamiento !== 'Papas crocantes') {
 adicionalesConQueso.push('🍟 ' + state.itemPersonalizacion.acompanamiento);
+}
+if (state.itemPersonalizacion.salsas && state.itemPersonalizacion.salsas.length) {
+state.itemPersonalizacion.salsas.forEach(s => adicionalesConQueso.push('🧂 ' + s));
 }
 const extra = { ...state.itemPersonalizacion, adicionales: adicionalesConQueso, pair, itemModalidad:(state.mesas[currentPedidoKey]?.modalidad === 'llevar' ? 'llevar' : 'salon'), split: state.itemPersonalizacion.split || false };
 if (state.saboresCallback) state.saboresCallback(state.saboresSelected, nota, extra);
@@ -3727,28 +3783,43 @@ ${extraInfo}
 <div class="cocina-time">${new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})}</div>
 </div>
 <div class="cocina-items">
-${fbItems.map((item)=>{
-const realIdx = mesa.items.indexOf(item);
-const detalleClean = (() => {
-const parts = [];
-if (item.sabores && item.sabores.length) parts.push(`🌶 ${item.sabores.join(' + ')}`);
-if (item.pair && item.pair.length) parts.push(`🍹 ${item.pair.join(' + ')}`);
-if (item.termino && item.termino !== 'Normal') parts.push(`🥩 ${item.termino}`);
-if (item.split) parts.push(`🔪 PARTIDA POR LA MITAD`);
-if (item.sin && item.sin.length) parts.push(`🚫 SIN: ${item.sin.join(', ')}`);
-if (item.adicionales && item.adicionales.length) parts.push(`➕ ${item.adicionales.join(', ')}`);
-if (item.nota) parts.push(`📝 ${item.nota}`);
-if (item.itemModalidad === 'llevar') parts.push(`🥡 PARA LLEVAR`);
-return parts.join(' · ');
-})();
-return `<div class="cocina-item ${item.listo?'done':''}" id="ci-${key}-${realIdx}">
+${(() => {
+  const esBebidaItem = (item) => item.brand === 'drinks' || (item.pair && item.pair.length > 0) || (item.hielo && item.hielo !== '');
+  const platosItems = fbItems.filter(item => !esBebidaItem(item));
+  const bebidasItems = fbItems.filter(item => esBebidaItem(item));
+  const renderCocinaItem = (item) => {
+    const realIdx = mesa.items.indexOf(item);
+    const detalleClean = (() => {
+      const parts = [];
+      if (item.sabores && item.sabores.length) parts.push(`🌶 ${item.sabores.join(' + ')}`);
+      if (item.pair && item.pair.length) parts.push(`🍹 ${item.pair.join(' + ')}`);
+      if (item.termino && item.termino !== 'Normal') parts.push(`🥩 ${item.termino}`);
+      if (item.split) parts.push(`🔪 PARTIDA POR LA MITAD`);
+      if (item.sin && item.sin.length) parts.push(`🚫 SIN: ${item.sin.join(', ')}`);
+      if (item.adicionales && item.adicionales.length) parts.push(`➕ ${item.adicionales.join(', ')}`);
+      if (item.nota) parts.push(`📝 ${item.nota}`);
+      if (item.itemModalidad === 'llevar') parts.push(`🥡 PARA LLEVAR`);
+      return parts.join(' · ');
+    })();
+    return `<div class="cocina-item ${item.listo?'done':''}" id="ci-${key}-${realIdx}">
 <button class="check-btn ${item.listo?'done':''}" onclick="toggleCocinaItem('${key}',${realIdx})">✓</button>
 <div class="cocina-item-name">${item.name}
 ${detalleClean ? `<div class="cocina-detail">${detalleClean}</div>` : ''}
 </div>
 <div class="cocina-item-qty">${item.qty}</div>
 </div>`;
-}).join('')}
+  };
+  let out = '';
+  if (platosItems.length) {
+    out += `<div class="cocina-subtitle" style="font-size:11px;font-weight:900;color:var(--fb-orange);text-transform:uppercase;letter-spacing:.5px;margin:6px 0 4px;">🍽️ Platos</div>`;
+    out += platosItems.map(renderCocinaItem).join('');
+  }
+  if (bebidasItems.length) {
+    out += `<div class="cocina-subtitle" style="font-size:11px;font-weight:900;color:#60a5fa;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px;">🍹 Bebidas</div>`;
+    out += bebidasItems.map(renderCocinaItem).join('');
+  }
+  return out;
+})()}
 </div>
 <div class="cocina-footer" style="padding:12px 16px;border-top:1px solid var(--fb-border);">
 ${mesa.estado === 'listo-entregar'
