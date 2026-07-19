@@ -3066,10 +3066,28 @@ function renderHistorialView(el) {
     </div>`;
   }
 
-  html += `<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin:12px 0 6px">Historial de pedidos</div>`;
+  const mostrarTodo = !!window._historialMostrarTodo;
+  html += `<div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 6px">
+    <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)">Historial de pedidos ${mostrarTodo?'(todos)':'(hoy)'}</span>
+    <button onclick="window._historialMostrarTodo=${!mostrarTodo};renderView('historial')" style="background:none;border:none;color:var(--fb-orange);font-size:11px;font-weight:800;cursor:pointer;text-decoration:underline">${mostrarTodo?'Ver solo hoy':'Ver historial completo'}</button>
+  </div>`;
 
-  state.historialPagos.slice().reverse().forEach((p,ri) => {
-    const idx2 = state.historialPagos.length - 1 - ri;
+  // Lista con índice ORIGINAL preservado (los botones editar/eliminar/recobrar
+  // dependen de la posición real dentro de state.historialPagos), pero
+  // ordenada por la fecha real del pago — no por el orden del array, que
+  // puede quedar desordenado tras un merge con Firebase (registros viejos
+  // pueden terminar mezclados con los de hoy si solo se hace reverse()).
+  let listaConIdx = state.historialPagos.map((p, i) => ({ p, idx2: i }));
+  if (!mostrarTodo) {
+    listaConIdx = listaConIdx.filter(o => filtrarPagosPorRango([o.p], 'hoy').length > 0);
+  }
+  listaConIdx.sort((a, b) => parsePagoFecha(b.p) - parsePagoFecha(a.p));
+
+  if (!listaConIdx.length) {
+    html += `<div class="empty-state"><div class="empty-icon">🗓️</div><p>Sin pedidos registrados hoy</p></div>`;
+  }
+
+  listaConIdx.forEach(({p, idx2}) => {
     const subtotal = (p.items||[]).reduce((a,i)=>a+(i.cortesia?0:(i.price||0)*(i.qty||1)),0)+(p.costoDelivery||0);
     const modLabel = {salon:'🪑 Salón',llevar:'🥡 Llevar',recojo:'📦 Recojo',delivery:'🛵 Delivery',externo:'📱 App'}[p.modalidad] || p.modalidad || '';
     // Badge de auditoría para pedidos re-liquidados
@@ -3080,6 +3098,13 @@ function renderHistorialView(el) {
          </div>
          ${p.historialCambios?`<div style="font-size:10px;color:var(--text-muted);padding:0 2px 4px;">Original: ${p.historialCambios.metodoPagoOriginal||''} · S/${(p.historialCambios.totalOriginal||0).toFixed(2)}</div>`:''}`
       : '';
+    // Comprobante (factura / boleta electrónica con DNI): mostrar a dónde se envía
+    const comp = p.comprobanteDatos;
+    const compLabel = p.tipoComprobante === 'factura' ? '🏢 Factura' : p.tipoComprobante === 'electronica' ? '📱 Boleta Electrónica' : '';
+    const compInfo = (compLabel && comp) ? `<div style="font-size:11px;color:#818CF8;margin-top:2px;line-height:1.5">
+        ${compLabel}${comp.razon ? ' · ' + comp.razon : ''}${comp.ruc ? ' · RUC ' + comp.ruc : ''}${comp.dni ? ' · DNI ' + comp.dni : ''}
+        ${comp.tel ? `<br>📤 Comprobante enviado a WhatsApp: <strong>${comp.tel}</strong>` : ''}
+      </div>` : '';
     html += `<div class="caja-card" style="margin-bottom:8px${p.editado?';border-color:var(--warning);border-width:2px;':''}" >
       <div class="caja-card-header">
         <div style="flex:1">
@@ -3087,6 +3112,7 @@ function renderHistorialView(el) {
           <div style="font-size:11px;color:var(--text-muted)">${modLabel} · ${p.fecha||''}</div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${p.metodoPago||''}</div>
           ${p.clienteNombre?`<div style="font-size:11px;color:var(--fb-yellow);margin-top:2px">👤 ${p.clienteNombre}</div>`:''}
+          ${compInfo}
           ${badgeAudit}
         </div>
         <div style="text-align:right">
@@ -5142,6 +5168,15 @@ function ejecutarCobro(key, metodoPago, totalFinal, mesa, pagoDetalle) {
 if (!mesa) mesa = state.mesas[key];
 if (!mesa) return;
 
+// ── GUARD: no permitir cobrar otra mesa mientras haya un comprobante
+// pendiente de confirmar para una mesa distinta (ver declaración de
+// _pagoEnProcesoKey más arriba). Esto evita que se pise window._lastPago.
+if (_pagoEnProcesoKey && _pagoEnProcesoKey !== key) {
+  alert(`⚠️ Termina de emitir el comprobante pendiente antes de cobrar otra mesa.\n\nHay un cobro sin confirmar (mesa: ${_pagoEnProcesoKey}). Ve a esa mesa y completa o cierra el comprobante primero.`);
+  return;
+}
+_pagoEnProcesoKey = key;
+
 // ── AUDITORÍA: si es un re-cobro, sobreescribir el registro original ──
 const esRecobro = mesa._esRecobro === true && mesa._recobroHistIdx !== undefined;
 if (esRecobro) {
@@ -5342,6 +5377,14 @@ if (key.startsWith('M')) {
 renderView('cobrar');
 }
 let compTipoSel = null;
+// ── GUARD anti-colisión de cobros simultáneos ──────────────────────────────
+// Si se cobra la mesa A (se abre el modal de comprobante) y, ANTES de confirmar
+// ese comprobante, se cobra la mesa B, window._lastPago se sobreescribe con los
+// datos de B. Al confirmar el comprobante de A (que sigue visualmente abierto),
+// en realidad se imprime y registra B, y el pago de A nunca queda registrado.
+// _pagoEnProcesoKey bloquea el cobro de una mesa distinta mientras haya un
+// comprobante pendiente de confirmar, evitando que se pise el snapshot.
+let _pagoEnProcesoKey = null;
 function abrirComprobante() {
 compTipoSel = null;
 document.querySelectorAll('.comp-tipo-btn').forEach(b => b.classList.remove('sel'));
@@ -5356,6 +5399,9 @@ document.getElementById('comp-overlay').classList.add('show');
 }
 function closeComp() {
 document.getElementById('comp-overlay').classList.remove('show');
+// Si se cierra sin confirmar, liberar el guard para no bloquear el cobro de otras mesas.
+// La mesa ya quedó marcada como pagada (ver ejecutarCobro) — se puede reimprimir después.
+if (window._lastPago && _pagoEnProcesoKey === window._lastPago.key) _pagoEnProcesoKey = null;
 }
 function selectCompTipo(btn, tipo) {
 compTipoSel = tipo;
@@ -5368,6 +5414,10 @@ function confirmarComprobante() {
 if (!compTipoSel) { alert('Selecciona el tipo de comprobante'); return; }
 const pago = window._lastPago;
 if (!pago) { closeComp(); return; }
+// A partir de aquí 'pago' ya quedó capturado en esta función (por valor/referencia
+// local), así que es seguro liberar el guard: un cobro nuevo puede sobreescribir
+// window._lastPago sin afectar este comprobante que ya se está imprimiendo.
+if (_pagoEnProcesoKey === pago.key) _pagoEnProcesoKey = null;
 let tel = '', ruc = '', razon = '', dni = '';
 if (compTipoSel === 'electronica') {
 tel = document.getElementById('comp-tel').value.trim();
@@ -5520,7 +5570,7 @@ if (!pago.registrado) {
   if (!state.historialPagos.some(p => p._uid === pagoUid)) {
     const fbItems = pago.items.filter(i => i.brand === 'foodbiker' || i.brand === 'custom' || i.isCustom || (!i.brand));
     if (fbItems.length) saveToSheet('FoodBiker_Ventas', [pago.fecha, pago.mesa, pago.modalidad, fbItems.map(itemLineText).join(' | '), calcTotal(fbItems).toFixed(2), pago.metodoPago, pago.clienteNombre||'', pago.direccion||'']);
-    state.historialPagos.push({ _uid: pagoUid, key: pago.key, mesa: pago.mesa, total: pago.total, metodoPago: pago.metodoPago, items: pago.items, fecha: pago.fecha, fechaISO: pago.fechaISO || new Date().toISOString(), modalidad: pago.modalidad, clienteNombre: pago.clienteNombre || '', costoDelivery: pago.delivery || 0, pagoDetalle: pago.pagoDetalle || null });
+    state.historialPagos.push({ _uid: pagoUid, key: pago.key, mesa: pago.mesa, total: pago.total, metodoPago: pago.metodoPago, items: pago.items, fecha: pago.fecha, fechaISO: pago.fechaISO || new Date().toISOString(), modalidad: pago.modalidad, clienteNombre: pago.clienteNombre || '', costoDelivery: pago.delivery || 0, pagoDetalle: pago.pagoDetalle || null, tipoComprobante: tipo || 'simple', comprobanteDatos: (tipo !== 'simple' && datos) ? { tel: datos.tel||'', dni: datos.dni||'', ruc: datos.ruc||'', razon: datos.razon||'' } : null });
   }
   pago.registrado = true;
   // Liberar la mesa de Caja — solo si NO es pago anticipado (la comida sigue en cocina)
@@ -5567,50 +5617,48 @@ let _reporteFiltro = 'hoy';
 let _customDesde = '';  // 'YYYY-MM-DD'
 let _customHasta = '';  // 'YYYY-MM-DD'
 
-function filtrarPagosPorRango(pagos, filtro) {
-  // ── Turno FoodBiker: 02:00 AM → 01:59 AM (cruza medianoche) ──
-  // "Día lógico del turno" = fecha calendario - 2h
-  // Si son las 00:30 del 22, pertenecen al turno del 21.
-  const SHIFT_HOUR = 2; // corte a las 2:00 AM
-
-  function parsePagoFecha(p) {
-    // PRIORIDAD 1: campo 'fecha' en formato local peruano (DD/MM/YYYY HH:MM[:SS] [AM|PM])
-    try {
-      const s = (p.fecha || '').trim();
-      const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      if (m) {
-        const day = parseInt(m[1]), mon = parseInt(m[2]) - 1, yr = parseInt(m[3]);
-        const hm = s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
-        const h = hm ? parseInt(hm[1]) : 0;
-        const mi = hm ? parseInt(hm[2]) : 0;
-        const isPM = /p\.?\s?m/i.test(s);
-        const hora = (isPM && h < 12) ? h + 12 : (!isPM && /a\.?\s?m/i.test(s) && h === 12) ? 0 : h;
-        const d = new Date(yr, mon, day, hora, mi, 0, 0);
-        if (!isNaN(d.getTime())) return d;
-      }
-    } catch(e) {}
-    // PRIORIDAD 2: fechaISO — ya viene en UTC, convertir a local mediante getters
-    if (p.fechaISO) {
-      try {
-        const d = new Date(p.fechaISO);
-        if (!isNaN(d.getTime())) return d;
-      } catch(e) {}
+// ── Parseo de fecha de un pago — usado tanto para filtrar por rango (abajo)
+// como para ordenar el Historial de pedidos cronológicamente (renderHistorialView) ──
+function parsePagoFecha(p) {
+  // PRIORIDAD 1: campo 'fecha' en formato local peruano (DD/MM/YYYY HH:MM[:SS] [AM|PM])
+  try {
+    const s = (p.fecha || '').trim();
+    const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (m) {
+      const day = parseInt(m[1]), mon = parseInt(m[2]) - 1, yr = parseInt(m[3]);
+      const hm = s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+      const h = hm ? parseInt(hm[1]) : 0;
+      const mi = hm ? parseInt(hm[2]) : 0;
+      const isPM = /p\.?\s?m/i.test(s);
+      const hora = (isPM && h < 12) ? h + 12 : (!isPM && /a\.?\s?m/i.test(s) && h === 12) ? 0 : h;
+      const d = new Date(yr, mon, day, hora, mi, 0, 0);
+      if (!isNaN(d.getTime())) return d;
     }
-    // Fallback nativo
+  } catch(e) {}
+  // PRIORIDAD 2: fechaISO — ya viene en UTC, convertir a local mediante getters
+  if (p.fechaISO) {
     try {
-      const d = new Date(p.fecha);
+      const d = new Date(p.fechaISO);
       if (!isNaN(d.getTime())) return d;
     } catch(e) {}
-    return new Date();
   }
+  // Fallback nativo
+  try {
+    const d = new Date(p.fecha);
+    if (!isNaN(d.getTime())) return d;
+  } catch(e) {}
+  return new Date();
+}
 
-  // Retorna el "día lógico del turno" como número YYYYMMDD
-  // Pagos entre 00:00 y 01:59 se asignan al día anterior del turno
-  function shiftDay(fecha) {
-    const shifted = new Date(fecha.getTime() - SHIFT_HOUR * 3600000);
-    return shifted.getFullYear() * 10000 + (shifted.getMonth()+1) * 100 + shifted.getDate();
-  }
+// Retorna el "día lógico del turno" como número YYYYMMDD
+// Pagos entre 00:00 y 01:59 se asignan al día anterior del turno
+const SHIFT_HOUR = 2; // corte a las 2:00 AM
+function shiftDay(fecha) {
+  const shifted = new Date(fecha.getTime() - SHIFT_HOUR * 3600000);
+  return shifted.getFullYear() * 10000 + (shifted.getMonth()+1) * 100 + shifted.getDate();
+}
 
+function filtrarPagosPorRango(pagos, filtro) {
   const ahora = new Date();
   const hoyShift = shiftDay(ahora); // día lógico de hoy según el turno
 
@@ -5939,6 +5987,7 @@ function renderReporteResumen(el) {
   html += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
     ${filtros.map(f=>`<button onclick="cambiarFiltroReporte('${f.k}')" style="padding:6px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:${filtro===f.k?'var(--fb-orange)':'var(--fb-border)'};color:${filtro===f.k?'#fff':'var(--text)'};">${f.l}</button>`).join('')}
     <button onclick="cambiarFiltroReporte('custom')" style="padding:6px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:${filtro==='custom'?'var(--fb-orange)':'var(--fb-border)'};color:${filtro==='custom'?'#fff':'var(--text)'};">📅 Personalizado</button>
+    <button onclick="verReporteMesActual()" style="padding:6px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--fb-border);color:var(--text);">🗓️ Este mes</button>
   </div>`;
 
   // Selector de rango personalizado
@@ -6158,6 +6207,14 @@ function cambiarFiltroReporte(filtro) {
     _customDesde = `${hace7.getFullYear()}-${String(hace7.getMonth()+1).padStart(2,'0')}-${String(hace7.getDate()).padStart(2,'0')}`;
     _customHasta = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
   }
+  renderView('reporte-caja');
+}
+function verReporteMesActual() {
+  const hoy = new Date();
+  const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  _customDesde = `${primerDia.getFullYear()}-${String(primerDia.getMonth()+1).padStart(2,'0')}-01`;
+  _customHasta = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`;
+  _reporteFiltro = 'custom';
   renderView('reporte-caja');
 }
 function aplicarRangoPersonalizado() {
